@@ -4709,6 +4709,9 @@ func TestGSSMainMergeCLinkPolicyRetiresCandidateAtEightLinkCap(t *testing.T) {
 		t.Fatal("certified C link policy retained a candidate that C retires")
 	}
 	assertGSSMainLinksEqual(t, incumbent.gss.head, before)
+	if !scratch.policyPruned {
+		t.Fatal("discarded GSS link certified as unpruned")
+	}
 }
 
 func TestMergeStacksGeneralFaithfulGSSPreservesCandidateBeyondUnsafeCLinkCap(t *testing.T) {
