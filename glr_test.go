@@ -2,6 +2,7 @@ package gotreesitter
 
 import (
 	"bytes"
+	"fmt"
 	"sync"
 	"testing"
 	"unsafe"
@@ -4674,6 +4675,47 @@ func TestGSSMainMergePreservesCandidateBeyondUnsafeCLinkCap(t *testing.T) {
 	}
 	if got := result[0].gss.head.linkCount(); got != maxMainLinkCount {
 		t.Fatalf("link count after capped merge = %d, want %d", got, maxMainLinkCount)
+	}
+}
+
+// BenchmarkPruningRecording compares identical discarded frontiers with
+// diagnostics off and on. It includes certificate publication and reuses
+// scratch so the paired comparison isolates always-on recording overhead.
+func BenchmarkPruningRecording(b *testing.B) {
+	for _, audit := range []bool{false, true} {
+		for _, path := range []string{"global_cull", "wide_cap", "alive_limit"} {
+			b.Run(fmt.Sprintf("%s/audit=%t", path, audit), func(b *testing.B) {
+				fixture := pruningCertificateStacks(8, path == "wide_cap")
+				for i := range fixture {
+					fixture[i].score = i
+				}
+				work := make([]glrStack, len(fixture))
+				scratch := parserScratch{}
+				scratch.audit.enabled = audit
+				arena := newNodeArena(arenaClassFull)
+				defer arena.Release()
+				var runtime ParseRuntime
+				b.ReportAllocs()
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					copy(work, fixture)
+					scratch.merge.reset()
+					scratch.merge.audit = &scratch.audit
+					scratch.merge.beginEquivEpoch()
+					if path == "global_cull" {
+						(&Parser{}).cullParseStacksForIteration(work, &scratch, arenaClassFull, 3, 3, false, nil)
+					} else {
+						if path == "wide_cap" {
+							scratch.merge.perKeyCap = 7
+						} else {
+							scratch.merge.budgetBytes = 7 * int64(unsafe.Sizeof(glrStack{})+unsafe.Sizeof(glrMergeSlot{}))
+						}
+						mergeStacksWithScratch(work, &scratch.merge)
+					}
+					captureParseScratchStats(&runtime, &scratch, arena, nil)
+				}
+			})
+		}
 	}
 }
 
