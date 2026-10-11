@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-11 (UTC).
-Latest throughput comparison baseline: `3a76b2df4097d57afc28d81104bab91f4f194fc2`.
+Latest shipped-route comparison baseline: `26dcc65c9d931dc1a2acba89e6892c924e171729`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -36,10 +36,191 @@ The strengthened final-source check passes **159 of 204** samples. All **120
 actual compact acceptances** match locked C on every tested structural axis.
 Of the 79 fallback cases, 35 match and 44 differ; of the five custom-source
 cases, four match and C++ differs. Chatito and EDS add propagated-error
-mismatches that the earlier comparator missed. The [per-language receipt](compact-r4-readiness-20261010.json)
+mismatches that the earlier comparator missed. The [initial per-language receipt](compact-r4-readiness-20261010.json)
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Preserve independent YAML lexer histories
+
+The early-owned YAML prototype exposed a canonicalization error. At byte 517,
+heads 94 and 95 had the same parser state, shifted state, and scanner checkpoint,
+but different pending lexer requests. Boundary lookup remapped both versions
+onto head 95. The unchanged ownership guard then rejected two scheduler owners
+on that physical head.
+
+Under the diagnostic probe, an owned remap needs a live version with matching immutable lexer history
+to authenticate its destination. Incompatible condensation candidates remain
+live for freshness and provenance checks, while their graph histories stay
+separate. They cannot be treated as dead historical boundaries or merged into
+one another. The new `Independent` bit fits existing padding; a condensation
+candidate remains 32 bytes. Tests cover equal and unequal requests, unwitnessed
+boundaries, separate owners, provenance, and rollback.
+
+Continuing every newly separated history was too expensive for a route that
+still falls back. The rejected variant raised Robot's complete route from
+986,767 to 2,546,686 ns/op (+158.08%, `p < .001`) and from 59,482 to 281,262 B/op.
+Independent-history expansion and owned canonicalization now stay behind the
+diagnostic probe along with early ownership. Ordinary routes retain their
+established canonicalization, condensation, and ownership checks. Tests prove
+that the ordinary route still rejects conflicting owners before publication.
+The existing Swift production-activation test retains its acceptance and exact
+lexer counters. No ownership or alternative-set check is removed.
+
+The diagnostic probe can continue with independent histories. It activates
+early ownership only when external symbols exactly cover every non-EOF
+terminal, before either clean pending version shifts. It defaults to false,
+has no environment switch, and is unavailable in an ordinary build.
+`TestCompactYAMLVersionOwnershipCOracle` requires actual compact acceptance
+without fallback and checks the hash-locked 1,998-byte YAML sample against C
+on every structural axis. The ordinary YAML route retains its existing
+blended-survivor decline. The probe does not graduate YAML or change routing
+allowlists.
+
+Scanner validation now avoids repeated formatting and hashing of immutable
+bindings. YAML gives its immutable language binding a stable pointer identity;
+per-parse state remains in the scanner payload. Value bindings use typed binary
+encoding that still detects changes to array and slice contents. Checkpoint
+validation compares receipts and exact bytes against the interner instead of
+rehashing every private copy. Request classification reuses validation already
+completed in the same call. Transient before/after state uses existing bounded
+scratch; published snapshots retain independent copies. Corruption, stale
+generation, foreign destination, binding mutation, and pointer replacement
+checks remain active.
+
+### Ownership correctness and work counters
+
+All **412 counter rows are byte-identical** to the measured `26dcc65c9` baseline,
+including Robot's original decline. The checked-in ledger is unchanged, and its
+strict 2% check passes. The four previously approved Liquid exceptions remain
+the only exceptions. The diagnostic owned-YAML build and its correctness-only
+baseline also produce byte-identical counter receipts:
+
+| Route and phase | Tokens before → after | Nodes before → after | Maximum versions before → after | Reused bytes before → after | Splices before → after |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Go candidate full | 589 → 589 | 1,251 → 1,251 | 3 → 3 | 0 → 0 | 0 → 0 |
+| Go candidate first edit | 374 → 374 | 1,553 → 1,553 | 8 → 8 | 1,784 → 1,784 | 266 → 266 |
+| YAML default full | 107 → 107 | 288 → 288 | 1 → 1 | 0 → 0 | 0 → 0 |
+| YAML default first edit | 107 → 107 | 480 → 480 | 1 → 1 | 0 → 0 | 0 → 0 |
+| YAML diagnostic owned full | 102 → 102 | 482 → 482 | 2 → 2 | 0 → 0 | 0 → 0 |
+| YAML diagnostic candidate first edit | 102 → 102 | 482 → 482 | 0 → 0 | 0 → 0 | 0 → 0 |
+
+The ordinary YAML candidate still records its no-action decline instead of
+full/edit work. The diagnostic candidate's edit receipt records
+`candidate_incremental_not_routed`; this does not certify compact subtree reuse.
+Owned full parsing still exceeds legacy's node and version counts, so its
+correctness success alone cannot satisfy graduation.
+
+All 206 separate 72-step edit sessions pass, with zero no-edit allocations,
+as do 618 locked-C fixture checks. The complete core package and focused
+canonicalization, ownership, checkpoint, snapshot, recovery, lifecycle, and
+memory-budget checks pass. The strict 204-file C census retains the same
+159 passes and 45 known failures; all 120 ordinary compact acceptances pass.
+The separate diagnostic YAML oracle requires compact acceptance without
+fallback. Existing failure expectations and graduation gates are unchanged.
+
+### Scanner validation performance receipt
+
+The shipped-route comparison uses clean baseline `26dcc65c9`. The diagnostic
+comparison uses correctness-only commit `219ab216be310015ff2aa1c4e91bb74ec1944364`
+with the ownership repair and probe,
+but the original scanner binding, formatting-based identity checks, checkpoint
+rehashing, and temporary snapshot allocation. Both diagnostic builds complete
+on compact, match C, and have identical work counters. This comparison does
+not measure a failing parser against a successful one.
+
+Each workload uses 20 paired alternating shuffled seeds, one process per seed,
+`GOMAXPROCS=1`, one CPU, `-count=1`, 750 ms, and `-benchmem`, through
+`scripts/run_randomized_benchmarks.sh` in serialized 6 GiB Docker. All Go source
+hashes remain fixed through the final correctness and timing runs. The Go run
+includes the primary full/edit/no-edit trio. Robot is included because its
+fallback cost exposed the rejected expansion policy.
+
+| Workload | Before ns/op | After ns/op | Change | p | B/op before → after | Allocs/op before → after |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Go real file, compact | 1,384,970 | 1,408,631.5 | +1.71% | .925 | 2,032 → 1,744 | 28 → 26 |
+| Go real file, legacy | 1,002,473 | 1,000,898 | -0.16% | .512 | 2,712 → 2,712 | 11 → 11 |
+| Go generated, full | 13,243,647.5 | 12,654,164.5 | -4.45% | .620 | 538,412 → 538,120 | 53 → 51 |
+| Go generated, single-byte edit | 148,020.5 | 152,182 | +2.81% | .738 | 404 → 404 | 5 → 5 |
+| Go generated, no edit | 4.3885 | 4.382 | -0.15% | .512 | 0 → 0 | 0 → 0 |
+| YAML real file, declined + legacy | 423,723.5 | 421,148 | -0.61% | .968 | 20,088 → 17,528 | 41 → 39 |
+| YAML real file, legacy | 304,045.5 | 302,723 | -0.43% | .718 | 1,440 → 1,440 | 18 → 18 |
+| Robot real file, declined + legacy | 749,987 | 677,136.5 | -9.71% | .023 | 59,482 → 59,482 | 132 → 132 |
+| Robot real file, legacy | 425,358 | 428,830.5 | +0.82% | .578 | 1,144 → 1,144 | 6 → 6 |
+| YAML diagnostic owned full | 15,127,465.5 | 1,140,997.5 | -92.46% | <.001 | 5,101,023 → 55,282 | 4,440 → 549 |
+
+The completed diagnostic YAML path is **13.26 times faster**, allocates
+**98.92% fewer bytes**, and performs **87.64% fewer allocations**; all three
+comparisons have `p < .001`. Every timed parse reports one compact route and
+zero fallbacks. This improvement is relative to the correctness-only owned
+parser, not to legacy or today's shipped fallback route.
+
+Go real-file allocation volume falls **14.17%** and YAML's complete shipped
+route falls **12.74%**, each saving two allocations (`p < .001`). Their final
+timing changes are inconclusive. Robot's complete route measures **9.71% faster**
+without changing its allocation volume, allocation count, or decline. Its
+legacy control rises 0.82%, an inconclusive change. The rejected Robot regression
+is not present in the final code.
+
+Candidate/legacy ratios change **1.382 → 1.407** for Go, **1.394 → 1.391** for
+YAML, and **1.763 → 1.579** for Robot. Go's directional ratio regression is
+retained alongside its allocation improvement. All three remain above E-A's
+1.15 ceiling; YAML and Robot remain above E-C's 1.10 declined-route ceiling.
+This subset does not establish the all-206 timing distribution or C-relative
+speed. The owned route remains diagnostic-only, and graduation stays blocked.
+
+Focused core and scheduler race checks pass. Both diagnostic-owned builds pass
+the 72-step YAML edit session with zero no-edit allocations. Clean-checkout
+`v1guard` and `v1layout` pass: 454 language-name uses, 101 environment reads,
+756 root Go files, and 12 public-API tag sets remain within existing registries.
+
+A fresh-process memory probe repeats complete YAML documents to **1,049,572
+bytes** (SHA-256 `8d615e96c0efe207dd1bfc4f54f601580d61dd0afc8f051ac3aaa92a2b27e397`).
+Both ordinary builds fall back, cover the input, and return an error-free tree.
+Peak RSS is 60,120 → 60,316 KiB (+0.33%); retained heap is
+131,318,712 → 131,317,744 bytes. Reserved heap is
+154,894,336 → 142,311,424 bytes. Wall time is 0.24 → 0.30 seconds. These are
+single-process completion and memory probes, not 20-seed timing or RSS ratchets.
+
+The diagnostic owned build also returns a complete error-free tree, but only
+after **61.50 seconds and legacy fallback**: at EOF it exceeds the existing
+live-link cap, **9 > 8**, at state 1507 and byte 1,049,572. Peak RSS is
+279,612 KiB (272.80 bytes per source byte), and retained heap is 139,243,944
+bytes. There is no crash, OOM, or timeout. This result does not certify compact
+completion or C parity on the large input. It is a concrete graduation blocker;
+neither the cap nor the admission default changes.
+
+On the small owned sample, the final CPU profile attributes 38.53% cumulatively
+to materialization and root finalization, including 31.49% under
+`compactAcceptanceElectionIsVacuous`. That points to answering acceptance
+vacuity from authenticated compact records without constructing a temporary
+public tree. Large-document ownership convergence and the EOF live-link limit
+also need investigation. Profile attribution does not replace the timing gate.
+
+Raw samples, source hashes, `benchstat` output, profiles, and counter receipts
+are under `/home/draco/.local/state/gotreesitter-evidence/20261011-yaml-ownership`.
+The rejected variants have separate source archives and receipts in
+`rejected-unbounded-owner` and `rejected-canonical-only` below that directory.
+
+Reproduce the ordinary comparison by mounting clean `26dcc65c9` at `/baseline`
+and this candidate at `/workspace`, then running the following inside the
+serialized Docker harness. Select Go, YAML, and Robot in separate invocations;
+the Go run also includes the primary trio as recorded in `perf.sh`.
+
+```sh
+GOMAXPROCS=1 GTS_ADMISSION_CANDIDATE=1 GTS_ADMISSION_REAL_CORPUS_LANGS=yaml \
+  bash scripts/run_randomized_benchmarks.sh \
+  --output /evidence/yaml-after.txt --baseline-root /baseline \
+  --baseline-output /evidence/yaml-before.txt \
+  --bench-regex '^BenchmarkAdmissionR4(Legacy|Compact)$' \
+  --require-benchmarks BenchmarkAdmissionR4Legacy,BenchmarkAdmissionR4Compact \
+  --runs 20 --benchtime 750ms
+```
+
+For the owned comparison, mount **`219ab216b`** at `/baseline`, select YAML,
+and use `^BenchmarkAdmissionR4OwnedExternalLexer$` for `--bench-regex` and
+`BenchmarkAdmissionR4OwnedExternalLexer` for `--require-benchmarks`.
+That benchmark explicitly enables and restores the diagnostic probe.
 
 ### Move cohort references out of hot scheduler records
 
@@ -92,14 +273,16 @@ split, and non-candidate admission. Its forced-certification object-declaration
 test fails identically on baseline and candidate: it expects compact acceptance
 but the blended-survivor check declines. That expectation is also unchanged.
 
-An external YAML prototype gave each competing version independent lexer
+During the reference-view work, an external YAML prototype gave each competing
+version independent lexer
 ownership before any sibling shifted. It passed the earlier blended-survivor
 decline, then failed because two scheduler owners reached the same physical
-compact head. That is not a valid acceptance. The prototype is not included;
-YAML retains its original decline at `spec`, bytes 346–350. The next ownership
-change must represent or separate these owners correctly through graph
+compact head. That was not a valid acceptance, so it was excluded from that
+change. YAML retained its original decline at `spec`, bytes 346–350. The next ownership
+change needed to represent or separate these owners correctly through graph
 canonicalization and rollback. Removing either ownership or alternative-set
-checks would not establish C correctness.
+checks would not establish C correctness. The ownership repair above supersedes
+that rejected prototype; early activation remains diagnostic-only.
 
 ### Reference-view performance receipt
 

@@ -495,7 +495,10 @@ func (YamlExternalScanner) ExternalScannerForLanguage(lang *gotreesitter.Languag
 	s.externalToToken = bindExternalScannerSpec(lang, yamlExternalScannerSpec, func(tokenIdx int, sym gotreesitter.Symbol) {
 		s.symbols[tokenIdx] = sym
 	})
-	return s
+	// The binding is immutable; per-parse state lives in Create's payload.
+	// Give it a stable instance identity so owned lexer snapshots do not copy
+	// or fingerprint the entire symbol mapping on each validation.
+	return &s
 }
 
 func (s YamlExternalScanner) symbolTable() *[yTokCount]gotreesitter.Symbol {

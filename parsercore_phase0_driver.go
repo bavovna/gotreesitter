@@ -5679,9 +5679,11 @@ func (s *diagnosticParserCoreGenericScheduler) versionLexerRequestSnapshotsValid
 		return false
 	}
 	for _, snapshot := range []*diagnosticParserCoreVersionLexerSnapshot{request.before, request.after} {
-		if err := snapshot.validateDestination(s.compact, s.tokenSource.language); err != nil {
+		if snapshot.compact != s.compact || snapshot.language != s.tokenSource.language {
 			return false
 		}
+		// validate authenticates this same destination as well as both owned
+		// checkpoint copies. Do not repeat its scanner-contract check above.
 		if err := snapshot.validate(); err != nil {
 			return false
 		}
@@ -5987,7 +5989,7 @@ func (s *diagnosticParserCoreGenericScheduler) requestVersionLexerHeader(index i
 	// including snapshot validation, checkpoint, and publication failures.
 	// Keep parser state and GLR state with the DFA cursor: the next shared
 	// election must observe exactly the state that preceded this request.
-	priorDFA := s.tokenSource.snapshotRelexState()
+	priorDFA := s.tokenSource.snapshotRelexStateWithScratch(&s.relexPriorScratch)
 	priorState := s.tokenSource.state
 	priorGLRStates := s.tokenSource.glrStates
 	defer func() {
@@ -6010,7 +6012,7 @@ func (s *diagnosticParserCoreGenericScheduler) requestVersionLexerHeader(index i
 	s.tokenSource.SetGLRStates(nil)
 	beforeID := base.afterCheckpoint
 	token := s.tokenSource.Next()
-	afterDFA := s.tokenSource.snapshotRelexState()
+	afterDFA := s.tokenSource.snapshotRelexStateWithScratch(&s.relexAfterScratch)
 	afterBytes := s.tokenSource.captureExternalScannerStateInto(s.scannerScratch)
 	afterID, _, err := diagnosticParserCoreInternCheckpoint(s.compact, afterBytes)
 	if err != nil {
@@ -6497,7 +6499,7 @@ func (s *diagnosticParserCoreGenericScheduler) rejoinSharedLexerFromOwnedHeader(
 	if err != nil {
 		return err
 	}
-	priorDFA := s.tokenSource.snapshotRelexState()
+	priorDFA := s.tokenSource.snapshotRelexStateWithScratch(&s.relexPriorScratch)
 	priorState := s.tokenSource.state
 	priorGLRStates := s.tokenSource.glrStates
 	committed := false
@@ -8590,7 +8592,11 @@ func (s *diagnosticParserCoreGenericScheduler) classifyVersionLexerCell(
 	if err := s.requestHeaderLexerToken(index); err != nil {
 		return diagnosticParserCoreGenericCell{}, false, nil, err
 	}
-	requestReference := s.versionLexerRequestReferenceForHeader(index)
+	// requestHeaderLexerToken either validated the existing request or
+	// published a freshly authenticated one. Its reference is stable until
+	// this dispatch changes the header; validating both snapshots again here
+	// would duplicate that work.
+	requestReference := s.headers[index].versionLexerRequestReference()
 	if requestReference == 0 {
 		return diagnosticParserCoreGenericCell{}, false, nil, fmt.Errorf(
 			"parser-core phase zero: version lexer request was not published for header %d",
