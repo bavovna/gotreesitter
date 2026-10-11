@@ -1133,6 +1133,9 @@ type CondenseCandidate struct {
 	ErrorCost     uint32
 	MergeIdentity uint16
 	Shifted       bool
+	// Independent keeps an incompatible lexer owner live for freshness and
+	// provenance checks, while excluding it from this dispatch's graph merges.
+	Independent bool
 }
 
 // Derivation is one retained exact root-to-head path after local shallow-link
@@ -3686,6 +3689,11 @@ func (c *Core) condenseWithOutcomeAtomic(key boundaryKey, in linkInput) (condens
 		return condenseOutcome{}, err
 	}
 	probe, oldID := c.boundaries.probe(boundaryIdentityFromKey(key))
+	if probe.found && c.condenseNodeHasIndependentOwner(oldID) {
+		// This is a live sibling, not a dead boundary being resurrected. Its
+		// lookahead history cannot be imported into this version's output.
+		return c.condenseDirectAppend(key, probe, prev, in, storedErrorCost)
+	}
 	if !probe.found {
 		// No incumbent has ever published this boundary in the current
 		// frontier: exactly one candidate exists (the incoming link), so no

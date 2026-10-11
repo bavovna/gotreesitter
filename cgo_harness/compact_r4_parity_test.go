@@ -13,6 +13,7 @@ import (
 
 	gts "github.com/odvcencio/gotreesitter"
 	"github.com/odvcencio/gotreesitter/grammars"
+	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
 
 // Run one language per process. This checks the candidate route, including
@@ -22,6 +23,16 @@ func TestCompactR4StructuralLockedC(t *testing.T) {
 	if name == "" {
 		t.Skip("set GTS_ADMISSION_REAL_CORPUS_LANGS to one R4 language")
 	}
+	testCompactR4StructuralLockedC(t, name, false)
+}
+
+func TestCompactYAMLVersionOwnershipCOracle(t *testing.T) {
+	t.Cleanup(core.SetExternalLexerOwnershipProbeForTest(true))
+	testCompactR4StructuralLockedC(t, "yaml", true)
+}
+
+func testCompactR4StructuralLockedC(t *testing.T, name string, requireCompact bool) {
+	t.Helper()
 	entry := grammars.DetectLanguageByName(name)
 	if entry == nil || strings.Contains(name, ",") {
 		t.Fatal("select exactly one registered R4 language")
@@ -79,6 +90,9 @@ func TestCompactR4StructuralLockedC(t *testing.T) {
 	defer tree.Release()
 	routed, fallback := gts.AdmissionCandidateCounters()
 	t.Logf("R4 language=%s bytes=%d compact=%d fallback=%d reason=%q", name, len(source), routed-beforeRouted, fallback-beforeFallback, gts.AdmissionCandidateLastFallbackReason())
+	if requireCompact && (routed-beforeRouted != 1 || fallback != beforeFallback) {
+		t.Fatal("version ownership witness did not complete on compact")
+	}
 	if diffs := compactT3StructuralDivergences(tree.RootNode(), lang, cTree.RootNode()); len(diffs) != 0 {
 		for _, diff := range diffs[:min(len(diffs), 8)] {
 			t.Error(compactT3FormatDivergence(diff))

@@ -18,6 +18,7 @@ import (
 	gotreesitter "github.com/odvcencio/gotreesitter"
 	"github.com/odvcencio/gotreesitter/grammars"
 	"github.com/odvcencio/gotreesitter/internal/benchfixtures"
+	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
 
 // These benchmarks include declined compact attempts in route timing.
@@ -25,6 +26,16 @@ import (
 // The committed R4 source and its digest are shared with the invariant gate.
 func BenchmarkAdmissionR4Legacy(b *testing.B)  { benchmarkAdmissionR4(b, false) }
 func BenchmarkAdmissionR4Compact(b *testing.B) { benchmarkAdmissionR4(b, true) }
+
+// BenchmarkAdmissionR4OwnedExternalLexer measures completed parses through the
+// diagnostic ownership activation. Keep it separate from shipped-route timing.
+func BenchmarkAdmissionR4OwnedExternalLexer(b *testing.B) {
+	b.Cleanup(core.SetExternalLexerOwnershipProbeForTest(true))
+	benchmarkAdmissionR4(b, true)
+	if routed, fallback := gotreesitter.AdmissionCandidateCounters(); routed != uint64(b.N) || fallback != 0 {
+		b.Fatalf("owned lexer benchmark did not stay on compact: routed=%d fallback=%d", routed, fallback)
+	}
+}
 
 func benchmarkAdmissionR4(b *testing.B, compact bool) {
 	name := strings.TrimSpace(os.Getenv("GTS_ADMISSION_REAL_CORPUS_LANGS"))

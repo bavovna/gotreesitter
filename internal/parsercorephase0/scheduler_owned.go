@@ -414,6 +414,9 @@ func (c *Core) mergeLiveCondenseCandidatesUncheckpointedWithCost(candidates []Co
 		match := -1
 		for prior := 0; prior < write; prior++ {
 			other := candidates[prior]
+			if candidate.Independent || other.Independent {
+				continue
+			}
 			otherNode, err := c.node(other.Head.Node)
 			if err != nil {
 				return nil, err

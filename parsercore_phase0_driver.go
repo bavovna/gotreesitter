@@ -2447,7 +2447,13 @@ func (s *diagnosticParserCoreCanonicalScratch) canonicalizeWithMutation(
 		}
 		if canonical, ok := compact.CanonicalBoundary(state, byteOffset, header.shifted, header.checkpoint); ok &&
 			!header.isRecoveryLineage() && header.recoveryRegion() == nil && !header.isRecoveryCosted() {
-			header.head = canonical
+			if core.CanonicalVersionRemap(header.head, canonical, core.ExternalLexerOwnershipProbeEnabled() && header.versionLexerSnapshot() != nil, headers,
+				func(other diagnosticParserCoreHeader, target core.Head) bool {
+					return other.head == target && (other.versionState == header.versionState ||
+						s.versionStateOwner != nil && s.versionStateOwner.versionLexerStateEqual(other.versionState, header.versionState))
+				}) {
+				header.head = canonical
+			}
 		}
 		header.freshness = 0
 		s.nextBuffer = uint8(target ^ 1)
@@ -2479,7 +2485,13 @@ func (s *diagnosticParserCoreCanonicalScratch) canonicalizeWithMutation(
 		}
 		if canonical, ok := compact.CanonicalBoundary(state, byteOffset, header.shifted, header.checkpoint); ok &&
 			!header.isRecoveryLineage() && header.recoveryRegion() == nil && !header.isRecoveryCosted() {
-			header.head = canonical
+			if core.CanonicalVersionRemap(header.head, canonical, core.ExternalLexerOwnershipProbeEnabled() && header.versionLexerSnapshot() != nil, headers,
+				func(other diagnosticParserCoreHeader, target core.Head) bool {
+					return other.head == target && (other.versionState == header.versionState ||
+						s.versionStateOwner != nil && s.versionStateOwner.versionLexerStateEqual(other.versionState, header.versionState))
+				}) {
+				header.head = canonical
+			}
 		}
 		versionState := header.versionState
 		if header.versionLexerSnapshot() == nil {
@@ -9057,6 +9069,25 @@ func (s *diagnosticParserCoreGenericScheduler) dispatchPassActive() (*diagnostic
 	if s.versionLexerOwnershipActive {
 		return s.dispatchVersionLexerPassActive()
 	}
+	// When the scanner owns the entire terminal lexicon, one shared token can
+	// hide different requests at the same byte. Establish each version's lexer
+	// identity before reducing either path into a shared boundary.
+	if len(s.headers) > 1 && s.token.ExternalScannerToken && core.ExternalLexerOwnershipProbeEnabled() && s.tokenSource != nil &&
+		s.tokenSource.language != nil && core.ExternalLexerOwnsAllTerminals(
+		s.tokenSource.language.TokenCount, s.tokenSource.language.ExternalSymbols) {
+		eligible := true
+		for index := range s.headers {
+			header := &s.headers[index]
+			if header.shifted || header.paused || header.accepted || header.isRecoveryLineage() ||
+				header.recoveryRegion() != nil || header.isRecoveryCosted() {
+				eligible = false
+				break
+			}
+		}
+		if eligible {
+			return s.activateVersionLexerOwnershipAtRagged(0)
+		}
+	}
 	s.work.Passes++
 	// R6 pass-mix counter. A single-header pass is exactly the shape the C4
 	// bytecode corridor is eligible for, so this count makes corridor coverage
@@ -12668,6 +12699,10 @@ func (s *diagnosticParserCoreGenericScheduler) reindexCondenseCandidatesOwned(ow
 
 func (s *diagnosticParserCoreGenericScheduler) collectCondenseCandidates(source int) []core.CondenseCandidate {
 	candidates := s.condenseCandidates[:0]
+	// Independent graph expansion belongs to the same diagnostic route as
+	// early scanner ownership. Ordinary routes keep their existing condensation
+	// and fail closed at the ownership guard instead of extending doomed work.
+	independentOwners := core.ExternalLexerOwnershipProbeEnabled() && source >= 0 && source < len(s.headers)
 	if source >= 0 && source < len(s.headers) {
 		sourceHeader := &s.headers[source]
 		if sourceHeader.accepted || sourceHeader.paused ||
@@ -12688,6 +12723,7 @@ func (s *diagnosticParserCoreGenericScheduler) collectCondenseCandidates(source 
 				Head: header.head, DropCohortRefs: header.dropCohortRefs,
 				Shifted: header.shifted, Checkpoint: header.checkpoint, ErrorCost: 0,
 				MergeIdentity: s.condenseCandidateMergeIdentity(index),
+				Independent:   independentOwners && !s.versionLexerStateEqual(s.headers[source].versionState, header.versionState),
 			})
 		}
 		s.condenseCandidates = candidates
@@ -12706,6 +12742,7 @@ func (s *diagnosticParserCoreGenericScheduler) collectCondenseCandidates(source 
 			Head: header.head, DropCohortRefs: header.dropCohortRefs,
 			Shifted: header.shifted, Checkpoint: header.checkpoint, ErrorCost: 0,
 			MergeIdentity: s.condenseCandidateMergeIdentity(index),
+			Independent:   independentOwners && !s.versionLexerStateEqual(s.headers[source].versionState, header.versionState),
 		})
 	}
 	s.condenseCandidates = candidates
