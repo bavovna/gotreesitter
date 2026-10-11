@@ -6822,6 +6822,7 @@ const parserCoreMaxRetainedComparisonBytes = 256 * 1024
 // owned runtime. Reset removes tree references before the next request borrows
 // its storage; published trees own their nodes independently.
 type parserCoreRunnerScratch struct {
+	derivations                    core.DerivationScratch
 	materialization                diagnosticParserCoreMaterializationScratch
 	postorder                      core.MaterializationPostorderScratch
 	acceptedLeaves                 diagnosticParserCoreAcceptedLeafCoverageScratch
@@ -11198,7 +11199,27 @@ func (s *diagnosticParserCoreGenericScheduler) completeAcceptance() (err error) 
 			member.recoveryRegion() != nil {
 			return s.finish(DiagnosticParserCoreAccept, "recovered root group has invalid provenance", index)
 		}
-		memberPaths, pathErr := compactDerivationsForAcceptance(s.compact, member.head)
+		var memberPaths []core.Derivation
+		var pathErr error
+		if scratch := s.options.acceptanceMaterializationScratch; scratch != nil && len(groupMembers) == 1 {
+			// Only this accepted group borrows the buffers. Materialization
+			// resets its own workspace while these paths stay live, so expire
+			// them only after selection and publication have copied their keys.
+			defer scratch.derivations.Reset()
+			memberPaths, pathErr = s.compact.DerivationsWithScratch(member.head, &scratch.derivations, func() error {
+				// Enumeration can grow between dispatches. Charge its complete
+				// capacities now, independent of the dispatch poll throttle.
+				if reason := s.stopControlMemoryBudgetReason(); resultMaterializationShouldStop(reason) {
+					return diagnosticParserCoreStopControlTripped(reason)
+				}
+				return s.pollStopControl()
+			})
+			if errors.Is(pathErr, core.ErrDerivationEnumerationCap) {
+				pathErr = &diagnosticParserCoreDecline{boundary: DiagnosticParserCoreAccept, detail: "accepted derivation enumeration cap"}
+			}
+		} else {
+			memberPaths, pathErr = compactDerivationsForAcceptance(s.compact, member.head)
+		}
 		if pathErr != nil {
 			// A capped enumeration leaves the accepted path set unknown.
 			s.censusAcceptanceDerivationSetTruncated()

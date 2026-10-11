@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-11 (UTC).
-Latest shipped-route comparison baseline: `3fe73a53e5309032851f01bb73c545d1678f8999`.
+Latest shipped-route comparison baseline: `ef360102d322ac6f553529f74989c2b927621a06`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -40,6 +40,120 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Reusable acceptance derivation enumeration
+
+Fresh profiles put exact derivation enumeration at about 20% of allocated
+objects on the diagnostic owned-YAML route. Reuse its temporary adjacency,
+path, payload and cycle-check storage through an exclusive runner lease.
+The implementation starts in `internal/parsercorephase0`; the existing copying
+API remains available. Borrowed results expire after acceptance selection and
+publication have copied their keys. Multiple recovered groups retain the
+copying path. Scratch retains IDs and values, with no core, parser, source,
+arena or public-tree references.
+
+Keep every alternative and preserve payloads, forward score arithmetic,
+insertion order, branch order, saturated-count validation, corruption errors
+and cap error precedence. Narrow adjacency checks use a bounded scan; wider
+frontiers retain the existing linear map validator. All backing capacities,
+including inactive frame storage, enter scheduler memory accounting.
+Enumeration polls stop control, and reset drops the complete workspace above
+256 KiB. Ineligible runner attempts also drop the lease before accounting.
+Warm sole-path and ambiguous-path unit probes allocate nothing. Generated
+graph comparisons, cancellation, reentry and retention tests pass.
+
+**Deterministic work bucket.** Against
+`ef360102d322ac6f553529f74989c2b927621a06`, all 412 ledger rows across 206
+languages remain byte-identical, including work, reuse, routing, coverage and
+stop reasons. The separate owned-YAML ledger also matches. No ledger reset or
+new counter exception is required. Selected before-and-after counters are:
+
+| Route | Full node work | First edit node work | First edit reused bytes | First edit block splices |
+|---|---:|---:|---:|---:|
+| Go candidate | 1,251 → 1,251 | 1,553 → 1,553 | 1,784 → 1,784 | 266 → 266 |
+| Go default | 1,922 → 1,922 | 3,810 → 3,810 | 1,166 → 1,166 | 296 → 296 |
+| YAML default | 288 → 288 | 480 → 480 | 0 → 0 | 0 → 0 |
+| YAML diagnostic owned candidate | 482 → 482 | 482 → 482 | 0 → 0 | 0 → 0 |
+
+The C4 identity check again records 37,662 lookups in each mode and 7,257
+corridor passes when enabled. These are implementation-specific proxies.
+
+**Allocation and throughput buckets.** All comparisons use 20 paired,
+alternating shuffled seeds through `scripts/run_randomized_benchmarks.sh`, one
+process per seed, `GOMAXPROCS=1`, `750ms`, `-count=1` and `-benchmem`, in
+serialized 6 GiB Docker pinned to CPU 6. The completed medians are:
+
+| Workload | Before ns/op | After ns/op | Direction | p | B/op | allocs/op |
+|---|---:|---:|---:|---:|---:|---:|
+| Go real file, compact | 946,066 | 945,760.5 | -0.03% | .820 | 1,744 → 1,696 | 26 → 25 |
+| Go real file, legacy | 691,650 | 700,786.5 | +1.32% | .009 | 2,712 → 2,712 | 11 → 11 |
+| Go generated, full | 9,052,334 | 8,994,446.5 | -0.64% | .211 | 538,115.5 → 538,080 | 51 → 50 |
+| Go generated, single-byte edit | 103,255 | 103,750.5 | +0.48% | .298 | 400 → 400 | 5 → 5 |
+| Go generated, no edit | 3.2765 | 3.2815 | +0.15% | .410 | 0 → 0 | 0 → 0 |
+| YAML real file, declined + legacy | 224,576 | 223,529.5 | -0.47% | .779 | 17,528 → 17,528 | 39 → 39 |
+| YAML real file, legacy | 162,882.5 | 172,844 | +6.12% | .547 | 1,440 → 1,440 | 18 → 18 |
+| YAML diagnostic owned route | 647,735.5 | 650,896.5 | +0.49% | .862 | 20,601 → 18,065 | 434 → 366 |
+
+Retain this change for the owned-YAML savings of **68 allocations (-15.67%)
+and 2,536 bytes (-12.31%)** per warm parse, plus one allocation (-3.85%) and
+48 bytes (-2.75%) for Go's real compact file. Both accepted routes have zero
+fallback in every timing sample. **No throughput improvement is established.**
+Go legacy's +1.32% is statistically supported in this set; all other timing
+differences are inconclusive. Record the Go edit/no-edit, owned YAML and
+ordinary YAML legacy increases as directional regressions. Every measured
+timing, allocation and RSS ratchet passes. The tradeoff is less allocation
+churn with added reusable temporary storage, without a proven speed benefit.
+
+**Memory bucket.** Twenty alternating fresh-process pairs accept the exact
+1 MiB Go input on compact without errors, truncation or fallback. RSS medians
+are 340,078 → 355,132 KiB (+4.43%); ranges are 310,124–359,852 and
+320,256–360,096 KiB. Retained heap medians are 218,569,968 → 218,570,112
+bytes; heap-in-use is 220,635,136 → 220,643,328 bytes. Record the RSS increase;
+the overlapping ranges do not establish attribution. The RSS ratchet and
+400-bytes-per-source-byte hard limit pass. The 1,049,572-byte ordinary YAML
+probe keeps its complete, error-free legacy result and existing no-action
+decline; single-process RSS is 60,812 → 60,864 KiB.
+
+**Correctness bucket.** All 206 separate 72-step edit-session gates and 618 C
+fixture checks pass, with no invariant skips and zero no-edit allocations.
+The strict 204-file census remains byte-identical: 159 PASS / 45 known FAIL,
+including 120 / 120 actual compact acceptances. Full tagged core tests,
+focused acceptance, corridor, memory and stop-control checks, phase-zero-A
+tests, owned-YAML/recover-EOF and Swift C oracles, focused container races and
+the CI planner pass.
+
+A broader supplemental root run exposed an existing failing assertion:
+`TestAdmissionCandidatePerlExternalPayloadPinsLiveLinkCapReach` expects a
+live-link-cap fallback, while both untouched baseline and candidate accept
+its 3,479-byte fixture on compact. A supplemental locked-C oracle reports
+19 structural differences on each, with the first eight reported differences
+identical. The fixture SHA-256 is
+`84b468672c82a73ba88d62a47591e85d02f9e35952a7ce45a494db71d1fa3ad4`.
+This fixture is outside the 204-file R4 census. Its expectation is unchanged;
+it is additional unfixed baseline correctness debt, not a passing C result.
+The required scoped gates pass; a complete root-suite pass is not claimed.
+
+**Graduation bucket.** Compact/legacy medians in this set remain **1.350× Go
+/ 1.293× ordinary YAML**. Neither graduates, and the lower ratios do not
+establish compact acceleration when legacy timing also rises. No all-206
+timed distribution or C-relative throughput certificate was produced. Owned
+YAML remains diagnostic; its existing large-input EOF frontier failure
+(state 1507, 9 live links exceeding the cap of 8) precedes acceptance and was
+not rerun. Go edit fallback, ordinary YAML's no-action decline and owned-YAML
+edit fallback remain. No allowlist, default, proof, cap or milestone changes
+are part of this receipt. #1319 remains open; the hot-header and publication
+replay costs remain architectural targets.
+
+R6 retains 454 language-name uses and 101 environment reads. L0 retains 756
+root Go files and all 12 API tag sets without snapshot changes. The frozen
+Go/module manifest covers 3,465 files with SHA-256
+`f2c786244f6e03628232f8326c7aa4a1f6547a628a57b7e4b7d9ea1ede1ddfd7`.
+Raw receipts and reproduction scripts are in
+`/home/draco/.local/state/gotreesitter-evidence/20261011-runtime-cost-buckets`:
+`profile.sh`, `perl-oracle.sh`, `final-check.sh`, `measure.sh`, `perf.sh`,
+`rss-repeat.sh`, `analyze.py` and `guard-snapshot.py`. The final serialized
+Docker pipeline exited 0 without OOM or timeout. Earlier receipts and the
+four owner-approved Liquid correctness increases below remain in force.
 
 ### States-free acceptance alternatives
 

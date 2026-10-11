@@ -565,6 +565,7 @@ func (r *parserCoreFreshFullRunner) parseWithObserverAndErrorRuns(
 		// This attempt cannot use the comparison lease. Drop its retained
 		// storage before scheduler memory accounting starts without the hook.
 		r.scratch.acceptanceComparison = nil
+		r.scratch.derivations = core.DerivationScratch{}
 	}
 	defer func() {
 		r.options.acceptanceMaterializationScratch = nil
