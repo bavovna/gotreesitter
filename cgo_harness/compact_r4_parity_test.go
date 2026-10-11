@@ -93,6 +93,14 @@ func testCompactR4StructuralLockedC(t *testing.T, name string, requireCompact bo
 	if requireCompact && (routed-beforeRouted != 1 || fallback != beforeFallback) {
 		t.Fatal("version ownership witness did not complete on compact")
 	}
+	if requireCompact && lang.ExternalScanner != nil {
+		runtime := tree.ParseRuntime()
+		// A scanner can certify transfer without storing checkpoints. The
+		// published tree must retain that proof after comparison-only trials.
+		if !runtime.CompactExternalScannerCheckpointTransferProven {
+			t.Fatal("published scanner transfer lost its proof after acceptance trials")
+		}
+	}
 	if diffs := compactT3StructuralDivergences(tree.RootNode(), lang, cTree.RootNode()); len(diffs) != 0 {
 		for _, diff := range diffs[:min(len(diffs), 8)] {
 			t.Error(compactT3FormatDivergence(diff))

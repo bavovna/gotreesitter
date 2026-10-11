@@ -5,7 +5,75 @@ package gotreesitter
 import (
 	"errors"
 	"testing"
+
+	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
+
+func TestDiagnosticParserCoreMaterializationComparisonMatchesIndependentTrial(t *testing.T) {
+	prepared, err := parserCoreWarmPrepare()
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths, err := prepared.acceptedCore.Derivations(prepared.acceptedHead)
+	if err != nil || len(paths) != 1 {
+		t.Fatalf("derivations=%d err=%v", len(paths), err)
+	}
+	var publishScratch parserCoreRunnerScratch
+	comparisonScratch := parserCoreRunnerScratch{materializationPurpose: core.MaterializationForComparison}
+	build := func(scratch *parserCoreRunnerScratch, source []byte) (*Tree, error) {
+		return materializeDiagnosticParserCoreAcceptedSelection(prepared.acceptedCore, prepared.acceptedHead,
+			paths[0].Payloads, prepared.parser, source, scratch, true, false)
+	}
+	published, err := build(&publishScratch, prepared.source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer published.Release()
+	// Before buffer reuse, acceptance trials passed nil scratch and walked
+	// without replay. Preserve every node attribute of that reference path.
+	independentTrial, err := build(nil, prepared.source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer independentTrial.Release()
+	if !compactAcceptanceDerivationTreesEqual(prepared.lang, published.root, independentTrial.root) {
+		t.Fatal("states-free trial differs from published public syntax")
+	}
+	if err := compactEagerCompareTrees(prepared.lang, published, independentTrial); err == nil {
+		t.Fatal("fixture did not distinguish published replay from a temporary trial")
+	}
+	for i := 0; i < 3; i++ {
+		comparison, err := build(&comparisonScratch, prepared.source)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := compactEagerCompareTrees(prepared.lang, independentTrial, comparison); err != nil {
+			comparison.Release()
+			t.Fatal(err)
+		}
+		if !comparison.incrementalReuseDisabled || comparison.ParseRuntime().CompactExternalScannerCheckpointTransferProven {
+			comparison.Release()
+			t.Fatal("temporary comparison tree advertises incremental provenance")
+		}
+		comparison.root.symbol++
+		if published.root.symbol == comparison.root.symbol || published.arena == comparison.arena {
+			comparison.Release()
+			t.Fatal("comparison construction shared the published tree's storage")
+		}
+		comparison.Release()
+	}
+	if tree, err := build(&comparisonScratch, nil); err == nil || tree != nil {
+		if tree != nil {
+			tree.Release()
+		}
+		t.Fatal("comparison omitted source-coverage validation")
+	}
+	if tree, err := build(&comparisonScratch, prepared.source); err != nil {
+		t.Fatal("failed comparison poisoned the scratch:", err)
+	} else {
+		tree.Release()
+	}
+}
 
 func TestDiagnosticParserCoreMaterializationScratchReusesVaryingWidths(t *testing.T) {
 	var scratch diagnosticParserCoreMaterializationScratch

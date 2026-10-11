@@ -89,6 +89,7 @@ type compactMaterializer struct {
 	lastEagerNodes   uint64
 	lastEagerSkipped uint64
 	lastAdopted      bool
+	purpose          core.MaterializationPurpose
 
 	replayRootPre                   core.StateID
 	recoveryTerminalAlias           Symbol
@@ -116,6 +117,13 @@ func (m *compactMaterializer) begin(
 		return errors.New("parser-core phase zero: materializer requires a compact core and a parser")
 	}
 	m.compact, m.parser, m.source, m.scratch = compact, parser, source, scratch
+	m.purpose = core.MaterializationForPublication
+	if scratch != nil {
+		m.purpose = scratch.materializationPurpose
+	}
+	if m.purpose != core.MaterializationForPublication && m.purpose != core.MaterializationForComparison {
+		return errors.New("parser-core phase zero: unknown materialization purpose")
+	}
 	m.incrementalReuse = incrementalReuse
 	m.replayEnabled = replayEnabled
 	m.replayTransition = nil
@@ -127,9 +135,14 @@ func (m *compactMaterializer) begin(
 			}
 		}
 		m.replayRootPre = core.StateID(parser.replayRootPreGotoState())
-		m.replayTransition = func(pre core.StateID, view core.MaterializationReplayView) (core.StateID, bool, error) {
-			state, known, err := parser.replayCompactMaterializationTransition(StateID(pre), view)
-			return core.StateID(state), known, err
+		// Nil-scratch acceptance trials used the states-free postorder walk.
+		// Reusing its buffers must not add replay work to that public-shape
+		// comparison. Publication still authenticates and stamps every state.
+		if m.purpose == core.MaterializationForPublication {
+			m.replayTransition = func(pre core.StateID, view core.MaterializationReplayView) (core.StateID, bool, error) {
+				state, known, err := parser.replayCompactMaterializationTransition(StateID(pre), view)
+				return core.StateID(state), known, err
+			}
 		}
 	}
 	m.arena = acquireNodeArena(arenaClassFull)
@@ -139,9 +152,9 @@ func (m *compactMaterializer) begin(
 	// visit. Set the language identity before publishing the first
 	// checkpoint so the incremental reuse gate can authenticate the copied
 	// snapshots.
-	m.scannerProvenanceTransferProven = true
+	m.scannerProvenanceTransferProven = m.purpose == core.MaterializationForPublication
 	m.usesScannerCheckpoints = languageUsesExternalScannerCheckpoints(parser.language)
-	if m.usesScannerCheckpoints {
+	if m.usesScannerCheckpoints && m.purpose == core.MaterializationForPublication {
 		_, identityRequired, identityValid := externalScannerCheckpointIdentityStatus(parser.language)
 		if identityRequired {
 			m.scannerProvenanceTransferProven = identityValid && m.arena.setExternalScannerCheckpointIdentityForLanguage(parser.language)
@@ -626,7 +639,7 @@ func (m *compactMaterializer) visit(id core.SubtreeID, view *core.Materializatio
 			arena, Symbol(view.Symbol), named, view.StartByte, view.EndByte,
 			m.points.point(view.StartByte), m.points.point(view.EndByte),
 		)
-		if m.usesScannerCheckpoints && view.Terminal &&
+		if m.usesScannerCheckpoints && m.purpose == core.MaterializationForPublication &&
 			!materializeCompactExternalScannerCheckpoint(m.compact, arena, node, *view, &m.materializationScratch.checkpoints) {
 			m.scannerProvenanceTransferProven = false
 		}

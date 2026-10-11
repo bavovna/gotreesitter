@@ -187,12 +187,10 @@ type DiagnosticParserCorePrefixOptions struct {
 	// public-tree pipeline the accepted parse itself uses, so it can require
 	// every candidate's tree to match the primary before admitting it.
 	//
-	// materializationForceReplayParseStates must match the value the
-	// caller's own post-acceptance materialization will use, not just be
-	// "some" value: it decides whether replayCompactDerivation stamps
-	// ParseState/PreGotoState on the materialized nodes at all, and the
-	// gate's comparator reads those stamps. A mismatched value would compare
-	// an attribute the published tree does not actually carry.
+	// materializationForceReplayParseStates matches the caller's publication
+	// setting so trials retain the same table-identity precondition. The
+	// comparator excludes replay stamps; temporary trials preserve the
+	// original states-free traversal and never certify incremental reuse.
 	//
 	// All fields are set by the two production seed entry points
 	// (DiagnosticParseParserCorePrefix, parserCoreFreshFullRunner's
@@ -6828,6 +6826,7 @@ type parserCoreRunnerScratch struct {
 	// also set recoveryTerminalAliasCertified for this materialization.
 	recoveryTerminalAliasSymbol    Symbol
 	recoveryTerminalAliasCertified bool
+	materializationPurpose         core.MaterializationPurpose
 	// materializer builds the public nodes. It retains the per-id node
 	// tables between parses and carries the eager state across a run.
 	materializer   compactMaterializer
@@ -7861,6 +7860,10 @@ func materializeDiagnosticParserCoreAcceptedSelectionWithRootFinalization(compac
 	if incrementalReuse != nil && (allowErrorRoot || rootFinalization != diagnosticParserCoreFinalizeDefault) {
 		return nil, compactIncrementalMaterializationDecline("borrowed subtrees require clean default root finalization")
 	}
+	if scratch != nil && scratch.materializationPurpose == core.MaterializationForComparison &&
+		(incrementalReuse != nil || allowErrorRoot || rootFinalization != diagnosticParserCoreFinalizeDefault) {
+		return nil, errors.New("parser-core phase zero: comparison materialization requires a fresh clean derivation")
+	}
 	stats, err := compact.Stats(head)
 	if err != nil {
 		return nil, err
@@ -7883,7 +7886,8 @@ func materializeDiagnosticParserCoreAcceptedSelectionWithRootFinalization(compac
 	// The eager driver may have built part of this derivation during the
 	// scheduler run. Adopt that state when the pass flags match the plain
 	// shape it assumed; otherwise release it and build from scratch.
-	adopted := m.eagerAdoptable(compact, parser, source, incrementalReuse, allowErrorRoot, rootFinalization, replayEnabled)
+	adopted := (scratch == nil || scratch.materializationPurpose == core.MaterializationForPublication) &&
+		m.eagerAdoptable(compact, parser, source, incrementalReuse, allowErrorRoot, rootFinalization, replayEnabled)
 	if !adopted {
 		m.abandonEager()
 		if err := m.begin(compact, parser, source, scratch, incrementalReuse, replayEnabled); err != nil {
@@ -8137,7 +8141,7 @@ func materializeDiagnosticParserCoreAcceptedSelectionWithRootFinalization(compac
 	// potentially reusable visible node and the scanner transfer is proven.
 	// Recovery-bearing nodes stay excluded by the reuse cursor, which descends
 	// to clean siblings while preserving the ordinary scanner gate.
-	compactIncrementalReuseProven := replayEnabled &&
+	compactIncrementalReuseProven := m.purpose == core.MaterializationForPublication && replayEnabled &&
 		compactIncrementalReuseProvenForLanguage(parser.language) &&
 		m.scannerProvenanceTransferProven && compactTreeIncrementalReuseProven(root, linkScratch)
 	tree.incrementalReuseDisabled = !compactIncrementalReuseProven
@@ -11568,13 +11572,13 @@ func compactAcceptanceElectionMaterialityDeclineDetail(paths []core.Derivation, 
 // on this witness); this gate now declines it. See the cost note where
 // completeAcceptance calls this function for that specific regression.
 //
-// forceReplayParseStates must equal the value the caller's own
-// post-acceptance materialization will use (DiagnosticParserCorePrefixOptions
-// .materializationForceReplayParseStates): it decides whether the
-// materialized nodes carry ParseState/PreGotoState stamps at all, and this
-// function's contract is to compare what the published tree actually
-// carries, not some other configuration. contextSet distinguishes "no caller
-// provided a materialization context" (fail closed) from "the caller
+// forceReplayParseStates carries the caller's publication setting so trials
+// retain its table-identity precondition. The comparison excludes parser
+// states, as documented by compactAcceptanceDerivationTreesEqual below.
+// Temporary trees preserve the original nil-scratch trials' states-free
+// traversal; the published tree separately runs replay and reuse validation.
+// contextSet distinguishes "no caller provided a materialization context"
+// (fail closed) from "the caller
 // provided one, and the source is legitimately empty". completeAcceptance
 // checks contextSet itself before calling this function and picks
 // compactAcceptanceElectionNoContextDetail instead of running a call that
@@ -11607,10 +11611,14 @@ func compactAcceptanceElectionIsVacuous(
 	// candidate that needs allowErrorRoot=true to materialize is not
 	// something this gate is equipped to reason about -- it fails the trial
 	// materialization, which the fail-closed contract below already treats
-	// as "not proven vacuous". forceReplayParseStates is threaded through
-	// (not hardcoded) so the trial materialization matches the caller's own
-	// post-acceptance one -- see this function's doc comment.
-	primaryTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, primary.Payloads, parser, source, nil, forceReplayParseStates, false)
+	// as "not proven vacuous". The caller's replay setting preserves the
+	// table-identity precondition, as described above.
+	// Trials share only transient construction buffers. Public nodes still
+	// belong to distinct arenas, so building an alternative cannot mutate the
+	// reference. Checkpoint copies serve incremental reuse, which no temporary
+	// comparison tree may perform. Syntax and completeness checks remain intact.
+	comparisonScratch := parserCoreRunnerScratch{materializationPurpose: core.MaterializationForComparison}
+	primaryTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, primary.Payloads, parser, source, &comparisonScratch, forceReplayParseStates, false)
 	if err != nil {
 		return false
 	}
@@ -11620,7 +11628,7 @@ func compactAcceptanceElectionIsVacuous(
 		if slices.Equal(candidate.Payloads, primary.Payloads) {
 			continue
 		}
-		candidateTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, candidate.Payloads, parser, source, nil, forceReplayParseStates, false)
+		candidateTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, candidate.Payloads, parser, source, &comparisonScratch, forceReplayParseStates, false)
 		if err != nil {
 			return false
 		}
