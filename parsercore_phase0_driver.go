@@ -11646,10 +11646,11 @@ func compactAcceptanceMaterializationContext(forceReplayParseStates bool) uint64
 	return 0
 }
 
-// With a publication caller, every candidate uses the publication traversal
-// and the reference retains all replay and scanner provenance. The full
-// public-tree comparison is unchanged. Without that caller, preserve the
-// original states-free trials and release every tree inside this function.
+// With a publication caller, the reference retains all replay and scanner
+// provenance. Alternatives use the states-free comparison traversal because
+// the public-tree comparator excludes replay states and cannot publish or
+// reuse an alternative. Both traversals authenticate the same syntax and
+// completeness. Without that caller, release every tree inside this function.
 func compactAcceptanceElectionMaterialize(
 	compact *core.Core, parser *Parser, source []byte,
 	forceReplayParseStates bool, contextSet bool,
@@ -11687,7 +11688,7 @@ func compactAcceptanceElectionMaterialize(
 			}
 		}()
 		publicationBudget = publicationScratch.materializationBudgetScheduler
-		comparisonScratch.materializationPurpose = core.MaterializationForReplayComparison
+		comparisonScratch.materializationPurpose = core.MaterializationForComparison
 		if publicationBudget != nil {
 			previous := publicationBudget.options.acceptanceMaterializationScratch
 			publicationBudget.options.acceptanceMaterializationScratch = publicationScratch

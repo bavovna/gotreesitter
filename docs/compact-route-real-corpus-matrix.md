@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-11 (UTC).
-Latest shipped-route comparison baseline: `481d8cfbc27f16030aaf324b81d75ed5725d2284`.
+Latest shipped-route comparison baseline: `3fe73a53e5309032851f01bb73c545d1678f8999`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -40,6 +40,106 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### States-free acceptance alternatives
+
+Temporary alternatives now use the existing states-free comparison traversal.
+The retained reference still receives full parser-state replay and scanner
+provenance. Every alternative still builds its own public tree and passes the
+same complete public-tree comparator. That comparator excludes replay states;
+alternatives cannot be published or reused. Table identity, metadata,
+exclusive ownership, source tiling, cancellation, deadline and memory checks
+remain active. Remove the unused replay-comparison purpose.
+
+The alias regression now uses initialized parser tables and an immutable table
+identity. It checks authoritative states through a retained alias, rejects a
+different alias, compares independent publications, holds an earlier tree alive
+across warm workspace reuse, checks cleared references, and exercises the
+scheduler-to-publication transfer. Existing comparison tests still check every
+attribute against an independent states-free trial and reject missing coverage.
+
+Against `3fe73a53e5309032851f01bb73c545d1678f8999`, all 412 ledger rows across
+206 languages remain byte-identical, including work, reuse, routing, coverage
+and stop reasons. The separate owned-YAML ledger also matches. No new counter
+exception or ledger reset is required. Selected before-and-after receipts are:
+
+| Route | Full node work | First edit node work | First edit reused bytes | First edit block splices |
+|---|---:|---:|---:|---:|
+| Go candidate | 1,251 → 1,251 | 1,553 → 1,553 | 1,784 → 1,784 | 266 → 266 |
+| Go default | 1,922 → 1,922 | 3,810 → 3,810 | 1,166 → 1,166 | 296 → 296 |
+| YAML default | 288 → 288 | 480 → 480 | 0 → 0 | 0 → 0 |
+| YAML diagnostic owned candidate | 482 → 482 | 482 → 482 | 0 → 0 | 0 → 0 |
+
+Before timing, separate `gts_workcount` processes measure the same warmed real
+files on the candidate route. Owned-YAML's table-lookup proxy falls
+**1,872 → 998 (-46.69%)**; its leaf/parent construction proxies remain
+420 → 420 / 748 → 748. Go's lookup proxy remains 3,688 → 3,688, with
+588 → 588 / 567 → 567 constructions. All other recorded proxy fields are
+unchanged. These implementation-specific proxies are not C work comparisons.
+The separate C4 identity check still records 37,662 → 37,662 lookups with
+7,257 corridor passes.
+
+The candidate passes all 206 separate 72-step edit-session gates and 618 C
+fixture checks, with no invariant skips and zero no-edit allocations. The
+strict 204-file census is byte-identical: 159 PASS / 45 known FAIL, including
+120 / 120 actual compact acceptances. Full core tests, focused root checks,
+owned-YAML/recover-EOF and Swift C oracles, focused container races and the CI
+planner pass. Baseline fleet evidence at the same immutable commit remains
+valid from the preceding corridor experiments.
+
+All timing sets use 20 paired alternating shuffled seeds through
+`scripts/run_randomized_benchmarks.sh`, one process per seed, `GOMAXPROCS=1`,
+`750ms`, `-count=1` and `-benchmem`, in serialized 6 GiB Docker pinned to CPU 6.
+The completed medians are:
+
+| Workload | Before ns/op | After ns/op | Direction | p | B/op | allocs/op |
+|---|---:|---:|---:|---:|---:|---:|
+| Go real file, compact | 1,221,724 | 1,210,805 | -0.89% | .512 | 1,744 → 1,744 | 26 → 26 |
+| Go real file, legacy | 896,872 | 890,329.5 | -0.73% | .478 | 2,712 → 2,712 | 11 → 11 |
+| Go generated, full | 11,869,043 | 11,364,790.5 | -4.25% | .414 | 538,119 → 538,119 | 51 → 51 |
+| Go generated, single-byte edit | 133,024 | 129,666 | -2.52% | .718 | 403 → 402 | 5 → 5 |
+| Go generated, no edit | 4.176 | 4.1165 | -1.42% | .733 | 0 → 0 | 0 → 0 |
+| YAML real file, declined + legacy | 281,164 | 279,935 | -0.44% | .698 | 17,528 → 17,528 | 39 → 39 |
+| YAML real file, legacy | 206,302 | 208,855 | +1.24% | .547 | 1,440 → 1,440 | 18 → 18 |
+| YAML diagnostic owned route | 848,461.5 | 842,930.5 | -0.65% | .820 | 20,649 → 20,601 | 437 → 434 |
+
+Owned YAML saves three allocations (-0.69%) and 48 bytes per parse (-0.23%),
+with zero fallback in every sample. Every timing difference is inconclusive;
+**no throughput improvement is established**. Record the ordinary YAML legacy
++1.24% direction as a regression. Every measured timing, allocation and RSS
+ratchet passes. Retain this smaller change because it removes duplicate work
+and allocations while simplifying the comparison modes; the earlier direct
+reduction and childless-traversal prototypes had no reliable throughput gain
+and were discarded.
+
+Compact/legacy medians remain **1.360× Go / 1.340× ordinary YAML**. Neither
+graduates. No all-206 timed distribution or C-relative throughput certificate
+was produced. Owned YAML remains diagnostic. Its existing large-input EOF
+frontier failure (state 1507, 9 live links exceeding the cap of 8) occurs before
+acceptance materialization and was not rerun. Go's existing edit fallback,
+ordinary YAML's no-action decline and owned-YAML's edit fallback remain intact.
+The allowlist and global default remain unchanged; #1319 stays open.
+
+Twenty alternating fresh-process pairs accept the exact 1 MiB Go input on
+compact without fallback, errors or truncation. RSS medians are 344,734 →
+337,392 KiB; ranges are 305,996–356,876 and 306,188–356,412 KiB. Retained heap
+medians are 218,569,568 → 218,569,816 bytes; heap-in-use remains 220,635,136
+bytes. The overlapping ranges do not prove an RSS improvement. The RSS ratchet
+and 400-bytes-per-source-byte hard limit pass. The 1,049,572-byte ordinary YAML
+probe retains its complete, error-free legacy result and unchanged decline;
+single-process RSS is 60,812 → 60,812 KiB.
+
+R6 retains 454 language-name uses and 101 environment reads. L0 retains 756
+root Go files and all 12 API tag sets without snapshot changes. The frozen
+Go/module pin covers 3,463 files with SHA-256
+`4399f8496176e0348f13226831f618db6af667540451b2b3a21fb48137ce9a01`.
+Raw receipts and reproduction scripts are in
+`/home/draco/.local/state/gotreesitter-evidence/20261011-comparison-replay`:
+`final-check.sh`, `work.sh`, `compare-work.py`, `measure.sh`, `perf.sh`,
+`rss-repeat.sh` and `analyze.py`. Baseline and discarded-prototype receipts
+remain in `20261011-corridor-session`. The final Docker run exited 0 without
+OOM or timeout. Earlier receipts and the four owner-approved Liquid correctness
+increases below remain in force.
 
 ### Cleared acceptance-comparison workspace
 

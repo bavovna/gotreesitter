@@ -121,8 +121,7 @@ func (m *compactMaterializer) begin(
 	if scratch != nil {
 		m.purpose = scratch.materializationPurpose
 	}
-	if m.purpose != core.MaterializationForPublication && m.purpose != core.MaterializationForComparison &&
-		m.purpose != core.MaterializationForReplayComparison {
+	if m.purpose != core.MaterializationForPublication && m.purpose != core.MaterializationForComparison {
 		return errors.New("parser-core phase zero: unknown materialization purpose")
 	}
 	m.incrementalReuse = incrementalReuse

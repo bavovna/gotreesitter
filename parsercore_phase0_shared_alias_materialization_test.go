@@ -15,6 +15,14 @@ type tiedAcceptanceAliasTable struct {
 	divergent bool
 }
 
+func (t *tiedAcceptanceAliasTable) TableIdentity() ([32]byte, bool) {
+	identity := [32]byte{1}
+	if t.divergent {
+		identity[1] = 1
+	}
+	return identity, true
+}
+
 func (t *tiedAcceptanceAliasTable) ProductionAliases(production uint16, count int) ([]core.Symbol, error) {
 	if count == 1 && (production == 1 || production == 2 && !t.divergent) {
 		return []core.Symbol{3}, nil
@@ -61,16 +69,20 @@ func TestCompactAcceptanceRetainsEquivalentAliasesAndRejectsDifferentAliases(t *
 		}
 		lang := &Language{
 			Name: "acceptance_alias_fixture", TokenCount: 2, SymbolCount: 4,
+			InitialState: 1, StateCount: 4, LargeStateCount: 4,
+			ParseTable:     [][]uint16{{0, 0, 0, 0}, {0, 1, 3, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
+			ParseActions:   []ParseActionEntry{{}, {Actions: []ParseAction{{Type: ParseActionShift, State: 2}}}},
 			SymbolNames:    []string{"end", "identifier", "root", "type_identifier"},
 			SymbolMetadata: []SymbolMetadata{{}, {Visible: true, Named: true}, {Visible: true, Named: true}, {Visible: true, Named: true}},
 		}
-		parser := &Parser{language: lang, reduceAliasSeq: [][]Symbol{nil, {3}, {3}}}
+		parser := NewParser(lang)
+		parser.reduceAliasSeq = [][]Symbol{nil, {3}, {3}}
 		if divergent {
 			parser.reduceAliasSeq[2] = nil
 		}
 		var scratch parserCoreRunnerScratch
 		tree, proved := compactAcceptanceElectionMaterialize(compact, parser, []byte("x"),
-			false, true, head, paths, paths[0], &scratch)
+			true, true, head, paths, paths[0], &scratch)
 		if divergent {
 			if proved || tree != nil {
 				if tree != nil {
@@ -87,9 +99,16 @@ func TestCompactAcceptanceRetainsEquivalentAliasesAndRejectsDifferentAliases(t *
 			tree.Release()
 			t.Fatal("retained tree lost its alias")
 		}
+		if tree.root.parseState != 3 || tree.root.preGotoState != 1 ||
+			tree.root.Child(0).parseState != 2 || tree.root.Child(0).preGotoState != 1 ||
+			!tree.root.hasCompactParseStateProof() || !tree.root.Child(0).hasCompactParseStateProof() {
+			t.Fatalf("retained publication lost authoritative replay through its alias: root=%d/%d known=%v child=%d/%d known=%v",
+				tree.root.parseState, tree.root.preGotoState, tree.root.hasCompactParseStateProof(),
+				tree.root.Child(0).parseState, tree.root.Child(0).preGotoState, tree.root.Child(0).hasCompactParseStateProof())
+		}
 		var independentScratch parserCoreRunnerScratch
 		independent, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, paths[0].Payloads,
-			parser, []byte("x"), &independentScratch, false, false)
+			parser, []byte("x"), &independentScratch, true, false)
 		if err != nil {
 			tree.Release()
 			t.Fatal(err)
@@ -104,9 +123,12 @@ func TestCompactAcceptanceRetainsEquivalentAliasesAndRejectsDifferentAliases(t *
 		if comparison == nil || comparison.postorder.RetainedBytes() == 0 {
 			t.Fatal("tied acceptance did not retain cleared construction storage")
 		}
+		if comparison.materializationPurpose != core.MaterializationForComparison {
+			t.Fatal("temporary alternative used publication replay")
+		}
 		for range 3 {
 			next, proved := compactAcceptanceElectionMaterialize(compact, parser, []byte("x"),
-				false, true, head, paths, paths[0], &scratch)
+				true, true, head, paths, paths[0], &scratch)
 			if !proved || next == nil {
 				t.Fatal("warm comparison did not publish")
 			}
@@ -134,7 +156,7 @@ func TestCompactAcceptanceRetainsEquivalentAliasesAndRejectsDifferentAliases(t *
 
 		// Exercise the scheduler-to-publication handoff, including the final
 		// acceptance bookkeeping that follows the materiality gate.
-		runner := parserCoreFreshFullRunner{parser: parser}
+		runner := parserCoreFreshFullRunner{parser: parser, replayParseStates: true}
 		defer runner.scratch.acceptanceMaterialization.Discard()
 		scheduler := diagnosticParserCoreGenericScheduler{
 			compact: compact,
@@ -142,10 +164,11 @@ func TestCompactAcceptanceRetainsEquivalentAliasesAndRejectsDifferentAliases(t *
 			token:   Token{StartByte: 1, EndByte: 1},
 			receipt: &DiagnosticParserCoreGenericScheduler{},
 			options: DiagnosticParserCorePrefixOptions{
-				materializationParser:            parser,
-				materializationSource:            []byte("x"),
-				materializationContextSet:        true,
-				acceptanceMaterializationScratch: &runner.scratch,
+				materializationParser:                 parser,
+				materializationSource:                 []byte("x"),
+				materializationContextSet:             true,
+				materializationForceReplayParseStates: true,
+				acceptanceMaterializationScratch:      &runner.scratch,
 			},
 		}
 		if err := scheduler.completeAcceptance(); err != nil {
