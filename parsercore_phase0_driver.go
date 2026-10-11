@@ -181,7 +181,7 @@ type DiagnosticParserCorePrefixOptions struct {
 	// materializationParser, materializationSource,
 	// materializationForceReplayParseStates, and materializationContextSet
 	// back the compact acceptance-election materiality gate
-	// (completeAcceptance -> compactAcceptanceElectionIsVacuous): when a
+	// (completeAcceptance -> compactAcceptanceElectionMaterialize): when a
 	// certified primary derivation election has more than one live
 	// candidate, the gate re-materializes every candidate through the same
 	// public-tree pipeline the accepted parse itself uses, so it can require
@@ -189,8 +189,9 @@ type DiagnosticParserCorePrefixOptions struct {
 	//
 	// materializationForceReplayParseStates matches the caller's publication
 	// setting so trials retain the same table-identity precondition. The
-	// comparator excludes replay stamps; temporary trials preserve the
-	// original states-free traversal and never certify incremental reuse.
+	// comparator excludes replay stamps. Retained publication uses replay
+	// comparisons; other callers preserve the original states-free trials.
+	// Every temporary trial remains ineligible for incremental reuse.
 	//
 	// All fields are set by the two production seed entry points
 	// (DiagnosticParseParserCorePrefix, parserCoreFreshFullRunner's
@@ -209,6 +210,9 @@ type DiagnosticParserCorePrefixOptions struct {
 	materializationSource                 []byte
 	materializationForceReplayParseStates bool
 	materializationContextSet             bool
+	// A full-tree caller may retain the verified primary publication. Other
+	// callers keep the temporary, states-free materiality comparisons.
+	acceptanceMaterializationScratch *parserCoreRunnerScratch
 	// eagerMaterializer, when set, builds public nodes during the scheduler
 	// run (issue #454). The fresh-full runner arms it for a plain parse and
 	// clears it when the run returns.
@@ -6827,6 +6831,9 @@ type parserCoreRunnerScratch struct {
 	recoveryTerminalAliasSymbol    Symbol
 	recoveryTerminalAliasCertified bool
 	materializationPurpose         core.MaterializationPurpose
+	acceptanceMaterialization      core.AcceptanceMaterialization[*Tree]
+	// During comparison, charge the reference arena beside the trial arena.
+	materializationReferenceBytes uint64
 	// materializer builds the public nodes. It retains the per-id node
 	// tables between parses and carries the eager state across a run.
 	materializer   compactMaterializer
@@ -7113,6 +7120,7 @@ func (s *parserCoreRunnerScratch) resetTreeBuffers() {
 	s.acceptedLeaves.reset()
 	s.materialization.checkpoints.Reset()
 	s.materializationBudgetScheduler = nil
+	s.materializationReferenceBytes = 0
 	s.incrementalReuse = nil
 	s.recoveryTerminalAliasSymbol = 0
 	s.recoveryTerminalAliasCertified = false
@@ -7860,7 +7868,7 @@ func materializeDiagnosticParserCoreAcceptedSelectionWithRootFinalization(compac
 	if incrementalReuse != nil && (allowErrorRoot || rootFinalization != diagnosticParserCoreFinalizeDefault) {
 		return nil, compactIncrementalMaterializationDecline("borrowed subtrees require clean default root finalization")
 	}
-	if scratch != nil && scratch.materializationPurpose == core.MaterializationForComparison &&
+	if scratch != nil && scratch.materializationPurpose != core.MaterializationForPublication &&
 		(incrementalReuse != nil || allowErrorRoot || rootFinalization != diagnosticParserCoreFinalizeDefault) {
 		return nil, errors.New("parser-core phase zero: comparison materialization requires a fresh clean derivation")
 	}
@@ -11262,13 +11270,27 @@ func (s *diagnosticParserCoreGenericScheduler) completeAcceptance() (err error) 
 			s.censusAcceptanceDerivationSet(paths, path, true, true)
 			return s.finish(DiagnosticParserCoreAccept, detail, 0)
 		}
-		if !compactAcceptanceElectionIsVacuous(
+		publicationScratch := s.options.acceptanceMaterializationScratch
+		if len(path.Payloads) > core.AcceptanceMaterializationPayloadLimit {
+			publicationScratch = nil
+		}
+		if publicationScratch != nil {
+			publicationScratch.materializationBudgetScheduler = s
+		}
+		publication, vacuous := compactAcceptanceElectionMaterialize(
 			s.compact, s.options.materializationParser, s.options.materializationSource,
 			s.options.materializationForceReplayParseStates, s.options.materializationContextSet,
-			winnerHeader.head, paths, path,
-		) {
+			winnerHeader.head, paths, path, publicationScratch,
+		)
+		if !vacuous {
 			s.censusAcceptanceDerivationSet(paths, path, true, true)
 			return s.finish(DiagnosticParserCoreAccept, compactAcceptanceElectionMaterialDetail, 0)
+		}
+		if publication != nil && !publicationScratch.acceptanceMaterialization.Store(
+			s.compact, winnerHeader.head, path.Payloads,
+			compactAcceptanceMaterializationContext(s.options.materializationForceReplayParseStates), publication,
+		) {
+			publication.Release()
 		}
 	}
 	// Stage D0 instrument (spec.derivation-set-equivalence.v1): record the
@@ -11591,20 +11613,41 @@ func compactAcceptanceElectionMaterialityDeclineDetail(paths []core.Derivation, 
 // fail-closed contract every other compact decline in this file uses: the
 // route never guesses.
 //
-// This redundantly re-materializes primary (once here for comparison, once
-// again by the caller's normal post-acceptance materialization). That cost
-// lands only on multi-derivation accepts, which are rare; a sole-derivation
-// accept (the overwhelming majority) never reaches this function at all.
+// Callers without a publication owner release every trial here and later
+// rebuild the primary. Eligible fresh-full callers use the helper below to
+// retain its completed publication. A sole derivation needs no comparisons.
 func compactAcceptanceElectionIsVacuous(
 	compact *core.Core, parser *Parser, source []byte,
 	forceReplayParseStates bool, contextSet bool,
 	head core.Head, paths []core.Derivation, primary core.Derivation,
 ) bool {
+	_, vacuous := compactAcceptanceElectionMaterialize(compact, parser, source,
+		forceReplayParseStates, contextSet, head, paths, primary, nil)
+	return vacuous
+}
+
+func compactAcceptanceMaterializationContext(forceReplayParseStates bool) uint64 {
+	if forceReplayParseStates || parserCoreReplayParseStatesEnabled() {
+		return 1
+	}
+	return 0
+}
+
+// With a publication caller, every candidate uses the publication traversal
+// and the reference retains all replay and scanner provenance. The full
+// public-tree comparison is unchanged. Without that caller, preserve the
+// original states-free trials and release every tree inside this function.
+func compactAcceptanceElectionMaterialize(
+	compact *core.Core, parser *Parser, source []byte,
+	forceReplayParseStates bool, contextSet bool,
+	head core.Head, paths []core.Derivation, primary core.Derivation,
+	publicationScratch *parserCoreRunnerScratch,
+) (*Tree, bool) {
 	if len(paths) < 2 {
-		return true
+		return nil, true
 	}
 	if !contextSet || compact == nil || parser == nil {
-		return false
+		return nil, false
 	}
 	// allowErrorRoot is always false here (B3 stage S3, materializeDiagnosticParserCoreAcceptedSelection):
 	// this gate only runs on a clean, non-recovery tied accept, and a
@@ -11618,27 +11661,47 @@ func compactAcceptanceElectionIsVacuous(
 	// reference. Checkpoint copies serve incremental reuse, which no temporary
 	// comparison tree may perform. Syntax and completeness checks remain intact.
 	comparisonScratch := parserCoreRunnerScratch{materializationPurpose: core.MaterializationForComparison}
-	primaryTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, primary.Payloads, parser, source, &comparisonScratch, forceReplayParseStates, false)
-	if err != nil {
-		return false
+	primaryScratch := &comparisonScratch
+	var publicationBudget *diagnosticParserCoreGenericScheduler
+	if publicationScratch != nil {
+		primaryScratch = publicationScratch
+		publicationBudget = publicationScratch.materializationBudgetScheduler
+		comparisonScratch.materializationPurpose = core.MaterializationForReplayComparison
 	}
-	defer primaryTree.Release()
+	primaryTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, primary.Payloads, parser, source, primaryScratch, forceReplayParseStates, false)
+	if err != nil {
+		return nil, false
+	}
+	retained := false
+	defer func() {
+		if !retained {
+			primaryTree.Release()
+		}
+	}()
 	primaryRoot := primaryTree.RootNode()
 	for _, candidate := range paths {
 		if slices.Equal(candidate.Payloads, primary.Payloads) {
 			continue
 		}
+		if publicationScratch != nil {
+			comparisonScratch.materializationBudgetScheduler = publicationBudget
+			comparisonScratch.materializationReferenceBytes = arenaAllocatedVolume(primaryTree.arena)
+		}
 		candidateTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, candidate.Payloads, parser, source, &comparisonScratch, forceReplayParseStates, false)
 		if err != nil {
-			return false
+			return nil, false
 		}
 		equal := compactAcceptanceDerivationTreesEqual(parser.language, primaryRoot, candidateTree.RootNode())
 		candidateTree.Release()
 		if !equal {
-			return false
+			return nil, false
 		}
 	}
-	return true
+	if publicationScratch != nil {
+		retained = true
+		return primaryTree, true
+	}
+	return nil, true
 }
 
 // compactAcceptanceDerivationTreesEqual reports whether two materialized

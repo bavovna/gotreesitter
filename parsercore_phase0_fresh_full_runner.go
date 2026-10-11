@@ -3,6 +3,7 @@
 package gotreesitter
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -379,6 +380,37 @@ func (r *parserCoreFreshFullRunner) materializeSelection(source []byte, compact 
 		}
 	}
 	r.scratch.materializationBudgetScheduler = scheduler
+	if !allowErrorRoot && rootFinalization == diagnosticParserCoreFinalizeDefault &&
+		r.options.compactIncrementalReuse == nil {
+		if tree, ok := r.scratch.acceptanceMaterialization.Take(compact,
+			scheduler.acceptedHead, scheduler.acceptedPayloads,
+			compactAcceptanceMaterializationContext(r.replayParseStates)); ok {
+			if tree.language == r.parser.language && bytes.Equal(tree.source, source) &&
+				(compactAcceptanceMaterializationContext(r.replayParseStates) == 0 || compact.TableIdentityMatches()) {
+				r.scratch.materializationBudgetScheduler = nil
+				// Acceptance comparisons can outlast the reference's final poll.
+				// Check the deadline without traversal throttling, then charge
+				// the transferred arena and retained scratch as publication does.
+				if reason := r.parser.activeParseStopReason(); resultMaterializationShouldStop(reason) {
+					tree.Release()
+					return nil, &diagnosticParserCoreDecline{boundary: DiagnosticParserCoreCap,
+						detail: "accepted-tree materialization stopped: " + string(reason)}
+				}
+				m := compactMaterializer{
+					parser: r.parser, arena: tree.arena, budgetScheduler: scheduler,
+					materializationScratch: &r.scratch.materialization,
+					acceptedLeaves:         &r.scratch.acceptedLeaves,
+				}
+				if err := m.poll(); err != nil {
+					tree.Release()
+					return nil, err
+				}
+				return tree, nil
+			}
+			tree.Release()
+		}
+	}
+	r.scratch.acceptanceMaterialization.Discard()
 	tree, err := materializeDiagnosticParserCoreAcceptedSelectionWithRootFinalization(
 		compact,
 		scheduler.acceptedHead,
@@ -524,6 +556,17 @@ func (r *parserCoreFreshFullRunner) parseWithObserverAndErrorRuns(
 	}()
 	r.beginEagerMaterialization(source)
 	defer r.endEagerMaterialization()
+	r.scratch.acceptanceMaterialization.Discard()
+	r.options.acceptanceMaterializationScratch = nil
+	if !r.s3AllowErrorRoot() && r.options.compactIncrementalReuse == nil &&
+		r.scratch.incrementalReuse == nil && r.options.eagerMaterializer == nil {
+		r.options.acceptanceMaterializationScratch = &r.scratch
+	}
+	defer func() {
+		r.options.acceptanceMaterializationScratch = nil
+		r.scheduler.options.acceptanceMaterializationScratch = nil
+		r.scratch.acceptanceMaterialization.Discard()
+	}()
 	scheduler, tokenSource, err := r.executeSchedulerOpenWithObserverAndErrorRuns(
 		source, r.compact, true, observer, forceErrorRuns,
 	)

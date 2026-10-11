@@ -10,4 +10,7 @@ type MaterializationPurpose uint8
 const (
 	MaterializationForPublication MaterializationPurpose = iota
 	MaterializationForComparison
+	// ReplayComparison follows the publication traversal, but remains private
+	// and omits scanner checkpoint copies and incremental reuse publication.
+	MaterializationForReplayComparison
 )

@@ -4,7 +4,9 @@ package gotreesitter
 
 import (
 	"errors"
+	"strings"
 	"testing"
+	"time"
 
 	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
@@ -72,6 +74,179 @@ func TestDiagnosticParserCoreMaterializationComparisonMatchesIndependentTrial(t 
 		t.Fatal("failed comparison poisoned the scratch:", err)
 	} else {
 		tree.Release()
+	}
+}
+
+func TestCompactAcceptanceRetainedPublicationPreservesReplay(t *testing.T) {
+	prepared, err := parserCoreWarmPrepare()
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths, err := prepared.acceptedCore.Derivations(prepared.acceptedHead)
+	if err != nil || len(paths) != 1 {
+		t.Fatalf("paths=%v err=%v", paths, err)
+	}
+	var independentScratch, publicationScratch parserCoreRunnerScratch
+	independent, err := materializeDiagnosticParserCoreAcceptedSelection(prepared.acceptedCore,
+		prepared.acceptedHead, paths[0].Payloads, prepared.parser, prepared.source, &independentScratch, true, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer independent.Release()
+	retained, vacuous := compactAcceptanceElectionMaterialize(prepared.acceptedCore,
+		prepared.parser, prepared.source, true, true, prepared.acceptedHead,
+		[]core.Derivation{paths[0], paths[0]}, paths[0], &publicationScratch)
+	if !vacuous || retained == nil {
+		t.Fatal("verified primary was not retained")
+	}
+	defer retained.Release()
+	if err := compactEagerCompareTrees(prepared.lang, independent, retained); err != nil {
+		t.Fatal("retained publication lost metadata:", err)
+	}
+	if independent.incrementalReuseDisabled != retained.incrementalReuseDisabled ||
+		independent.ParseRuntime().CompactExternalScannerCheckpointTransferProven !=
+			retained.ParseRuntime().CompactExternalScannerCheckpointTransferProven {
+		t.Fatal("retained publication changed reuse provenance")
+	}
+	bad := core.Derivation{Payloads: []core.SubtreeID{0}}
+	if tree, proved := compactAcceptanceElectionMaterialize(prepared.acceptedCore,
+		prepared.parser, prepared.source, true, true, prepared.acceptedHead,
+		[]core.Derivation{paths[0], bad}, paths[0], &publicationScratch); proved || tree != nil {
+		if tree != nil {
+			tree.Release()
+		}
+		t.Fatal("failed alternative published the primary")
+	}
+}
+
+func TestCompactAcceptanceReferenceAndRetainedArenasStayInMemoryBudget(t *testing.T) {
+	parser := NewParser(&Language{})
+	var scheduler diagnosticParserCoreGenericScheduler
+	baseline := diagnosticParserCoreSchedulerFootprintBytes(&scheduler)
+	scheduler.options.stopControlMemoryBudgetBytes = int64(baseline + 1024)
+	scratch := parserCoreRunnerScratch{materializationReferenceBytes: 4096}
+	m := compactMaterializer{parser: parser, budgetScheduler: &scheduler, scratch: &scratch}
+	if err := m.poll(); err == nil {
+		t.Fatal("comparison budget omitted the reference arena")
+	}
+	scratch.materializationReferenceBytes = 0
+	if err := m.poll(); err != nil {
+		t.Fatal("empty comparison exceeded budget:", err)
+	}
+	compact, err := core.New(&parserCoreRootTables{}, core.Limits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	arena := newNodeArena(arenaClassFull)
+	node := newLeafNodeInArena(arena, 1, true, 0, 0, Point{}, Point{})
+	tree := newTreeWithArenas(node, nil, parser.language, arena, nil)
+	if !scratch.acceptanceMaterialization.Store(compact, core.Head{Node: 1}, []core.SubtreeID{1}, 0, tree) {
+		tree.Release()
+		t.Fatal("store failed")
+	}
+	defer scratch.acceptanceMaterialization.Discard()
+	scheduler.options.acceptanceMaterializationScratch = &scratch
+	if got := diagnosticParserCoreSchedulerFootprintBytes(&scheduler); got < baseline+arenaAllocatedVolume(arena) {
+		t.Fatal("scheduler footprint omitted the retained publication")
+	}
+	if got := scheduler.stopControlMemoryBudgetReason(); got != ParseStopMemoryBudget {
+		t.Fatalf("retained arena budget stop=%v", got)
+	}
+	scratch.acceptanceMaterialization.Discard()
+	if got := diagnosticParserCoreSchedulerFootprintBytes(&scheduler); got != baseline {
+		t.Fatalf("discarded publication remains charged: %d, baseline %d", got, baseline)
+	}
+}
+
+func TestCompactAcceptanceChangedSourceKeepsRebuildBudget(t *testing.T) {
+	prepared, err := parserCoreWarmPrepare()
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths, err := prepared.acceptedCore.Derivations(prepared.acceptedHead)
+	if err != nil || len(paths) != 1 {
+		t.Fatalf("paths=%v err=%v", paths, err)
+	}
+	var publishScratch parserCoreRunnerScratch
+	tree, err := materializeDiagnosticParserCoreAcceptedSelection(prepared.acceptedCore,
+		prepared.acceptedHead, paths[0].Payloads, prepared.parser, prepared.source, &publishScratch, true, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := parserCoreFreshFullRunner{parser: prepared.parser, replayParseStates: true}
+	if !runner.scratch.acceptanceMaterialization.Store(prepared.acceptedCore,
+		prepared.acceptedHead, paths[0].Payloads, compactAcceptanceMaterializationContext(true), tree) {
+		tree.Release()
+		t.Fatal("store failed")
+	}
+	defer runner.scratch.acceptanceMaterialization.Discard()
+	scheduler := diagnosticParserCoreGenericScheduler{compact: prepared.acceptedCore,
+		acceptedHead: prepared.acceptedHead, acceptedPayloads: paths[0].Payloads}
+	scheduler.options.stopControlMemoryBudgetBytes = 1
+	result, err := runner.materializeSelection(nil, prepared.acceptedCore, &scheduler)
+	if result != nil {
+		result.Release()
+		t.Fatal("changed source published a cached tree")
+	}
+	var decline *diagnosticParserCoreDecline
+	if !errors.As(err, &decline) || decline.boundary != DiagnosticParserCoreCap {
+		t.Fatalf("changed-source rebuild lost its budget: %v", err)
+	}
+	if runner.scratch.acceptanceMaterialization.Retained() != nil {
+		t.Fatal("changed source retained the old publication")
+	}
+}
+
+func TestCompactAcceptanceCachedPublicationStopControl(t *testing.T) {
+	for _, reason := range []ParseStopReason{ParseStopCancelled, ParseStopTimeout, ParseStopMemoryBudget} {
+		t.Run(string(reason), func(t *testing.T) {
+			prepared, err := parserCoreWarmPrepare()
+			if err != nil {
+				t.Fatal(err)
+			}
+			paths, err := prepared.acceptedCore.Derivations(prepared.acceptedHead)
+			if err != nil || len(paths) != 1 {
+				t.Fatalf("paths=%v err=%v", paths, err)
+			}
+			parser := NewParser(prepared.lang)
+			runner := parserCoreFreshFullRunner{parser: parser, replayParseStates: true}
+			defer runner.scratch.acceptanceMaterialization.Discard()
+			tree, err := materializeDiagnosticParserCoreAcceptedSelection(prepared.acceptedCore,
+				prepared.acceptedHead, paths[0].Payloads, parser, prepared.source, &runner.scratch, true, false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !runner.scratch.acceptanceMaterialization.Store(prepared.acceptedCore,
+				prepared.acceptedHead, paths[0].Payloads, compactAcceptanceMaterializationContext(true), tree) {
+				tree.Release()
+				t.Fatal("store failed")
+			}
+			scheduler := diagnosticParserCoreGenericScheduler{compact: prepared.acceptedCore,
+				acceptedHead: prepared.acceptedHead, acceptedPayloads: paths[0].Payloads}
+			var cancellation uint32 = 1
+			switch reason {
+			case ParseStopCancelled:
+				parser.SetCancellationFlag(&cancellation)
+			case ParseStopTimeout:
+				parser.SetTimeoutMicros(1)
+				parser.parseDeadline = time.Now().Add(-time.Second)
+			case ParseStopMemoryBudget:
+				scheduler.options.stopControlMemoryBudgetBytes = 1
+			}
+			selected, err := runner.materializeSelection(prepared.source, prepared.acceptedCore, &scheduler)
+			if selected != nil {
+				selected.Release()
+				t.Fatal("retained publication bypassed stop control")
+			}
+			var decline *diagnosticParserCoreDecline
+			if !errors.As(err, &decline) || decline.boundary != DiagnosticParserCoreCap ||
+				!strings.Contains(decline.detail, string(reason)) {
+				t.Fatalf("publication stop=%v, want %s", err, reason)
+			}
+			if runner.scratch.acceptanceMaterialization.Retained() != nil {
+				t.Fatal("stopped publication retained ownership")
+			}
+		})
 	}
 }
 

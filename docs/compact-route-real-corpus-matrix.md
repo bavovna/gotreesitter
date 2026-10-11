@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-11 (UTC).
-Latest shipped-route comparison baseline: `7a1a14dde2a3e73370d5f031c2e17c080feaacb9`.
+Latest shipped-route comparison baseline: `0c9e53580e401a95152eaa7ac60b58bf23574a25`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -40,6 +40,112 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Retained acceptance publication
+
+An eligible clean fresh parse now retains the selected publication while the
+tied-acceptance gate checks the alternatives. After all comparisons pass, the
+caller transfers that tree instead of constructing the selected tree again.
+The reference includes normal replay and scanner provenance. Alternative trees
+use the publication traversal, remain private, and omit incremental checkpoint
+copies. Each owns a separate arena; the full public-tree comparator remains.
+
+The one-shot internal owner binds the Core pointer, reset and authentication
+generations, accepted head, copied payload sequence, and replay context. The
+caller also checks language identity and source bytes. The fixed eight-payload
+key uses no per-parse allocation; wider selections use the original path.
+Recovery, borrowed reuse, and eager materialization retain their existing paths.
+No acceptance, graph, memory, or dispatch cap changes.
+
+Publication rechecks cancellation and the deadline without traversal throttling,
+then charges the transferred arena and retained scratch to the normal memory
+check. The regressions reproduce cancellation, timeout, and budget changes after
+retention, source changes before publication, stale generations, failed
+alternatives, and the exact scheduler-to-publication transfer. Failed checks
+release the tree. Comparison memory also charges the live reference arena.
+
+The final source passes the full core package, focused root checks, 206 separate
+72-step edit sessions, 618 locked-C fixture checks, and focused container race
+checks. The strict 204-file census remains 159 PASS / 45 known FAIL, including
+120 / 120 actual compact acceptances. The owned-YAML and recover-EOF C oracles
+pass. All 412 ledger rows and the separate owned-YAML before/after receipts are
+byte-identical to baseline `0c9e53580e401a95152eaa7ac60b58bf23574a25`. All
+no-edit checks allocate zero. No ledger exception or baseline reset is added.
+
+The final owned-YAML timing uses 20 paired alternating shuffle seeds, one process
+per seed, `GOMAXPROCS=1`, `750ms`, and `-benchmem`, in serialized 6 GiB Docker
+pinned to CPU 6. It completes on compact with zero fallback in every sample:
+1,219,860.5 → 1,180,129.5 ns/op (-3.26%, p=.040), 30,545 → 30,089 B/op,
+and 469 → 461 allocations/op. This diagnostic activation is still uncertified
+for default routing and is not a YAML graduation certificate.
+
+The fused version-persistence experiment was dropped after its completed paired
+benchmarks found no throughput improvement. An initial four-payload retention
+bound excluded the five-payload YAML witness; those inactive-path timings were
+discarded. The active prototype's initial gain was repeated on the final source
+after restoring the publication stop-control poll. Only the final-source
+measurements above and below are used as receipts.
+
+The same protocol covers the five Go benchmarks and ordinary YAML, one
+language per process. All timing sets contain exactly 20 samples per benchmark
+and build. The completed final-source medians are:
+
+| Workload | Before ns/op | After ns/op | Direction | p | B/op | allocs/op |
+|---|---:|---:|---:|---:|---:|---:|
+| Go real file, compact | 1,068,762 | 1,033,219.5 | -3.33% | .678 | 1,744 → 1,744 | 26 → 26 |
+| Go real file, legacy | 757,811.5 | 745,748 | -1.59% | .904 | 2,712 → 2,712 | 11 → 11 |
+| Go generated, full | 9,860,028 | 10,375,834.5 | +5.23% | .659 | 538,115 → 538,115.5 | 51 → 51 |
+| Go generated, single-byte edit | 110,566 | 115,703.5 | +4.65% | .758 | 401 → 401 | 5 → 5 |
+| Go generated, no edit | 3.5985 | 3.478 | -3.35% | .180 | 0 → 0 | 0 → 0 |
+| YAML real file, declined + legacy | 216,679.5 | 221,221 | +2.10% | .003 | 17,528 → 17,528 | 39 → 39 |
+| YAML real file, legacy | 163,205.5 | 162,842.5 | -0.22% | .369 | 1,440 → 1,440 | 18 → 18 |
+| YAML diagnostic owned route | 1,219,860.5 | 1,180,129.5 | -3.26% | .040 | 30,545 → 30,089 | 469 → 461 |
+
+The ordinary YAML attempt-plus-fallback regression is statistically supported
+(+2.10%, p=.003). The owned-route improvement is also supported (-3.26%,
+p=.040). Both remain within the timing ratchet. Every other timing difference
+is inconclusive. The Go generated full-parse (+5.23%) and edit (+4.65%) directions
+are recorded as regressions, with unchanged allocation counts. Go no-edit
+remains allocation-free. This change saves tied-acceptance construction; it
+does not demonstrate a Go throughput win.
+
+The final compact/legacy medians remain 1.385× for Go and 1.358× for ordinary
+YAML, including its unchanged decline and fallback. Both block graduation.
+The owned-YAML timing is diagnostic and does not change that judgment.
+
+Twenty alternating fresh-process pairs on the exact 1 MiB Go source measure
+RSS medians of 346,322 → 331,176 KiB. The observed ranges are 319,696–356,932
+and 307,400–359,088 KiB. Retained heap medians are 218,463,800 → 218,463,632
+bytes, with heap-in-use unchanged at 220,512,256 bytes. The RSS ratchet and
+400-bytes-per-source-byte hard limit pass; the overlapping ranges do not prove
+an RSS improvement. Every process accepts on compact without fallback and
+covers all 1,048,576 bytes without errors.
+
+The 1,049,572-byte ordinary YAML memory probe retains its existing no-action
+decline and complete legacy result. Its single-process RSS values are
+59,404 → 60,196 KiB. The earlier large owned-YAML EOF live-link failure remains
+a blocker: this acceptance optimization runs after that frontier boundary and
+does not alter its caps. That costly diagnostic was not rerun.
+
+R6 retains 454 language-name uses and 101 environment reads. L0 retains all
+756 root Go files and checks 12 API tag sets; its snapshots now record the
+private retention hook in the existing diagnostic-options struct. No callable
+API is added. The source pin covers 3,444 Go/module files and has SHA-256
+`d8f224b92c3e86106e8d0e672ea2c2f35a852c0b8bd686e8b8be76617f6f771c`.
+The complete bounded Docker run exits 0 without OOM or timeout.
+
+Local receipts are under
+`/home/draco/.local/state/gotreesitter-evidence/20261011-acceptance-publication-final`.
+The baseline checkout is pinned to `0c9e53580e401a95152eaa7ac60b58bf23574a25`.
+Reproduce each timing set with `scripts/run_randomized_benchmarks.sh`, using
+`--baseline-root`, `--baseline-output`, `--runs 20`, and `--benchtime 750ms`,
+inside the same bounded parity container. Select one language with
+`GTS_ADMISSION_REAL_CORPUS_LANGS`, set `GTS_ADMISSION_CANDIDATE=1`, and use the
+benchmark names in the table. For the Go memory pairs, build the unmodified
+probe from `scripts/compact_runtime_memory_probe.sh` once per checkout and run
+`1 go 24902` in 20 fresh alternating process pairs under `/usr/bin/time -v`.
+The allowlist, default, existing C-failure census, and ledger baselines stay
+unchanged.
 
 ### Acceptance-trial materialization
 

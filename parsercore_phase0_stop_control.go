@@ -284,6 +284,11 @@ func diagnosticParserCoreSchedulerFootprintBytes(s *diagnosticParserCoreGenericS
 	}
 	addBytes(s.options.compactIncrementalReuse.footprintBytes())
 	addBytes(s.recoveryCostMemo.FootprintBytes())
+	if scratch := s.options.acceptanceMaterializationScratch; scratch != nil {
+		if tree := scratch.acceptanceMaterialization.Retained(); tree != nil {
+			addBytes(arenaAllocatedVolume(tree.arena))
+		}
+	}
 	// Header copies share immutable version-state pointers. Count each owned
 	// wrapper, region, and lexer snapshot once across the active frontier,
 	// canonical keys/groups, and retained header scratch. The scheduler-owned

@@ -121,7 +121,8 @@ func (m *compactMaterializer) begin(
 	if scratch != nil {
 		m.purpose = scratch.materializationPurpose
 	}
-	if m.purpose != core.MaterializationForPublication && m.purpose != core.MaterializationForComparison {
+	if m.purpose != core.MaterializationForPublication && m.purpose != core.MaterializationForComparison &&
+		m.purpose != core.MaterializationForReplayComparison {
 		return errors.New("parser-core phase zero: unknown materialization purpose")
 	}
 	m.incrementalReuse = incrementalReuse
@@ -138,7 +139,7 @@ func (m *compactMaterializer) begin(
 		// Nil-scratch acceptance trials used the states-free postorder walk.
 		// Reusing its buffers must not add replay work to that public-shape
 		// comparison. Publication still authenticates and stamps every state.
-		if m.purpose == core.MaterializationForPublication {
+		if m.purpose != core.MaterializationForComparison {
 			m.replayTransition = func(pre core.StateID, view core.MaterializationReplayView) (core.StateID, bool, error) {
 				state, known, err := parser.replayCompactMaterializationTransition(StateID(pre), view)
 				return core.StateID(state), known, err
@@ -475,6 +476,13 @@ func (m *compactMaterializer) poll() error {
 	reason := m.parser.resultMaterializationStopReason(m.arena)
 	if !resultMaterializationShouldStop(reason) && m.budgetScheduler != nil {
 		additional := arenaAllocatedVolume(m.arena)
+		if m.scratch != nil {
+			if math.MaxUint64-additional < m.scratch.materializationReferenceBytes {
+				additional = math.MaxUint64
+			} else {
+				additional += m.scratch.materializationReferenceBytes
+			}
+		}
 		coverageBytes := m.acceptedLeaves.footprintBytes()
 		if math.MaxUint64-additional < coverageBytes {
 			additional = math.MaxUint64
