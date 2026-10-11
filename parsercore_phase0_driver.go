@@ -6814,6 +6814,10 @@ const parserCoreMaxRetainedNodeScratch = 256 * 1024
 // parserCoreMaxRetainedLineStarts caps the retained line-start buffer.
 const parserCoreMaxRetainedLineStarts = 256 * 1024
 
+// Bound the complete secondary workspace, including every backing array.
+// Large comparisons still work; their scratch leaves the lease after use.
+const parserCoreMaxRetainedComparisonBytes = 256 * 1024
+
 // parserCoreRunnerScratch retains materialization buffers for one exclusively
 // owned runtime. Reset removes tree references before the next request borrows
 // its storage; published trees own their nodes independently.
@@ -6832,6 +6836,9 @@ type parserCoreRunnerScratch struct {
 	recoveryTerminalAliasCertified bool
 	materializationPurpose         core.MaterializationPurpose
 	acceptanceMaterialization      core.AcceptanceMaterialization[*Tree]
+	// The alternative construction workspace owns no published nodes. It is
+	// reused only by this exclusively leased runner, then cleared and bounded.
+	acceptanceComparison *parserCoreRunnerScratch
 	// During comparison, charge the reference arena beside the trial arena.
 	materializationReferenceBytes uint64
 	// materializer builds the public nodes. It retains the per-id node
@@ -7115,6 +7122,12 @@ func clearNodeScratch(buf []*Node) []*Node {
 func (s *parserCoreRunnerScratch) resetTreeBuffers() {
 	if s == nil {
 		return
+	}
+	if comparison := s.acceptanceComparison; comparison != nil {
+		comparison.resetTreeBuffers()
+		if comparison.materializationRetainedBytes() > parserCoreMaxRetainedComparisonBytes {
+			s.acceptanceComparison = nil
+		}
 	}
 	s.postorder.Reset()
 	s.acceptedLeaves.reset()
@@ -11660,13 +11673,32 @@ func compactAcceptanceElectionMaterialize(
 	// belong to distinct arenas, so building an alternative cannot mutate the
 	// reference. Checkpoint copies serve incremental reuse, which no temporary
 	// comparison tree may perform. Syntax and completeness checks remain intact.
-	comparisonScratch := parserCoreRunnerScratch{materializationPurpose: core.MaterializationForComparison}
-	primaryScratch := &comparisonScratch
+	var comparisonScratch *parserCoreRunnerScratch
 	var publicationBudget *diagnosticParserCoreGenericScheduler
 	if publicationScratch != nil {
-		primaryScratch = publicationScratch
+		comparisonScratch = publicationScratch.acceptanceComparison
+		if comparisonScratch == nil || comparisonScratch.materializationRetainedBytes() > parserCoreMaxRetainedComparisonBytes {
+			comparisonScratch = &parserCoreRunnerScratch{}
+			publicationScratch.acceptanceComparison = comparisonScratch
+		}
+		defer func() {
+			if comparisonScratch.materializationRetainedBytes() > parserCoreMaxRetainedComparisonBytes {
+				publicationScratch.acceptanceComparison = nil
+			}
+		}()
 		publicationBudget = publicationScratch.materializationBudgetScheduler
 		comparisonScratch.materializationPurpose = core.MaterializationForReplayComparison
+		if publicationBudget != nil {
+			previous := publicationBudget.options.acceptanceMaterializationScratch
+			publicationBudget.options.acceptanceMaterializationScratch = publicationScratch
+			defer func() { publicationBudget.options.acceptanceMaterializationScratch = previous }()
+		}
+	} else {
+		comparisonScratch = &parserCoreRunnerScratch{materializationPurpose: core.MaterializationForComparison}
+	}
+	primaryScratch := comparisonScratch
+	if publicationScratch != nil {
+		primaryScratch = publicationScratch
 	}
 	primaryTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, primary.Payloads, parser, source, primaryScratch, forceReplayParseStates, false)
 	if err != nil {
@@ -11687,7 +11719,7 @@ func compactAcceptanceElectionMaterialize(
 			comparisonScratch.materializationBudgetScheduler = publicationBudget
 			comparisonScratch.materializationReferenceBytes = arenaAllocatedVolume(primaryTree.arena)
 		}
-		candidateTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, candidate.Payloads, parser, source, &comparisonScratch, forceReplayParseStates, false)
+		candidateTree, err := materializeDiagnosticParserCoreAcceptedSelection(compact, head, candidate.Payloads, parser, source, comparisonScratch, forceReplayParseStates, false)
 		if err != nil {
 			return nil, false
 		}

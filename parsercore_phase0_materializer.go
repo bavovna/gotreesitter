@@ -483,13 +483,22 @@ func (m *compactMaterializer) poll() error {
 				additional += m.scratch.materializationReferenceBytes
 			}
 		}
-		coverageBytes := m.acceptedLeaves.footprintBytes()
+		// A retained comparison workspace is already charged in full by the
+		// scheduler, including its coverage and checkpoint buffers.
+		comparisonCharged := false
+		if publication := m.budgetScheduler.options.acceptanceMaterializationScratch; publication != nil {
+			comparisonCharged = m.scratch != nil && publication.acceptanceComparison == m.scratch
+		}
+		coverageBytes := uint64(0)
+		if !comparisonCharged {
+			coverageBytes = m.acceptedLeaves.footprintBytes()
+		}
 		if math.MaxUint64-additional < coverageBytes {
 			additional = math.MaxUint64
 		} else {
 			additional += coverageBytes
 		}
-		if m.materializationScratch != nil {
+		if !comparisonCharged && m.materializationScratch != nil {
 			checkpointBytes := m.materializationScratch.checkpoints.RetainedBytes()
 			if math.MaxUint64-additional < checkpointBytes {
 				additional = math.MaxUint64

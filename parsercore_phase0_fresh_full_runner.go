@@ -561,6 +561,10 @@ func (r *parserCoreFreshFullRunner) parseWithObserverAndErrorRuns(
 	if !r.s3AllowErrorRoot() && r.options.compactIncrementalReuse == nil &&
 		r.scratch.incrementalReuse == nil && r.options.eagerMaterializer == nil {
 		r.options.acceptanceMaterializationScratch = &r.scratch
+	} else {
+		// This attempt cannot use the comparison lease. Drop its retained
+		// storage before scheduler memory accounting starts without the hook.
+		r.scratch.acceptanceComparison = nil
 	}
 	defer func() {
 		r.options.acceptanceMaterializationScratch = nil

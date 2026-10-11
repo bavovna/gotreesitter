@@ -1,6 +1,10 @@
 package parsercorephase0
 
-import "errors"
+import (
+	"errors"
+	"math"
+	"unsafe"
+)
 
 type materializationPostorderFrame struct {
 	id     SubtreeID
@@ -34,6 +38,21 @@ type MaterializationPostorderScratch struct {
 	// visitor does not move a fresh view to the heap on every subtree.
 	view  MaterializationSubtreeView
 	inUse bool
+}
+
+// RetainedBytes counts backing storage even after Reset clears the lengths.
+// The traversal's inline state belongs to its caller's scratch allocation.
+func (scratch *MaterializationPostorderScratch) RetainedBytes() uint64 {
+	if scratch == nil {
+		return 0
+	}
+	colors := uint64(cap(scratch.colors))
+	frames := uint64(cap(scratch.frames))
+	size := uint64(unsafe.Sizeof(materializationPostorderFrame{}))
+	if frames > (math.MaxUint64-colors)/size {
+		return math.MaxUint64
+	}
+	return colors + frames*size
 }
 
 // Reset clears traversal state while retaining the backing storage for reuse.

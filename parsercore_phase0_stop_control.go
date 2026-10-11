@@ -249,6 +249,50 @@ func compareDiagnosticParserCoreFootprintRefs(
 	return 0
 }
 
+// materializationRetainedBytes accounts for the complete secondary workspace.
+// Arrays containing public nodes are cleared by resetTreeBuffers before reuse.
+func (s *parserCoreRunnerScratch) materializationRetainedBytes() uint64 {
+	if s == nil {
+		return 0
+	}
+	total := uint64(unsafe.Sizeof(*s))
+	buffers := [...]struct {
+		capacity int
+		size     uintptr
+	}{
+		{cap(s.materialization.entries), unsafe.Sizeof(stackEntry{})},
+		{cap(s.materialization.reduce.nodes), unsafe.Sizeof((*Node)(nil))},
+		{cap(s.materialization.reduce.fieldIDs), unsafe.Sizeof(FieldID(0))},
+		{cap(s.materialization.reduce.fieldSources), 1},
+		{cap(s.materialization.reduce.repeatStamp), 4},
+		{cap(s.materialization.reduce.repeatCount), 2},
+		{cap(s.materialization.reduce.repeatSource), 1},
+		{cap(s.materialization.reduce.repeatTouched), unsafe.Sizeof(FieldID(0))},
+		{cap(s.materializer.nodesByID), unsafe.Sizeof((*Node)(nil))},
+		{cap(s.materializer.hasErrorByID), unsafe.Sizeof(bool(false))},
+		{cap(s.materializer.frames), unsafe.Sizeof(compactEagerFrame{})},
+		{cap(s.nodes), unsafe.Sizeof((*Node)(nil))},
+		{cap(s.linkScratch), unsafe.Sizeof((*Node)(nil))},
+		{cap(s.lineStarts), unsafe.Sizeof(uint32(0))},
+		{cap(s.goCompatFrames), unsafe.Sizeof(goCompatSubtreeFrame{})},
+	}
+	for _, buffer := range buffers {
+		if uint64(buffer.capacity) > (math.MaxUint64-total)/uint64(buffer.size) {
+			return math.MaxUint64
+		}
+		total += uint64(buffer.capacity) * uint64(buffer.size)
+	}
+	for _, bytes := range [...]uint64{
+		s.postorder.RetainedBytes(), s.acceptedLeaves.footprintBytes(), s.materialization.checkpoints.RetainedBytes(),
+	} {
+		if bytes > math.MaxUint64-total {
+			return math.MaxUint64
+		}
+		total += bytes
+	}
+	return total
+}
+
 func diagnosticParserCoreSchedulerFootprintBytes(s *diagnosticParserCoreGenericScheduler) uint64 {
 	if s == nil {
 		return 0
@@ -285,6 +329,7 @@ func diagnosticParserCoreSchedulerFootprintBytes(s *diagnosticParserCoreGenericS
 	addBytes(s.options.compactIncrementalReuse.footprintBytes())
 	addBytes(s.recoveryCostMemo.FootprintBytes())
 	if scratch := s.options.acceptanceMaterializationScratch; scratch != nil {
+		addBytes(scratch.acceptanceComparison.materializationRetainedBytes())
 		if tree := scratch.acceptanceMaterialization.Retained(); tree != nil {
 			addBytes(arenaAllocatedVolume(tree.arena))
 		}

@@ -49,6 +49,11 @@ suite and TOML unfinished-value scanner-padding matrix pass. Pruning-certificate
 tests, internal facts tests, root facts/outline tests and all 16 editor-gate
 tests also pass. No graduation or default-route change is included.
 
+The contribution creates a new test package under `grammars/swift`. Add it to
+the grammar-support race lane and select the directive oracle in the existing
+locked-C job. The package passes its container race test; the CI planner now
+assigns every test package to an execution lane.
+
 Reproducible logs, exact contribution and diagnostic overlays are in
 `/home/draco/.local/state/gotreesitter-evidence/20261011-swift-contribution-review`.
 Rejected runtime experiments are retained there only as review evidence.

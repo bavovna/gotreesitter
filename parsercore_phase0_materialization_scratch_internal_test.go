@@ -158,6 +158,63 @@ func TestCompactAcceptanceReferenceAndRetainedArenasStayInMemoryBudget(t *testin
 	}
 }
 
+func TestCompactAcceptanceComparisonWorkspaceMemoryBudget(t *testing.T) {
+	parser := NewParser(&Language{})
+	var scheduler diagnosticParserCoreGenericScheduler
+	baseline := diagnosticParserCoreSchedulerFootprintBytes(&scheduler)
+	comparison := &parserCoreRunnerScratch{}
+	comparison.acceptedLeaves.spans = make([]diagnosticParserCoreAcceptedLeafSpan, 0, 32)
+	comparison.materializer.nodesByID = make([]*Node, 0, 64)
+	compact, err := core.New(&parserCoreRootTables{}, core.Limits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	start, err := compact.InternCheckpoint([]byte("before"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	end, err := compact.InternCheckpoint([]byte("after"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, ok := comparison.materialization.checkpoints.CopyPair(compact, start, end); !ok {
+		t.Fatal("checkpoint copy failed")
+	}
+	publication := &parserCoreRunnerScratch{acceptanceComparison: comparison}
+	scheduler.options.acceptanceMaterializationScratch = publication
+	bytes := comparison.materializationRetainedBytes()
+	if got := diagnosticParserCoreSchedulerFootprintBytes(&scheduler); got != baseline+bytes {
+		t.Fatalf("workspace budget = %d, want %d", got, baseline+bytes)
+	}
+	// The budget stops at equality, so allow one byte beyond the exact charge.
+	scheduler.options.stopControlMemoryBudgetBytes = int64(baseline + bytes + 1)
+	m := compactMaterializer{parser: parser, budgetScheduler: &scheduler, scratch: comparison,
+		acceptedLeaves: &comparison.acceptedLeaves, materializationScratch: &comparison.materialization}
+	if err := m.poll(); err != nil {
+		t.Fatal("workspace coverage or checkpoint storage was counted twice:", err)
+	}
+	scheduler.options.stopControlMemoryBudgetBytes--
+	if err := m.poll(); err == nil {
+		t.Fatal("workspace escaped the memory budget")
+	}
+	publication.resetTreeBuffers()
+	if got := diagnosticParserCoreSchedulerFootprintBytes(&scheduler); got != baseline+comparison.materializationRetainedBytes() {
+		t.Fatal("cleared slice lengths hid retained workspace capacity")
+	}
+}
+
+func TestCompactAcceptanceComparisonWorkspaceRetentionBound(t *testing.T) {
+	comparison := &parserCoreRunnerScratch{}
+	// This remains under the individual line-index limit but exceeds the
+	// complete comparison lease's byte limit.
+	comparison.lineStarts = make([]uint32, parserCoreMaxRetainedComparisonBytes/4+1)
+	publication := parserCoreRunnerScratch{acceptanceComparison: comparison}
+	publication.resetTreeBuffers()
+	if publication.acceptanceComparison != nil {
+		t.Fatal("an oversized comparison workspace stayed on the runner")
+	}
+}
+
 func TestCompactAcceptanceChangedSourceKeepsRebuildBudget(t *testing.T) {
 	prepared, err := parserCoreWarmPrepare()
 	if err != nil {

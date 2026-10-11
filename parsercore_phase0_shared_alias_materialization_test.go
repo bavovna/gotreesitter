@@ -100,6 +100,36 @@ func TestCompactAcceptanceRetainsEquivalentAliasesAndRejectsDifferentAliases(t *
 			t.Fatal(err)
 		}
 		independent.Release()
+		comparison := scratch.acceptanceComparison
+		if comparison == nil || comparison.postorder.RetainedBytes() == 0 {
+			t.Fatal("tied acceptance did not retain cleared construction storage")
+		}
+		for range 3 {
+			next, proved := compactAcceptanceElectionMaterialize(compact, parser, []byte("x"),
+				false, true, head, paths, paths[0], &scratch)
+			if !proved || next == nil {
+				t.Fatal("warm comparison did not publish")
+			}
+			if scratch.acceptanceComparison != comparison || next.root == tree.root {
+				next.Release()
+				t.Fatal("workspace reuse lost its lease or shared a published node")
+			}
+			if err := compactEagerCompareTrees(lang, tree, next); err != nil {
+				next.Release()
+				t.Fatal("building the next acceptance changed the first publication:", err)
+			}
+			next.Release()
+			if comparison.materializer.parser != nil || comparison.materializer.compact != nil ||
+				comparison.materializer.source != nil || comparison.materializer.arena != nil ||
+				comparison.materializationBudgetScheduler != nil {
+				t.Fatal("comparison storage retained a parser, source, core or arena")
+			}
+			for _, node := range comparison.materializer.nodesByID[:cap(comparison.materializer.nodesByID)] {
+				if node != nil {
+					t.Fatal("comparison storage retained a released public node")
+				}
+			}
+		}
 		tree.Release()
 
 		// Exercise the scheduler-to-publication handoff, including the final
