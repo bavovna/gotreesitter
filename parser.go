@@ -2512,6 +2512,9 @@ func (p *Parser) rejectUndrainedPendingForkStacks(s *glrStack) bool {
 		return false
 	}
 	workCountRecordPendingTransition(p, &p.pendingForkStacks[0], len(p.pendingForkStacks), 0, workCountConvergenceOutcomePendingDiscarded, "undrained post-reduce candidates rejected")
+	if p.mergeScratch != nil {
+		p.mergeScratch.policyPruned = true
+	}
 	if workCountInstrumentationEnabled {
 		workCountTopologyRetireVersionsIfActive(p.pendingForkStacks)
 	}
@@ -3889,7 +3892,7 @@ func captureParseScratchStats(parseRuntime *ParseRuntime, scratch *parserScratch
 		return false
 	}
 	if arena != nil {
-		arena.legacyNoPolicyPruning = !scratch.merge.policyPruned && scratch.audit.globalCullStacksIn == scratch.audit.globalCullStacksOut
+		arena.legacyNoPolicyPruning = !scratch.merge.policyPruned
 	}
 	parseRuntime.ScratchBytesAllocated = scratch.allocatedBytes()
 	parseRuntime.TransientScratchBytesAllocated = scratch.transientParents.allocatedBytes + scratch.transientChildren.allocatedBytes
@@ -7134,6 +7137,7 @@ func (p *Parser) parseInternal(source []byte, ts TokenSource, reuse *reuseCursor
 					chosen, chosenOrdinal, choice = deterministicExternalConflictActionAt(actions)
 				}
 				if choice {
+					scratch.merge.policyPruned = true
 					skipRepetitionShift := false
 					if chosen.Type == ParseActionReduce {
 						if cReduce, ok := singleReduceAgainstRepetitionShiftConflictChoice(actions); ok && cReduce == chosen {
@@ -7867,6 +7871,9 @@ func (p *Parser) parseInternal(source []byte, ts TokenSource, reuse *reuseCursor
 				continue
 			}
 			if !p.errorCostCompetitionEnabled() || liveUnaccepted == 0 {
+				if liveUnaccepted > 0 {
+					scratch.merge.policyPruned = true
+				}
 				accepted := compactAcceptedStacks(stacks)
 				selectable := accepted[:0]
 				continuationEscape := p.lineContinuationEscapeByte()
@@ -8479,6 +8486,9 @@ func (p *Parser) cullParseStacksForIteration(stacks []glrStack, scratch *parserS
 	}
 	if workCountInstrumentationEnabled {
 		workCountTopologyReconcileVersionSelection(topologyBefore, stacks)
+	}
+	if len(stacks) < cullIn {
+		scratch.merge.policyPruned = true
 	}
 	scratch.audit.recordGlobalCull(cullIn, len(stacks))
 	workCountRecordBoundaryCull(p, cullIn, len(stacks))
