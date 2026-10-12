@@ -73,7 +73,9 @@ allocation bytes; it is not the committed candidate.
 
 All **412 rows / 206 languages** preserve every numerical work and reuse counter.
 Only C's existing fallback diagnostic changes from boundary `(450,365)` to
-`(445,389)`; both hit `9 > 8`, and C remains a fallback. The original owned YAML
+`(445,389)`; both hit `9 > 8`, and C remains a fallback. The canonical ledger updates
+only this diagnostic string; every numeric ratchet, fixture identity, route and
+other field stays pinned. The original owned YAML
 full/edit ledger is byte-identical, including **482 full-parse nodes**. A parser
 reuse regression parses the pressured stream before this sample and verifies the
 same node budget. The four approved Liquid exceptions remain the only exceptions.
@@ -165,7 +167,11 @@ Raw receipts and reproduction scripts are in
 `large-yaml.sh`, `guard-snapshot.py`, and their logs. Earlier rejected or exploratory
 receipts have `p1-`, `p6-`, or `p8-` prefixes. The final correctness pipeline exits
 zero without resuming. The timing runner's preflight refused an existing output
-file before measuring; archived outputs and fresh paths preserve both versions.
+file before measuring; archived outputs and fresh paths preserve both versions. CI then caught the
+canonical C diagnostic mismatch; a diagnostic-only follow-up and the exact
+canonical ledger command address it. The first pushed head's grammar-lock job
+failed before tests when the pinned CLI download returned HTTP 504; no oracle or
+CLI pin changes are made.
 
 ### Scanner restore buffers and projection publication
 
