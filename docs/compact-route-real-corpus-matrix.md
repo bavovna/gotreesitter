@@ -41,6 +41,47 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Scanner-history correction and single-version follow-up
+
+The broader CI run found a nested Go generic-call regression in the previous
+reduction child-selection change. `Foo[int](Foo[int](a))` selected nested indexed
+calls, while locked C selects nested type conversions. The new
+`TestGoNestedGenericSelectionLockedC` checks both routes on every structural axis;
+the existing nineteen-case generic-conflict gate remains unchanged.
+
+Child selection now requires **every terminal to carry an exact external scanner
+transition**. DFA-only and mixed terminal histories do not authenticate the owned
+lexer requests needed by this proof and keep both alternatives. This tightens the
+existing predicate without adding a language-name branch or changing a cap.
+The nested Go case again falls back and matches C. Owned YAML's original sample,
+four-document and sixteen-document witnesses keep C-correct compact acceptance.
+Native regressions cover both wholly unowned and mixed histories and cursor
+cleanup. The clean-checkout Solidity sequence also regains its pinned fallback.
+
+All **412 numerical work/reuse rows** remain unchanged against `396f4cbcc5f641a06bb8f60c73c0f82cfdeaa523`.
+Only C's fallback boundary diagnostic returns **(445,389) → (450,365)**, with the
+same `9 > 8` limit failure and unchanged fixture identities and route. The canonical
+ledger changes only that string; no numeric ratchet or exception is reset.
+
+The corrected source passes **206 separate 72-step invariant sessions**,
+**618 locked-C fixture checks**, the unchanged strict census (**159 PASS / 45
+known FAIL**, all **120 compact acceptances** C-exact), core/phase-zero-A tests,
+focused root and container races including the generic-conflict family, the exact
+335-pattern CI selection, and six peak-budget processes. Owned YAML's full/edit
+ledger remains byte-identical at 482 full-parse nodes. The full run stopped at the
+strict-census step because its evidence manifest had not been copied; resuming
+there completed the remaining checks. No complete root-suite certificate is claimed.
+
+Raw correction evidence is in
+`/home/draco/.local/state/gotreesitter-evidence/20261012-go-corridor-yaml-ownership`.
+`final-source.json` pins 3,470 Go/module files (SHA-256
+`0eaaa81688c0c928326a0c2085b15611836348bf369c6d6775ce409a42297dcd`).
+`correction-full-wrapper.log`, `correction-resume-wrapper.log`,
+`scanner-selection-wrapper.log` and `solidity-full-wrapper.log` distinguish the
+full fixture sweeps from the focused regression checks. The first local Solidity
+probe stopped at an existing ignored corpus directory; the clean owned checkout
+preserved that user data and passed the complete Solidity fixture sequence.
+
 ### Reconverged YAML children and EOF acceptance
 
 The diagnostic-owned YAML EOF witness now completes on compact at **8,012 bytes**

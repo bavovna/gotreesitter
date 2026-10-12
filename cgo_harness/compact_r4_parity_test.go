@@ -108,3 +108,33 @@ func testCompactR4StructuralLockedC(t *testing.T, name string, requireCompact bo
 		t.Fatalf("%d structural differences", len(diffs))
 	}
 }
+
+func TestGoNestedGenericSelectionLockedC(t *testing.T) {
+	source := []byte("package p\n\nfunc f() {\n\t_ = Foo[int](Foo[int](a))\n}\n")
+	lang := grammars.GoLanguage()
+	cLang, err := ParityCLanguage("go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cTree := compactT3ParseC(t, cLang, source)
+	defer cTree.Close()
+	for _, candidate := range []bool{false, true} {
+		p := gts.NewParser(lang)
+		p.SetAdmissionCandidateRoute(candidate)
+		before, beforeFallback := gts.AdmissionCandidateCounters()
+		tree, err := p.Parse(source)
+		if err != nil || tree == nil {
+			t.Fatalf("parse: %v", err)
+		}
+		defer tree.Release()
+		routed, fallback := gts.AdmissionCandidateCounters()
+		t.Logf("candidate=%t route=%d fallback=%d tree=%s", candidate, routed-before, fallback-beforeFallback, tree.RootNode().SExpr(lang))
+		diffs := compactT3StructuralDivergences(tree.RootNode(), lang, cTree.RootNode())
+		for _, d := range diffs[:min(len(diffs), 8)] {
+			t.Error(compactT3FormatDivergence(d))
+		}
+		if len(diffs) > 0 {
+			t.Errorf("candidate=%t differences=%d", candidate, len(diffs))
+		}
+	}
+}

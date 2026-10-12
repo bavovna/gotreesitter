@@ -6,8 +6,8 @@ import "errors"
 // ts_parser__select_children. It applies only to parents built by this one
 // reduction, with one identical graph predecessor. It does not authorize a
 // general stack-link tie, a historical fold, or a merge between lexer owners.
-// The terminal histories must also be identical, including exact scanner
-// transitions. Unsupported histories retain both alternatives.
+// Every terminal must carry an exact scanner transition. DFA-only histories
+// do not authenticate each version's lexer request and retain alternatives.
 func (c *Core) compareReconvergedReductionChildren(left linkRecord, right linkInput) (int, bool, error) {
 	scratch := &c.reductionScratch
 	if !scratch.selectCleanChildren || left.prev != right.prev ||
@@ -103,6 +103,9 @@ func (c *Core) nextReductionTerminal(stack *[]SubtreeID, work *uint64, budget ui
 			return 0, false, nil
 		}
 		if record.terminal {
+			if !record.external {
+				return 0, false, nil
+			}
 			if record.external {
 				provenance, exact := c.externalPayloadScannerProvenance(id)
 				if !exact {

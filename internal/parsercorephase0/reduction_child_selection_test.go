@@ -69,11 +69,38 @@ func reductionSelectionPair(t *testing.T, c *Core, leftLeaf, rightLeaf SubtreeID
 func reductionSelectionLeaf(t *testing.T, c *Core, record subtreeRecord) SubtreeID {
 	t.Helper()
 	record.terminal = true
+	record.external = true
 	id, err := c.appendSubtree(record, nil, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+	c.externalProvenance = append(c.externalProvenance, externalPayloadProvenance{payload: id})
 	return id
+}
+
+func TestReconvergedReductionChildSelectionRequiresCompleteScannerHistory(t *testing.T) {
+	for _, mixed := range []bool{false, true} {
+		c := newCSelectionCompareTestCore(t)
+		dfa, err := c.appendSubtree(subtreeRecord{terminal: true, symbol: 3, endByte: 1}, nil, nil, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		leaf := dfa
+		if mixed {
+			external := reductionSelectionLeaf(t, c, subtreeRecord{symbol: 2, endByte: 1})
+			leaf, err = c.appendSubtree(subtreeRecord{symbol: 40}, []SubtreeID{external, dfa}, nil, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		left, right := reductionSelectionPair(t, c, leaf, leaf)
+		if _, selected, err := c.compareReconvergedReductionChildren(left, right); err != nil || selected {
+			t.Fatalf("mixed=%t selected=%t err=%v: DFA history must retain alternatives", mixed, selected, err)
+		}
+		if len(c.popScratch.rev) != 0 || len(c.popScratch.external) != 0 {
+			t.Fatal("unsupported history retained live cursors")
+		}
+	}
 }
 
 func TestReconvergedReductionChildSelectionUsesCOrder(t *testing.T) {

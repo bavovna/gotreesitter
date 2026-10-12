@@ -1065,7 +1065,7 @@
       "fixture_sha256": "ccdf9a3671f4f291c653fce2ee409557cadddc893494c112ce49a1cf9c139917",
       "session_sha256": "b9cefc3950abd10a96cc068ecfc6f42c591268d5c67371c8bc6b1e2258f3eb73",
       "route": "candidate",
-      "decline_reason": "compact route error: parser-core phase zero: shared (445,389) live-link cap exceeded: 9 > 8"
+      "decline_reason": "compact route error: parser-core phase zero: shared (450,365) live-link cap exceeded: 9 > 8"
     },
     {
       "language": "c",
