@@ -289,6 +289,11 @@ func TestCompactLegacyReadsPreserveBoundaryAndProjectionProofs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	for _, node := range nodes {
+		if node != nil && node.flags&nodeFlags(incr.TransientProjectionRejected) != 0 {
+			t.Fatal("publication leaked a transient projection marker")
+		}
+	}
 	for id, node := range nodes[1:13] {
 		got, ok := legacyReuseLookahead(node)
 		if node == nodes[1] || node == nodes[3] || node == nodes[5] {
@@ -316,6 +321,79 @@ func TestCompactLegacyReadsPreserveBoundaryAndProjectionProofs(t *testing.T) {
 	reads.Seal()
 	if got := *legacyReuseWord(nodes[7], false); got != wantWord {
 		t.Fatalf("reusing scan scratch changed a published receipt: %d -> %d", wantWord, got)
+	}
+}
+
+func TestCompactLegacyProjectionMarkerFitsNodeFlags(t *testing.T) {
+	if uint16(nodeFlagCompactPreGotoStateProven)<<1 != incr.TransientProjectionRejected {
+		t.Fatal("the transient projection marker overlaps the facade's node flags")
+	}
+}
+
+func TestCompactLegacyProjectionMarkersClearOnFailure(t *testing.T) {
+	for _, mode := range []string{"geometry panic", "first poll", "second poll"} {
+		t.Run(mode, func(t *testing.T) {
+			arena := acquireNodeArena(arenaClassFull)
+			defer arena.Release()
+			foreignArena := acquireNodeArena(arenaClassFull)
+			defer foreignArena.Release()
+			bad := newLeafNodeInArena(arena, 1, true, 0, 1, Point{}, Point{Column: 1})
+			good := newLeafNodeInArena(arena, 1, true, 0, 1, Point{}, Point{Column: 1})
+			foreign := newLeafNodeInArena(foreignArena, 1, true, 0, 1, Point{}, Point{Column: 1})
+			for _, node := range []*Node{bad, good, foreign} {
+				node.setCompactMaterialized(true)
+				node.setCompactPreGotoStateProof(true)
+				node.setCompactParseStateProof(true)
+			}
+			// Another arena's private publication can have its own active marker.
+			// This publisher must leave every foreign flag untouched.
+			foreign.flags |= nodeFlags(incr.TransientProjectionRejected)
+			badFlags, goodFlags, foreignFlags := bad.flags, good.flags, foreign.flags
+			nodes := make([]*Node, 257)
+			nodes[1], nodes[2], nodes[256] = bad, foreign, good
+			reads := incr.NewReads(4)
+			reads.Record(0, 2)
+			s := &diagnosticParserCoreGenericScheduler{}
+			s.reuseDependencies.reads = reads
+			points := diagnosticParserCorePointIndex{lineStarts: []uint32{0}}
+			sentinel := errors.New("projection publication stopped")
+			polls := 0
+			func() {
+				defer func() {
+					if got := recover(); got != nil {
+						if mode != "geometry panic" || got != sentinel {
+							t.Fatalf("unexpected panic: %v", got)
+						}
+					} else if mode == "geometry panic" {
+						t.Fatal("expected geometry panic")
+					}
+				}()
+				err := s.publishCompactLegacyReads(arena, nodes, func(id core.SubtreeID) (core.SubtreeGeometry, error) {
+					if id == 1 {
+						return core.SubtreeGeometry{EndByte: 2}, nil
+					}
+					if mode == "geometry panic" {
+						panic(sentinel)
+					}
+					return core.SubtreeGeometry{EndByte: 1}, nil
+				}, &points, func() error {
+					polls++
+					if mode == "first poll" && polls == 1 || mode == "second poll" && polls == 2 {
+						return sentinel
+					}
+					return nil
+				})
+				if !errors.Is(err, sentinel) {
+					t.Fatalf("publication error=%v, want sentinel", err)
+				}
+			}()
+			if bad.flags != badFlags || good.flags != goodFlags || foreign.flags != foreignFlags {
+				t.Fatal("failed publication changed node flags or leaked a marker")
+			}
+			if _, ok := legacyReuseLookahead(bad); ok {
+				t.Fatal("failed publication authenticated a mismatched projection")
+			}
+		})
 	}
 }
 

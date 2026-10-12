@@ -404,18 +404,30 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReads(arena *
 		return nil
 	}
 	reads.Seal()
-	mapBytes := uint64(len(nodes))*64 + 256
-	if reason := s.stopControlMemoryBudgetReasonWithAdditionalBytes(mapBytes + arenaAllocatedVolume(arena)); resultMaterializationShouldStop(reason) {
+	if reason := s.stopControlMemoryBudgetReasonWithAdditionalBytes(arenaAllocatedVolume(arena)); resultMaterializationShouldStop(reason) {
 		return diagnosticParserCoreStopControlTripped(reason)
 	}
-	unknown := make(map[*Node]bool)
+	// Several compact IDs can project onto one collapsed public node. Mark
+	// every mismatch before publishing any receipt, so an aligned inner ID
+	// cannot authenticate a mismatched outer projection. These nodes belong
+	// exclusively to the unpublished arena; no borrowed node is marked.
+	const rejected = nodeFlags(incr.TransientProjectionRejected)
+	processed := 0
+	defer func() {
+		for _, node := range nodes[:processed] {
+			if node != nil && node.ownerArena == arena {
+				node.flags &^= rejected
+			}
+		}
+	}()
 	for id, node := range nodes {
 		if node == nil || node.ownerArena != arena {
 			continue
 		}
+		processed = id + 1
 		view, err := geometryFor(core.SubtreeID(id))
 		if err != nil || view.StartByte != node.StartByte() || view.EndByte != node.EndByte() || points.point(node.StartByte()) != node.StartPoint() || points.point(node.EndByte()) != node.EndPoint() {
-			unknown[node] = true
+			node.flags |= rejected
 		}
 		if id&255 == 0 {
 			if err := poll(); err != nil {
@@ -428,7 +440,7 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReads(arena *
 	// binary-search fallback when a later projection ends earlier.
 	parents, leaves := reads.Cursor(true), reads.Cursor(false)
 	for id, node := range nodes {
-		if node == nil || node.ownerArena != arena || unknown[node] || !compactNodeStateProofAvailable(node) {
+		if node == nil || node.ownerArena != arena || node.flags&rejected != 0 || !compactNodeStateProofAvailable(node) {
 			continue
 		}
 		var count uint32

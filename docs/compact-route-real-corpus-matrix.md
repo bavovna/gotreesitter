@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-12 (UTC).
-Latest shipped-route comparison baseline: `ef3ab2ba734609bc6d1a72cf28cc339e2875d502`.
+Latest shipped-route comparison baseline: `d22b66a1ffbd5c34608f7953deb263e282602619`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -40,6 +40,116 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Scanner restore buffers and projection publication
+
+YAML checkpoint restoration reuses its private indentation buffers instead of
+allocating root sentinels on every restore. Serialized checkpoints still own
+independent bytes. Tests cover deep/shallow transitions, nil and short
+checkpoints, incomplete trailing entries, signed state, root sentinels, input
+mutation, and zero-allocation warm restores. Scanner binding and grammar blobs
+remain unchanged.
+
+Compact publication reconciles every compact ID that projects onto one public
+node before granting any legacy reuse receipt. Replace its transient pointer
+map with a temporary flag on the private arena's nodes. Any mismatched outer
+projection still invalidates aligned inner projections. Borrowed nodes remain
+untouched; cleanup runs on success, both polling failure phases, and panic.
+The flag uses the last available uint16 bit without growing Node. A reservation
+check prevents overlap with existing flags. Geometry, point, state and keyword
+checks and polling intervals remain intact.
+
+This also removes the map's conservative budget reservation, rather than
+weakening a limit. A paired, cold-run bisection on the 2,047-byte Go R4 fixture
+finds the minimum accepted configured budget changes **3,402,742 → 3,320,310
+bytes**, freeing **82,432 bytes (2.42%)** of request headroom. Both runs create
+1,283 compact records. The difference exactly matches the former
+`(records + 1) * 64 + 256` reservation. This measures budget headroom, not a
+reduction in retained heap or a throughput improvement. Arena memory remains
+charged; the existing peak bounds pass in three fresh processes per witness.
+
+All **412 ledger rows / 206 languages** are byte-identical to baseline
+`d22b66a1ffbd5c34608f7953deb263e282602619`. The separate diagnostic-owned YAML
+ledger also matches. No counters, exemptions, allowlists, defaults or caps reset.
+The four previously approved Liquid exceptions remain the only exceptions.
+
+| Route and phase | Tokens before → after | Nodes before → after | Maximum versions before → after | Reused bytes before → after | Splices before → after |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Go candidate full | 589 → 589 | 1,251 → 1,251 | 3 → 3 | 0 → 0 | 0 → 0 |
+| Go candidate first edit | 374 → 374 | 1,553 → 1,553 | 8 → 8 | 1,784 → 1,784 | 266 → 266 |
+| YAML default full | 107 → 107 | 288 → 288 | 1 → 1 | 0 → 0 | 0 → 0 |
+| YAML diagnostic owned full | 102 → 102 | 482 → 482 | 2 → 2 | 0 → 0 | 0 → 0 |
+
+All 206 separate 72-step invariant sessions pass, with zero no-edit allocations,
+as do 618 locked-C fixture checks. The strict census stays **159 PASS / 45 known
+FAIL**, with **120 / 120 actual compact acceptances** matching C. Focused core,
+root, recovery, reuse, scanner and container race checks pass, including the
+independent fused replay comparison and CI's exact 335-pattern tagged selection.
+R6 remains 454 language-name uses / 101 environment reads; L0 remains 756 root
+Go files / 12 API tag sets. No snapshots changed. No full root-suite or complete
+C-parity certificate is claimed.
+
+The final paired comparisons use one process per shuffle seed, 20 alternating
+before/after seeds, GOMAXPROCS=1, count=1, 750ms and benchmem, through the
+randomized wrapper in a serialized 6 GiB Docker container pinned to CPU 6.
+
+| Workload | Before ns/op | After ns/op | Time direction | p | B/op before → after | allocs/op before → after |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Go real file, compact | 1,267,969.5 | 1,239,597 | -2.24% | .989 | 1,696 → 1,696 | 25 → 25 |
+| Go real file, legacy | 958,091.5 | 888,462 | -7.27% | .565 | 2,712 → 2,712 | 11 → 11 |
+| Go generated full | 11,887,901.5 | 11,793,093 | -0.80% | .698 | 538,082 → 538,083.5 | 50 → 50 |
+| Go one-byte edit | 145,886 | 134,669 | -7.69% | .369 | 403 → 402 | 5 → 5 |
+| Go no edit | 4.0325 | 3.9725 | -1.49% | .640 | 0 → 0 | 0 → 0 |
+| YAML ordinary attempt + legacy | 411,254 | 391,356.5 | -4.84% | .820 | 17,144 → 17,144 | 39 → 37 |
+| YAML legacy | 292,073.5 | 283,809 | -2.83% | .620 | 1,440 → 1,440 | 18 → 16 |
+| YAML diagnostic owned | 879,086 | 864,327 | -1.68% | .301 | 18,065 → 16,593 | 366 → 172 |
+
+**No throughput improvement is established.** Go's timing ranges are broad,
+and its unchanged legacy control also moves. Bucket the supported wins as
+**194 fewer owned-YAML allocations (-53.01%) / 1,472 fewer bytes (-8.15%)**, two
+fewer ordinary-YAML allocations, and Go's budget headroom. Record the tiny Go
+full-parse B/op increase and Go compact/legacy ratio increase as directional
+regressions. All measured 10% ratchets pass. The earlier borrowed-pop-path
+prototype had no supported timing or allocation gain and is discarded; its
+noisy Go full/control increases are not retained-candidate evidence.
+
+Twenty fresh-process Go pairs complete exactly 1 MiB on compact with no
+fallback. RSS medians **330,576 → 330,586 KiB** are effectively unchanged, with
+ranges 298,656..344,724 / 302,656..355,032 KiB. Retained heap medians change
+214,686,832 → 214,686,984 bytes; HeapInuse stays 216,801,280 bytes. The RSS ratchet
+and 400-bytes-per-source-byte limit pass. Ordinary YAML's 1,049,572-byte probe
+keeps complete, error-free fallback; RSS stays 62,976 KiB and retained heap
+changes 131,424,824 → 131,425,136 bytes. These are not retention wins.
+
+The owned YAML EOF failure now has a bounded **four-document / 8,012-byte**
+witness (SHA-256 `778d1dec01bef4da1cef26acff6b8012c9701a23af67bdb9511b419912f04400`).
+At state 1507 and byte 8012, reductions combine four left alternatives with
+multiple right alternatives; the ninth distinct live link reaches the unchanged
+cap of eight. This is a live reduction batch, not a dead-boundary remap.
+`TestCompactYAMLDocumentStreamLockedC` compares one owned document, four ordinary
+documents, and four owned documents against C on every structural axis, counts
+fallback explicitly, and permits a future C-correct compact completion. The
+one-document owned parse must stay accepted. The four-document owned route
+still falls back at the cap; the ordinary route still declines at no-action.
+Neither ownership checks nor alternative-set coverage are relaxed.
+
+Current ratios remain **1.395× Go / 1.379× ordinary YAML**; the owned route remains
+diagnostic. E-A2's indexed-header target, ordinary YAML ownership, its live-link
+frontier, incremental scanner reuse, the full E-A distribution and C-relative
+performance remain unresolved. Neither language graduates.
+
+Raw receipts and reproduction scripts are in
+`/home/draco/.local/state/gotreesitter-evidence/20261012-yaml-route-go-hotpath`:
+`final-source.json` (3,468 files; SHA-256
+`63459ba1324b03d6fa8ce27f49b54e6d16a0119005d3438df9d1f7f9cdaa538b`),
+`final-check.sh`, `final-resume.sh`, `final-remaining.sh`, `final-perf.sh`,
+`final-memory.sh`, `final-bounds.sh`, `budget-probe.sh`, `performance-summary.json`
+and the benchmark/census logs. The first full run stopped on test-line-only
+census differences; moving the new regression to its own file restored the
+byte-identical census. The next run stopped on container VCS stamping during CI
+package discovery; buildvcs=false resolved that tooling failure. Remaining
+correctness, memory, bounds and performance runs exit zero. These resumes do
+not stand in for an uninterrupted successful full pipeline.
 
 ### Narrower headers and borrowed publication replay
 

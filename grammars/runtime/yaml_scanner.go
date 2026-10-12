@@ -555,8 +555,11 @@ func (YamlExternalScanner) Deserialize(payload any, buf []byte) {
 	s.blkImpRow = -1
 	s.blkImpCol = -1
 	s.blkImpTab = 0
-	s.indTypStk = []int16{yIndRot}
-	s.indLenStk = []int16{-1}
+	// A restore replaces the current cursor's indentation history. Snapshots
+	// own serialized bytes, so retaining these private buffers cannot alias
+	// another version's history.
+	s.indTypStk = append(s.indTypStk[:0], yIndRot)
+	s.indLenStk = append(s.indLenStk[:0], -1)
 	if len(buf) >= 10 {
 		off := 0
 		s.row = int16(binary.LittleEndian.Uint16(buf[off:]))
