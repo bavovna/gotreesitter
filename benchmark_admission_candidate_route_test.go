@@ -74,7 +74,7 @@ func TestCompactYAMLReductionSelectionPreservesSampleWork(t *testing.T) {
 	if routed, fallback := gotreesitter.AdmissionCandidateCounters(); routed != 1 || fallback != 0 {
 		t.Fatalf("owned sample route=%d fallback=%d", routed, fallback)
 	}
-	if runtime := tree.ParseRuntime(); runtime.NodesAllocated > 482 || tree.RootNode().HasError() || tree.RootNode().EndByte() != uint32(len(source)) {
+	if runtime := tree.ParseRuntime(); runtime.NodesAllocated > 484 || tree.RootNode().HasError() || tree.RootNode().EndByte() != uint32(len(source)) {
 		t.Fatalf("owned sample work or coverage changed: %+v", runtime)
 	}
 }

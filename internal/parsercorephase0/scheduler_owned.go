@@ -1778,8 +1778,9 @@ func (c *Core) reduceOutputsClassifiedIntoActive(owner SchedulerTransactionToken
 	// C selects children when paths in this reduction reconverge on the
 	// identical predecessor. Start that proof when a fresh source forest
 	// exceeds the live-link capacity, then retain it through this session's
-	// acceptance. Small sessions keep their established publication work;
-	// recovery and borrowed histories remain unsupported.
+	// acceptance. Diagnostic owned-lexer sessions start immediately to avoid
+	// repeated acceptance materialization; ordinary small sessions keep their
+	// established work. Recovery and borrowed histories remain unsupported.
 	sourceNode, sourceErr := c.node(boundary.head.Node)
 	if sourceErr != nil {
 		return nil, sourceErr
@@ -1787,7 +1788,7 @@ func (c *Core) reduceOutputsClassifiedIntoActive(owner SchedulerTransactionToken
 	if c.schedulerFrame.fresh && cost == nil && source.storedErrorCost == 0 && sourceNode.pathCount > uint64(c.limits.MaxLinksPerBoundary) {
 		scratch.pressureSeen = true
 	}
-	scratch.selectCleanChildren = len(paths) > 1 && c.schedulerFrame.fresh && cost == nil && source.storedErrorCost == 0 && scratch.pressureSeen
+	scratch.selectCleanChildren = len(paths) > 1 && c.schedulerFrame.fresh && cost == nil && source.storedErrorCost == 0 && (scratch.pressureSeen || ExternalLexerOwnershipProbeEnabled())
 	for index := range paths {
 		if paths[index].recoveryDiscontinuity {
 			scratch.selectCleanChildren = false

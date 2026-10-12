@@ -41,6 +41,67 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Owned YAML early selection: approved measured trade
+
+Baseline: `624b2a60c8f402f6c2adb24846b192a547a918ce`. This proposal starts the
+existing bounded child-selection proof before link pressure only when the
+**diagnostic external-lexer ownership probe** is active. Every terminal must
+still authenticate its exact external scanner transition. Ordinary activation,
+recovery, caps, the allowlist and the global default keep their current behavior.
+The owner approved the two diagnostic node-work increases below on 2026-10-12.
+The committed change uses the reviewed predicate and work guard.
+
+Twenty shuffled, alternating baseline/candidate pairs on CPU 6, in a 6 GiB
+container with `GOMAXPROCS=1`, `-count=1`, `750ms` and `-benchmem`, measured the
+committed 1,998-byte YAML sample through `BenchmarkAdmissionR4OwnedExternalLexer`:
+
+| Metric | Before | After | Change |
+| --- | ---: | ---: | ---: |
+| Median parse time | 667.2 µs | 487.5 µs | −26.93%, p < 0.001 |
+| Median allocated bytes | 16,593 | 15,144 | −8.73%, p < 0.001 |
+| Allocations | 172 | 141 | −31, p < 0.001 |
+| Compact acceptance / fallback | 1 / 0 | 1 / 0 | Unchanged |
+| Diagnostic candidate full new nodes | 482 | 484 | +2 (+0.41%) |
+| Diagnostic candidate first-edit new nodes | 482 | 484 | +2 (+0.41%) |
+
+The first edit still uses the established fresh-parse fallback. The last two
+rows are the owner-approved measured trade under
+[R3](v1-design.md#r3-counter-ledger-changes). Only the diagnostic 482-node guard
+rises to 484; the ordinary ledger keeps every numerical ratchet.
+
+The reviewed candidate passes core/phase-zero-A and focused root tests, all 206
+separate 72-step invariant sessions, 618 locked-C fixture checks, the unchanged
+strict census (159 PASS / 45 known FAIL; all 120 compact acceptances C-exact),
+focused container races, the 335-pattern CI selection and six peak-budget
+processes. The 1,049,572-byte, 524-document stream completes on compact and
+matches locked C on all checked structural axes (SHA-256
+`8d615e96c0efe207dd1bfc4f54f601580d61dd0afc8f051ac3aaa92a2b27e397`).
+Both owned YAML 72-step sessions pass with zero no-edit allocations.
+The large C-oracle process peaks at 157,004 KiB RSS (153.18 bytes/source byte),
+under the 400-byte requirement, with no OOM or timeout.
+All 412 ordinary numerical work/reuse ledger rows remain unchanged; only the
+two owned node counters above change.
+
+A broader experiment also resolved ordinary YAML ownership and passed the
+original and four-document C oracles, but **failed the throughput ratchet**.
+Across twenty pairs, ordinary candidate time rose **311.7 → 609.4 µs (+95.47%,
+p < 0.001)** while fallback became compact acceptance. Allocations rose
+**37 → 141**. Legacy control time was **202.4 → 220.3 µs**, statistically
+inconclusive (p = 0.758). This activation is discarded. Passing ownership and
+C correctness is necessary but does not justify this regression or graduation.
+
+A Go prototype split sole fresh-reduction publication out of the cold output
+handling. Its ledger and focused C/invariant checks passed, but twenty pairs
+showed **1.213 → 1.201 ms**, an inconclusive change (p = 0.583), with unchanged
+1,696 bytes and 25 allocations. That prototype is discarded too.
+
+Raw overlay sources, before/after logs, benchstat summaries and gate logs are in
+`/home/draco/.local/state/gotreesitter-evidence/20261012-go-corridor-yaml-ownership`.
+The exact YAML proposal uses `yaml-diagnostic-early-overlay.json` and
+`yaml-diagnostic-early-{before,after}.txt`; the ordinary rejection uses
+`yaml-ordinary-{before,after}.txt`. These are separate measurements and are not
+claims about the shipped ordinary YAML route.
+
 ### Scanner-history correction and single-version follow-up
 
 The broader CI run found a nested Go generic-call regression in the previous
