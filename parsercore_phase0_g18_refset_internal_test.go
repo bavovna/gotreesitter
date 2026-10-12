@@ -541,8 +541,8 @@ func TestG18RefSetSchedulerMemoryBudgetAccounting(t *testing.T) {
 }
 
 func TestG18RefSetSchedulerRecordSizeRatchets(t *testing.T) {
-	if got := unsafe.Sizeof(diagnosticParserCoreHeader{}); got != 96 {
-		t.Fatalf("scheduler header size=%d, want 96", got)
+	if got := unsafe.Sizeof(diagnosticParserCoreHeader{}); got != 88 {
+		t.Fatalf("scheduler header size=%d, want 88", got)
 	}
 	if got := unsafe.Sizeof(diagnosticParserCoreCanonicalGroup{}); got != 48 {
 		t.Fatalf("canonical group size=%d, want 48", got)

@@ -1234,8 +1234,8 @@ func diagnosticParserCoreSelectedNodeCensus(root *Node) diagnosticParserCoreSele
 type diagnosticParserCoreHeader struct {
 	creationSeq    uint64
 	head           core.Head
-	dropCohortRefs core.DropCohortRefSet
 	checkpoint     core.CheckpointID
+	dropCohortRefs core.DropCohortRefSet
 	// altSet mirrors cleanPathRank/cleanPathLineage but by union rather than
 	// overwrite: it accumulates every converged-split (event, branch) member
 	// this derivation thread has passed through and is never invalidated
@@ -1283,8 +1283,8 @@ type diagnosticParserCoreHeader struct {
 	// recoveryFlags records recovery competition and permanent cost provenance,
 	// plus one unrelated bit (diagnosticParserCoreZeroWidthReopenedFlag) that
 	// only shares this byte for layout reasons -- see that flag's own doc
-	// comment. It sits before versionState in the padding byte at offset 87.
-	// Placing it after the pointer would grow each header from 96 to 104
+	// comment. It sits before versionState in the padding byte at offset 75.
+	// Placing it after the pointer would grow each header from 88 to 96
 	// bytes, and this struct has no other spare bits: every additional field
 	// or byte here shifts versionState's own 8-byte-aligned offset outward
 	// (unsafe.Sizeof-verified, parsercore_phase0_canonical_scratch_internal_test.go
@@ -7900,10 +7900,11 @@ func materializeDiagnosticParserCoreAcceptedSelectionWithRootFinalization(compac
 	// same transition rules replayCompactDerivation applies, so the tree needs
 	// no second full-derivation pass.
 	replayEnabled := incrementalReuse != nil || forceReplayParseStates || parserCoreReplayParseStatesEnabled()
-	var local compactMaterializer
-	m := &local
+	var m *compactMaterializer
 	if scratch != nil {
 		m = &scratch.materializer
+	} else {
+		m = &compactMaterializer{}
 	}
 	// The eager driver may have built part of this derivation during the
 	// scheduler run. Adopt that state when the pass flags match the plain
@@ -7970,7 +7971,7 @@ func materializeDiagnosticParserCoreAcceptedSelectionWithRootFinalization(compac
 	materializeVisit := func(materializationScratch *diagnosticParserCoreMaterializationScratch) error {
 		m.materializationScratch = materializationScratch
 		if scratch != nil {
-			return compact.VisitMaterializationPostorderPrebuilt(payloads, poll, &scratch.postorder, m.replayRootPre, m.replayTransition, prebuilt, m.visit)
+			return compact.VisitMaterializationPostorderPrebuiltWithBorrowedReplay(payloads, poll, &scratch.postorder, m.replayRootPre, m.replayTransition, prebuilt, m.visit)
 		}
 		return compact.VisitMaterializationPostorder(payloads, poll, func(id core.SubtreeID, view core.MaterializationSubtreeView) error {
 			return m.visit(id, &view)

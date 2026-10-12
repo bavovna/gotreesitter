@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-11 (UTC).
-Latest shipped-route comparison baseline: `ef360102d322ac6f553529f74989c2b927621a06`.
+Current evidence date: 2026-10-12 (UTC).
+Latest shipped-route comparison baseline: `ef3ab2ba734609bc6d1a72cf28cc339e2875d502`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -40,6 +40,127 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Narrower headers and borrowed publication replay
+
+Keep singleton alternative-set membership inline and store larger sets in the
+existing exact, append-only arena. The set view narrows 16 → 12 bytes; graph
+lineage records narrow 36 → 32 bytes. Reorder the header's checkpoint beside
+its head to fill alignment padding: scheduler headers narrow **96 → 88 bytes**.
+Membership, sorted order, the 32-member ceiling, overflow conservatism and
+rollback remain unchanged. The out-of-order spill regression also holds an
+earlier inline snapshot alive and checks its exact membership after growth.
+This is progress toward #1314, not completion of its 32-byte indexed-header
+requirement; optional version state still uses the existing immutable wrappers.
+
+Publication now borrows one scratch-owned replay view per transition. The
+value-based traversal API remains available through an adapter. Every root
+and child still receives the complete replay transition and metadata/ownership
+validation. Frames carry the validated subtree ID and resolve records from the
+unchanged arena; removing record pointers narrows frames **32 → 24 bytes** and
+makes them pointer-free. Tests pin that layout, verify complete cleanup, and
+compare production borrowed replay against independent top-down states on Go
+code with extras and malformed input. Borrowed reuse transitions still reject
+incompatible states. Aliases, table identity, scanner provenance, cancellation,
+deadlines and memory limits retain their checks.
+
+The pointer callback initially made a fallback local materializer escape to
+the heap even when reusable scratch was supplied. Construct it only in the
+branch that needs it. The discarded prototype added one allocation and 640
+bytes to Go's real compact parse and failed the byte-allocation ratchet; those
+results are not the retained candidate. The narrower records also exposed one
+intermittent tiny-budget peak failure. Extend the cheap capacity-growth signal
+to include cold lineage and membership arrays, which it previously omitted;
+the complete footprint remains the authority. The existing peak bounds pass
+in three fresh processes, and all final memory checks pass without relaxing
+budgets or test expectations.
+
+**Work and correctness bucket.** Against
+`ef3ab2ba734609bc6d1a72cf28cc339e2875d502`, all **412 ledger rows for 206
+languages** and the separate owned-YAML ledger remain byte-identical. No work
+counter rises, no reuse counter falls, and no exception or reset is added:
+
+| Route | Full node work | First edit node work | First edit reused bytes | First edit block splices |
+|---|---:|---:|---:|---:|
+| Go candidate | 1,251 → 1,251 | 1,553 → 1,553 | 1,784 → 1,784 | 266 → 266 |
+| Go default | 1,922 → 1,922 | 3,810 → 3,810 | 1,166 → 1,166 | 296 → 296 |
+| YAML default | 288 → 288 | 480 → 480 | 0 → 0 | 0 → 0 |
+| YAML diagnostic owned candidate | 482 → 482 | 482 → 482 | 0 → 0 | 0 → 0 |
+
+All 206 separate 72-step sessions and 618 C fixture checks pass, without
+invariant skips and with zero no-edit allocations. The strict real-file census
+is byte-identical: 159 PASS / 45 known FAIL, including 120 / 120 actual compact
+acceptances. Full core, phase-zero-A, focused root/budget/replay checks, focused
+container races, owned-YAML/recover-EOF and Swift C oracles, and the CI planner
+pass. The supplemental Perl fixture still has 19 C differences on baseline and
+candidate, with its eight reported differences identical; its existing reach
+pin is unchanged. These scoped checks do not establish a complete root-suite
+pass or eliminate the known correctness debt. The C4 proxy remains 37,662
+lookups in each mode and 7,257 corridor passes when enabled.
+
+**Throughput and allocation buckets.** The final source uses 20 alternating
+paired shuffled seeds per set through `scripts/run_randomized_benchmarks.sh`,
+one process per seed, `GOMAXPROCS=1`, `750ms`, `-count=1` and `-benchmem`,
+serialized 6 GiB Docker pinned to CPU 6. Medians and benchstat results are:
+
+| Workload | Before ns/op | After ns/op | Direction | p | B/op | allocs/op |
+|---|---:|---:|---:|---:|---:|---:|
+| Go real file, compact | 927,123 | 901,621 | -2.75% | .005 | 1,696 → 1,696 | 25 → 25 |
+| Go real file, legacy | 682,347.5 | 673,922.5 | -1.23% | .020 | 2,712 → 2,712 | 11 → 11 |
+| Go generated, full | 9,003,122 | 8,770,215 | -2.59% | .010 | 538,079.5 → 538,079 | 50 → 50 |
+| Go generated, single-byte edit | 101,720.5 | 100,814 | -0.89% | .713 | 400 → 400 | 5 → 5 |
+| Go generated, no edit | 3.057 | 3.0515 | -0.18% | .499 | 0 → 0 | 0 → 0 |
+| YAML real file, declined + legacy | 208,920.5 | 210,596 | +0.80% | .192 | 17,528 → 17,144 | 39 → 39 |
+| YAML real file, legacy | 153,506.5 | 154,703 | +0.78% | .341 | 1,440 → 1,440 | 18 → 18 |
+| YAML diagnostic owned route | 609,427 | 599,500.5 | -1.63% | .012 | 18,065 → 18,065 | 366 → 366 |
+
+The final Go compact/full and diagnostic owned-YAML timing improvements are
+statistically supported in this set. Legacy Go also improves; these results
+do not isolate each component's contribution. Incremental and ordinary-YAML
+timing differences remain inconclusive. Record both positive ordinary-YAML
+directions as regressions. All allocation counts stay unchanged. The ordinary
+YAML declined attempt saves 384 allocated bytes (-2.19%). Accepted Go and
+owned-YAML timing samples have zero fallback. Every measured ratchet passes.
+
+Earlier isolated header-read/no-op-wrapper trials establish no allocation or
+timing benefit and are discarded. The layout-only comparison also has unchanged
+warm allocation counts and inconclusive timing: Go compact 1,084,656.5 →
+1,054,213.5 ns/op (-2.81%, p=.414), Go legacy 863,662 → 810,081.5
+(-6.20%, p=.242), owned YAML 650,568.5 → 659,251.5 (+1.33%, p=.989).
+Retain the final combination for its measured throughput and smaller storage;
+do not attribute the combined timing wins to the layout-only trial.
+
+**Memory bucket.** Twenty alternating fresh-process pairs accept the exact
+1 MiB Go input on compact without errors, truncation or fallback. Median
+retained heap falls **218,570,032 → 214,687,168 bytes (-3,882,864, -1.78%)**;
+heap-in-use falls 220,643,328 → 216,801,280 bytes. Median RSS falls
+340,096 → 322,980 KiB (-5.03%), with overlapping ranges 315,136–358,920
+and 302,660–349,380 KiB. The direction supports the storage result, but the
+overlap does not establish an RSS effect by itself. The 10% RSS ratchet and
+400-bytes-per-source-byte hard gate pass. Ordinary YAML's 1,049,572-byte probe
+keeps its complete, error-free legacy tree and existing no-action decline;
+single-process RSS rises 60,832 → 62,980 KiB. Record that +3.53% direction;
+this single pair is not a randomized RSS ratchet.
+
+**Graduation bucket.** Final compact/legacy medians remain **1.338× Go /
+1.361× ordinary YAML**. Neither graduates. No all-206 timed distribution or
+C-relative throughput certificate was produced. Owned YAML remains diagnostic;
+its large-input EOF frontier failure (state 1507, 9 live links exceeding 8)
+precedes publication and was not rerun. Existing edit fallbacks, the allowlist
+and global default remain unchanged. #1314 and #1319 remain open.
+
+R6 retains 454 language-name uses and 101 environment reads. L0 retains 756
+root Go files and all 12 API tag sets, without snapshot changes. The frozen
+Go/module manifest covers 3,465 files with SHA-256
+`98c8dcd4abfa6bc4bc39027f5356410080081d486a29ee37be2da93ecf60490d`.
+Raw receipts and reproduction scripts are in
+`/home/draco/.local/state/gotreesitter-evidence/20261012-hot-header-replay`:
+`layout-perf.sh`, `perl-oracle.sh`, `final-check.sh`, `final-perf-resume.sh`,
+`perf.sh`, `rss-repeat.sh`, `analyze.py` and `guard-snapshot.py`. The completed
+final correctness gates and resumed final performance run have no OOM or
+timeout; the performance container exits 0. Failed/prototype receipts are
+separate. All historical receipts and four owner-approved Liquid correctness
+counter increases below remain in force.
 
 ### Reusable acceptance derivation enumeration
 

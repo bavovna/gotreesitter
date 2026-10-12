@@ -2693,6 +2693,7 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 	}
 	for name, typ := range map[string]reflect.Type{
 		"node":                   reflect.TypeFor[nodeRecord](),
+		"materialization-frame":  reflect.TypeFor[materializationPostorderFrame](),
 		"node-lineage":           reflect.TypeFor[nodeLineageRecord](),
 		"link":                   reflect.TypeFor[linkRecord](),
 		"subtree":                reflect.TypeFor[subtreeRecord](),
@@ -2711,13 +2712,16 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 			}
 		}
 	}
+	if got := unsafe.Sizeof(materializationPostorderFrame{}); got != 24 {
+		t.Fatalf("materializationPostorderFrame size = %d, want 24", got)
+	}
 	if got := unsafe.Sizeof(nodeRecord{}); got != 32 {
 		t.Fatalf("nodeRecord size = %d, want 32", got)
 	}
 	// Store optional reference sets separately; every graph node pays this
 	// record width, even when no certificates are recorded.
-	if got := unsafe.Sizeof(nodeLineageRecord{}); got != 36 {
-		t.Fatalf("nodeLineageRecord size = %d, want 36", got)
+	if got := unsafe.Sizeof(nodeLineageRecord{}); got != 32 {
+		t.Fatalf("nodeLineageRecord size = %d, want 32", got)
 	}
 	if got := unsafe.Sizeof(linkRecord{}); got != 32 {
 		t.Fatalf("linkRecord size = %d, want 32", got)
@@ -3191,5 +3195,25 @@ func diagnosticReduceTable(childCount uint8, dynamicPrecedence int16) *fakeTable
 			}},
 		},
 		gotos: map[tableCell]StateID{{state: 1, symbol: 2}: 4},
+	}
+}
+
+// Cold lineage and membership arrays can grow while hot arrays retain capacity.
+// Their capacity changes must still trigger an exact memory-budget check.
+func TestDominantCapacityBytesIncludesColdLineageGrowth(t *testing.T) {
+	var c Core
+	before := c.DominantCapacityBytes()
+	c.nodeLineages = make([]nodeLineageRecord, 0, 256)
+	lineage := c.DominantCapacityBytes()
+	if lineage <= before || len(c.nodeLineages) != 0 {
+		t.Fatal("inactive cold lineage capacity did not signal growth")
+	}
+	c.alternativeSpillArena = make([]uint32, 0, 256)
+	membership := c.DominantCapacityBytes()
+	if membership <= lineage || len(c.alternativeSpillArena) != 0 {
+		t.Fatal("inactive membership capacity did not signal growth")
+	}
+	if membership > c.FootprintBytes() {
+		t.Fatal("growth signal exceeded complete footprint")
 	}
 }

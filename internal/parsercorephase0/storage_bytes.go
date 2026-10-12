@@ -224,10 +224,10 @@ func (c *Core) FootprintBytes() uint64 {
 }
 
 // DominantCapacityBytes returns a cheap, O(1), CAPACITY-based (not
-// length-based) proxy for the compact core's footprint growth: the four
+// length-based) proxy for the compact core's footprint growth: the main
 // growable record families that dominate real parse-tree memory for both
 // typical and pathological-wide-GLR inputs (nodes, subtrees, links, and
-// children), each counted by cap() -- the same capacity accounting
+// children and their cold lineage/membership storage), each counted by cap() -- the same capacity accounting
 // FootprintBytes uses for these families, just without the other ~40 minor
 // families FootprintBytes also totals.
 //
@@ -240,7 +240,7 @@ func (c *Core) FootprintBytes() uint64 {
 // that gap caused for tranche B9), and a cheap-but-blind growth proxy would
 // silently defeat the bound it exists to provide. It is NOT a footprint
 // estimate on its own -- it deliberately omits everything FootprintBytes
-// covers outside these four families -- so a caller must still fall back to
+// covers outside these families -- so a caller must still fall back to
 // the exact FootprintBytes() periodically (not just when this proxy trips)
 // to catch growth in every other family.
 func (c *Core) DominantCapacityBytes() uint64 {
@@ -248,6 +248,8 @@ func (c *Core) DominantCapacityBytes() uint64 {
 		return 0
 	}
 	return uint64(cap(c.nodes))*coreNodeRecordBytes +
+		uint64(cap(c.nodeLineages))*coreNodeLineageRecordBytes +
+		uint64(cap(c.alternativeSpillArena))*coreUint32Bytes +
 		uint64(cap(c.subtrees))*coreSubtreeRecordBytes +
 		uint64(cap(c.links))*coreLinkRecordBytes +
 		uint64(cap(c.children))*coreChildRecordBytes

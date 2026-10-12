@@ -535,28 +535,13 @@ type nodeLineageMutation struct {
 // would exceed it stops recording new members and reports Overflowed.
 // spec.b4b-alternative-set.v1 section 3.2, open question 5.
 //
-// v2 widened one packed member from uint16 (event only) to uint32 (event,
-// branch), doubling AlternativeSet's inline array from 8 to 16 bytes and,
-// with it, every by-value container that embeds a set (nodeLineageRecord,
-// ReductionOutput, and diagnosticParserCoreHeader's two copies) -- paid on
-// every header canonicalize double-buffer copy, rollback scratch snapshot,
-// and reduction-output propagation, whether or not that particular set is
-// ever populated (b4b-width-repair audit, 2026-08). 4 was never a load-
-// bearing width: the canonical-fixture census (four fixtures, 8537 converged
-// -split elections) shows 8519/8537 (99.8%) already touch a spilled set by
-// election time and 8424/8537 (98.7%) are already Overflowed at the hard
-// cap, so the inline/spill boundary is nearly vestigial in steady state.
-// Lowering it to 2 -- matching "canonical reductions produce one output 95%
-// of the time and at most two observed" (packAlternativeSetMember's doc
-// comment; census maxBranch=1 on all four fixtures) so a fresh establishment
-// plus one sibling union still never spills -- restores AlternativeSet's
-// inline array to its pre-v2 8 bytes (2 members x 4 bytes, vs. the original
-// 4 members x 2 bytes) at the same total 16-byte struct size, with no change
-// to member encoding, hard cap, or any observable membership: spilled
-// storage is exact and zero-alloc once warm (alternativeSetInsert/
-// alternativeSetMembers already treat inline and spilled uniformly).
+// A singleton stays inline. Larger sets use the existing exact append-only
+// spill arena. The narrower view reduces copies in version headers, graph
+// lineage records and reduction handoffs; the cost is spilling two-member
+// sets earlier. Member encoding, the hard cap, overflow behavior and rollback
+// remain unchanged. See the real-corpus matrix for the measured tradeoff.
 const (
-	alternativeSetInlineCapacity = 2
+	alternativeSetInlineCapacity = 1
 	alternativeSetHardCap        = 32
 )
 

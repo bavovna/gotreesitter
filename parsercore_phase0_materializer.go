@@ -69,7 +69,7 @@ type compactMaterializer struct {
 	budgetScheduler        *diagnosticParserCoreGenericScheduler
 	materializationScratch *diagnosticParserCoreMaterializationScratch
 	acceptedLeaves         *diagnosticParserCoreAcceptedLeafCoverageScratch
-	replayTransition       core.MaterializationReplayTransition
+	replayTransition       core.MaterializationReplayBorrowedTransition
 	points                 diagnosticParserCorePointIndex
 	// view and replayView are the eager driver's visit arguments. frames is
 	// the pending-subtree traversal stack.
@@ -139,7 +139,7 @@ func (m *compactMaterializer) begin(
 		// Reusing its buffers must not add replay work to that public-shape
 		// comparison. Publication still authenticates and stamps every state.
 		if m.purpose != core.MaterializationForComparison {
-			m.replayTransition = func(pre core.StateID, view core.MaterializationReplayView) (core.StateID, bool, error) {
+			m.replayTransition = func(pre core.StateID, view *core.MaterializationReplayView) (core.StateID, bool, error) {
 				state, known, err := parser.replayCompactMaterializationTransition(StateID(pre), view)
 				return core.StateID(state), known, err
 			}
@@ -369,7 +369,7 @@ func (m *compactMaterializer) visitEager(id core.SubtreeID, view *core.Materiali
 	}
 	m.ensureTables(int(id) + 1)
 	if m.replayEnabled {
-		state, known, err := m.replayTransition(pre, m.replayView)
+		state, known, err := m.replayTransition(pre, &m.replayView)
 		if err != nil {
 			return err
 		}
@@ -412,7 +412,7 @@ func (m *compactMaterializer) buildPending(root core.SubtreeID, pre core.StateID
 					}
 					// The replay advances the parent's cursor by the child's
 					// result even when the tables held no transition.
-					state, _, err := m.replayTransition(top.cursor, replay)
+					state, _, err := m.replayTransition(top.cursor, &replay)
 					if err != nil {
 						return err
 					}
@@ -459,7 +459,7 @@ func (m *compactMaterializer) restampRoot(id core.SubtreeID) error {
 	if err := m.compact.FillMaterializationView(id, view, &m.replayView); err != nil {
 		return err
 	}
-	state, known, err := m.replayTransition(m.replayRootPre, m.replayView)
+	state, known, err := m.replayTransition(m.replayRootPre, &m.replayView)
 	if err != nil {
 		return err
 	}
