@@ -397,6 +397,20 @@ func TestDiagnosticParserCoreVersionLexerElectionScratchPreservesZeroPayload(t *
 			if !reflect.DeepEqual(next, want) || next.externalPayload != nil {
 				t.Fatalf("warm zero-payload scratch snapshot=%+v, want %+v", next, want)
 			}
+			// Replacing a populated destination must also clear every stale
+			// snapshot field when this scanner serializes no state.
+			next.externalPayload = []byte{99}
+			next.externalTokenStart = []byte{88}
+			next.extZeroTried = []bool{true}
+			tokenSource.snapshotRelexStateWithScratchFromExternalPayload(&next, &scratch, nil)
+			if !reflect.DeepEqual(next, want) {
+				t.Fatalf("in-place zero-payload snapshot=%+v, want %+v", next, want)
+			}
+			if allocs := testing.AllocsPerRun(100, func() {
+				tokenSource.snapshotRelexStateWithScratchFromExternalPayload(&next, &scratch, nil)
+			}); allocs != 0 {
+				t.Fatalf("warm in-place snapshot allocations=%v, want 0", allocs)
+			}
 		})
 	}
 }

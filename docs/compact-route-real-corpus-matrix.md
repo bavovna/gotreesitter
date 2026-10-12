@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-12 (UTC).
-Latest shipped-route comparison baseline: `d22b66a1ffbd5c34608f7953deb263e282602619`.
+Latest shipped-route comparison baseline: `f569f9cc780da404e0703ff3dfe1fc9ddd5fed6f`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -41,7 +41,136 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Reconverged YAML children and EOF acceptance
+
+The diagnostic-owned YAML EOF witness now completes on compact at **8,012 bytes**
+(four documents, SHA-256
+`778d1dec01bef4da1cef26acff6b8012c9701a23af67bdb9511b419912f04400`).
+The 32,048-byte sixteen-document witness also completes. Both match locked C on
+all structural axes in `TestCompactYAMLDocumentStreamLockedC`, including points,
+fields, extra and missing flags, propagated errors, and complete input coverage.
+The same sources previously reached the unchanged eight-link limit at EOF.
+
+The new internal helper implements a bounded, clean subset of C's reduction
+child selection. It compares parents from one reduction batch at one identical
+graph predecessor, after a fresh forest first exceeds live-link capacity. The
+parents must share their production, precedence and span, and their ordered
+terminal histories must match exactly, including external scanner transitions
+and skipped-prefix proofs. C's raw child ordering chooses the survivor. Missing
+nodes, recovery, opaque reused records, corrupt histories and exhausted
+comparison budgets retain alternatives or fail closed. No language-name branch,
+scanner ownership bypass, larger cap, allowlist entry, or default-route change is
+introduced.
+
+Keep the narrow selection active through the rest of that fresh session, then
+clear its pressure flag on entry, success, failure, panic and reset. A diagnostic
+probe shows why the lifetime matters: limiting selection to each pressured
+operation left eight derivations at acceptance and repeatedly materialized public
+trees. Continuing the same proven selection removes that acceptance election on
+the four- and sixteen-document witnesses. The discarded per-operation version
+was **18.69% slower** in twenty pairs and failed the ratchet despite reducing
+allocation bytes; it is not the committed candidate.
+
+All **412 rows / 206 languages** preserve every numerical work and reuse counter.
+Only C's existing fallback diagnostic changes from boundary `(450,365)` to
+`(445,389)`; both hit `9 > 8`, and C remains a fallback. The original owned YAML
+full/edit ledger is byte-identical, including **482 full-parse nodes**. A parser
+reuse regression parses the pressured stream before this sample and verifies the
+same node budget. The four approved Liquid exceptions remain the only exceptions.
+
+| Route and phase | Tokens before → after | Nodes before → after | Maximum versions before → after | Reused bytes before → after | Splices before → after |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Go candidate full | 589 → 589 | 1,251 → 1,251 | 3 → 3 | 0 → 0 | 0 → 0 |
+| Go candidate first edit | 374 → 374 | 1,553 → 1,553 | 8 → 8 | 1,784 → 1,784 | 266 → 266 |
+| YAML default full | 107 → 107 | 288 → 288 | 1 → 1 | 0 → 0 | 0 → 0 |
+| YAML diagnostic owned full | 102 → 102 | 482 → 482 | 2 → 2 | 0 → 0 | 0 → 0 |
+
+The final-source pipeline passes all 206 separate 72-step invariant sessions,
+618 locked-C fixture checks, and the strict census of **159 PASS / 45 known FAIL**,
+with **120 / 120 actual compact acceptances** matching C. Focused core and root
+checks, phase-zero-A checks, scanner/recovery/reuse checks, container races, the
+exact CI 335-pattern tagged selection, and six fresh-process peak-budget probes
+pass. R6 stays 454 language-name uses / 101 environment reads; L0 stays 756 root
+Go files / 12 API tag sets. No API or layout snapshots changed. This is not a
+complete grammar-wide C-parity certificate.
+
+The final comparison uses **twenty alternating, shuffled before/after pairs**
+per workload, count=1, 750ms, benchmem and GOMAXPROCS=1 through the randomized
+wrapper, in one serialized 6 GiB Docker container pinned to CPU 6. The stream
+benchmark includes the baseline's failed compact attempt and legacy fallback;
+it counts the actual route during timing. This is an end-to-end route comparison,
+not a comparison with pure legacy or a C-relative speed certificate.
+
+| Workload | Before ns/op | After ns/op | Time direction | p | B/op before → after | allocs/op before → after |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Go real file, compact | 1,115,522 | 1,084,187.5 | -2.81% | .108 | 1,696 → 1,696 | 25 → 25 |
+| Go real file, legacy | 772,621.5 | 796,024.5 | +3.03% | .289 | 2,712 → 2,712 | 11 → 11 |
+| Go generated full | 9,989,183 | 9,536,764 | -4.53% | .142 | 538,080 → 538,079 | 50 → 50 |
+| Go one-byte edit | 119,996.5 | 111,630 | -6.97% | .429 | 401.5 → 401 | 5 → 5 |
+| Go no edit | 3.393 | 3.623 | +6.78% | .127 | 0 → 0 | 0 → 0 |
+| YAML original diagnostic owned | 709,581.5 | 705,275 | -0.61% | .620 | 16,592 → 16,592 | 172 → 172 |
+| YAML ordinary attempt + legacy | 263,343.5 | 270,376 | +2.67% | .529 | 17,144 → 17,144 | 37 → 37 |
+| YAML legacy | 191,798 | 199,056 | +3.78% | .678 | 1,440 → 1,440 | 16 → 16 |
+| YAML 8 KiB diagnostic owned stream | 4,934,423 | 3,488,693 | -29.30% | < .001 | 961,540 → 53,081 | 479 → 460 |
+
+Bucket the supported win as **compact EOF completion**, **29.30% lower end-to-end
+time** (p < .001), **908,459 fewer allocated bytes (-94.48%)**, and **19 fewer
+allocations (-3.97%)** on the four-document witness. Fallbacks change **1 → 0** per
+parse and compact completions **0 → 1**. The original owned sample retains 172
+allocations and its existing node budget. Ordinary YAML remains a fallback.
+
+The direct-fill DFA snapshot and sole-pop native publication changes preserve
+ownership, cursor state and provenance, but **no Go throughput improvement is
+established**. Go's compact direction is -2.81% (p=.108); all allocation counts
+are unchanged. Treat these as neutral architectural experiments. Record Go
+no-edit time +6.78%, Go legacy time +3.03%, and ordinary YAML times +2.67% / +3.78%
+as directional regressions; none is statistically supported. All measured 10%
+time, bytes and allocation ratchets pass. Current compact/legacy ratios are
+**1.362× Go / 1.358× ordinary YAML**; the Go gap remains open.
+
+Twenty fresh-process Go pairs complete exactly 1 MiB on compact with no fallback.
+RSS medians **316,336 → 318,630 KiB (+0.73%)** remain within the ratchet, with
+ranges 299,584..345,568 / 293,836..342,824 KiB. Retained heap medians change
+214,686,920 → 214,687,240 bytes; HeapInuse stays 216,801,280 bytes. The 400-bytes-per-
+source-byte limit passes. These are not retention wins. Ordinary YAML's
+1,049,572-byte probe retains complete, error-free fallback; RSS changes
+62,304 → 63,080 KiB and retained heap 131,424,840 → 131,430,240 bytes. These small
+increases are recorded, not claimed as improvements.
+
+A separate **524-document / 1,049,572-byte owned YAML** probe now accepts on
+compact, covers every byte, has no error, and matches locked C on every tested
+axis (SHA-256
+`8d615e96c0efe207dd1bfc4f54f601580d61dd0afc8f051ac3aaa92a2b27e397`).
+The combined Go-and-C oracle process reaches **155,020 KiB RSS**, below the hard
+limit. Its 0.97-second wall time is a completion/memory receipt, not comparative
+throughput evidence. No crash, OOM or timeout occurs in the final pipeline.
+
+The final-source Go R4 profile attributes **44.91% cumulative CPU** to corridor
+dispatch, **17.84%** to election and **21.19%** to final selection materialization.
+These shares overlap and must not be added. The next larger targets are the
+single-version dispatch/reduction path in #1319 and final publication. The profile
+ranks targets; it does not establish a speedup or complete E-A7.
+
+Ordinary YAML still declines at the no-action alternative-set coverage proof;
+the accepted ownership path remains diagnostic. Go's throughput target, ordinary
+scanner ownership, incremental scanner reuse, the indexed-header target, the
+full E-A distribution and C-relative performance remain open. Neither language
+graduates from these receipts.
+
+Raw receipts and reproduction scripts are in
+`/home/draco/.local/state/gotreesitter-evidence/20261012-yaml-eof-go-throughput`:
+`final-source.json` (3,470 files; SHA-256
+`5ce8987bb864a34378b93ac2256f83497cd0ef373fbd6898d593db2267cdbb55`),
+`final-check.sh`, `final-measure.sh`, `final-perf.sh`, `rss-repeat.sh`,
+`large-yaml.sh`, `guard-snapshot.py`, and their logs. Earlier rejected or exploratory
+receipts have `p1-`, `p6-`, or `p8-` prefixes. The final correctness pipeline exits
+zero without resuming. The timing runner's preflight refused an existing output
+file before measuring; archived outputs and fresh paths preserve both versions.
+
 ### Scanner restore buffers and projection publication
+
+This earlier receipt compares against `d22b66a1ffbd5c34608f7953deb263e282602619`.
+The EOF frontier status and latest measurements appear above.
 
 YAML checkpoint restoration reuses its private indentation buffers instead of
 allocating root sentinels on every restore. Serialized checkpoints still own

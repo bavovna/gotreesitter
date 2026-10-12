@@ -6102,7 +6102,8 @@ func (s *diagnosticParserCoreGenericScheduler) captureSharedElectionSnapshotFrom
 	if s == nil || s.tokenSource == nil {
 		return errors.New("parser-core phase zero: shared lexer snapshot source is unavailable")
 	}
-	s.versionLexerBefore = s.tokenSource.snapshotRelexStateWithScratchFromExternalPayload(
+	s.tokenSource.snapshotRelexStateWithScratchFromExternalPayload(
+		&s.versionLexerBefore,
 		&s.versionLexerBeforeScratch,
 		externalPayload,
 	)

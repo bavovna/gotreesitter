@@ -1775,6 +1775,25 @@ func (c *Core) reduceOutputsClassifiedIntoActive(owner SchedulerTransactionToken
 	}
 	c.addWork(&c.work.EmittedPopPayloads, emittedPayloads)
 	scratch := &c.reductionScratch
+	// C selects children when paths in this reduction reconverge on the
+	// identical predecessor. Start that proof when a fresh source forest
+	// exceeds the live-link capacity, then retain it through this session's
+	// acceptance. Small sessions keep their established publication work;
+	// recovery and borrowed histories remain unsupported.
+	sourceNode, sourceErr := c.node(boundary.head.Node)
+	if sourceErr != nil {
+		return nil, sourceErr
+	}
+	if c.schedulerFrame.fresh && cost == nil && source.storedErrorCost == 0 && sourceNode.pathCount > uint64(c.limits.MaxLinksPerBoundary) {
+		scratch.pressureSeen = true
+	}
+	scratch.selectCleanChildren = len(paths) > 1 && c.schedulerFrame.fresh && cost == nil && source.storedErrorCost == 0 && scratch.pressureSeen
+	for index := range paths {
+		if paths[index].recoveryDiscontinuity {
+			scratch.selectCleanChildren = false
+			break
+		}
+	}
 	// len(paths) > 1 is this reduce's pop.size > 1 (a GSS multi-pop / diamond
 	// merge): more than one distinct way to pop act.ChildCount entries was
 	// found, one per path below -- mirrors the production Go parser's
@@ -1864,6 +1883,24 @@ func (c *Core) reduceOutputsClassifiedIntoActive(owner SchedulerTransactionToken
 			}
 			if err != nil {
 				return nil, err
+			}
+		}
+		// A fresh sole pop with no imported history or certificate refs
+		// has exactly the zero-valued provenance the general aggregation
+		// below computes. Publish its one output without the cold workspace.
+		if !multiPop && cost == nil && outcome.change == condenseNew && !outcome.historicalBoundarySplit {
+			predecessor, err := c.nodeLineage(path.prev)
+			if err != nil {
+				return nil, err
+			}
+			if predecessor.dropCohortRefIndex == 0 {
+				links, err := c.reductionLinkChainForHead(out)
+				if err != nil {
+					return nil, err
+				}
+				frontier = append(frontier, ReductionOutput{Head: out, Links: links, Freshness: ReductionNew, CleanPathRank: path.cleanPathRank})
+				phase0AFinishReductionConstruction(c)
+				return frontier, nil
 			}
 		}
 		boundaryIndex, seen := scratch.boundary(key)

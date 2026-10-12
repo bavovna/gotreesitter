@@ -3461,7 +3461,8 @@ func (d *dfaTokenSource) snapshotRelexStateWithScratch(scratch *dfaRelexSnapshot
 	if scratch == nil {
 		return d.snapshotRelexState()
 	}
-	s := d.snapshotRelexStateIntoScratch(scratch)
+	var s dfaRelexSnapshot
+	d.snapshotRelexStateIntoScratch(&s, scratch)
 	if d.hasExternalScanner && d.language != nil && d.language.ExternalScanner != nil {
 		buf := prepareDFARelexExternalPayloadScratch(scratch)
 		if n := d.language.ExternalScanner.Serialize(d.externalPayload, buf); n > 0 {
@@ -3479,14 +3480,17 @@ func (d *dfaTokenSource) snapshotRelexStateWithScratch(scratch *dfaRelexSnapshot
 // snapshotRelexStateWithScratchFromExternalPayload captures one snapshot
 // from scanner bytes that the caller already serialized at this cursor.
 // This avoids a second Serialize call during a parser election.
+// Fill the destination directly: the election does not need to return and
+// copy the complete cursor and lookahead snapshot through two callers.
 func (d *dfaTokenSource) snapshotRelexStateWithScratchFromExternalPayload(
+	s *dfaRelexSnapshot,
 	scratch *dfaRelexSnapshotScratch,
 	externalPayload []byte,
-) dfaRelexSnapshot {
+) {
 	if scratch == nil {
 		scratch = &dfaRelexSnapshotScratch{}
 	}
-	s := d.snapshotRelexStateIntoScratch(scratch)
+	d.snapshotRelexStateIntoScratch(s, scratch)
 	if d.hasExternalScanner && d.language != nil && d.language.ExternalScanner != nil {
 		buf := prepareDFARelexExternalPayloadScratch(scratch)
 		if n := copy(buf, externalPayload); n > 0 {
@@ -3498,11 +3502,10 @@ func (d *dfaTokenSource) snapshotRelexStateWithScratchFromExternalPayload(
 	} else {
 		clearDFARelexExternalPayloadScratch(scratch)
 	}
-	return s
 }
 
-func (d *dfaTokenSource) snapshotRelexStateIntoScratch(scratch *dfaRelexSnapshotScratch) dfaRelexSnapshot {
-	s := dfaRelexSnapshot{
+func (d *dfaTokenSource) snapshotRelexStateIntoScratch(s *dfaRelexSnapshot, scratch *dfaRelexSnapshotScratch) {
+	*s = dfaRelexSnapshot{
 		lexerPos:                    d.lexer.pos,
 		lexerRow:                    d.lexer.row,
 		lexerCol:                    d.lexer.col,
@@ -3539,7 +3542,6 @@ func (d *dfaTokenSource) snapshotRelexStateIntoScratch(scratch *dfaRelexSnapshot
 	if len(d.extZeroTried) != 0 {
 		s.extZeroTried = scratch.extZeroTried
 	}
-	return s
 }
 
 func prepareDFARelexExternalPayloadScratch(scratch *dfaRelexSnapshotScratch) []byte {

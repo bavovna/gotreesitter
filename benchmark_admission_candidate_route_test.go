@@ -37,6 +37,88 @@ func BenchmarkAdmissionR4OwnedExternalLexer(b *testing.B) {
 	}
 }
 
+func admissionYAMLDocumentStreamSample(tb testing.TB) []byte {
+	tb.Helper()
+	sample, err := os.ReadFile("internal/benchfixtures/testdata/real/yaml")
+	if err != nil {
+		tb.Fatal(err)
+	}
+	sum := sha256.Sum256(sample)
+	if len(sample) != 1998 || hex.EncodeToString(sum[:]) != "5aa2c70bccfe73254f13eca40476c3f88f522c6a47aea499f9d672dbc5aae8c4" {
+		tb.Fatal("YAML R4 sample identity changed")
+	}
+	return sample
+}
+
+// Keep the original owned sample's work pinned while resolving wider forests.
+func TestCompactYAMLReductionSelectionPreservesSampleWork(t *testing.T) {
+	t.Cleanup(core.SetExternalLexerOwnershipProbeForTest(true))
+	p := gotreesitter.NewParser(grammars.YamlLanguage())
+	p.SetAdmissionCandidateRoute(true)
+	source := admissionYAMLDocumentStreamSample(t)
+	// Reuse the parser after a pressured session: the next fresh parse must
+	// retain the original sample's work contract.
+	document := append([]byte("---\n"), source...)
+	document = append(document, '\n')
+	warm, err := p.Parse(bytes.Repeat(document, 4))
+	if err != nil || warm == nil || warm.RootNode() == nil {
+		t.Fatalf("document stream: %v", err)
+	}
+	warm.Release()
+	gotreesitter.ResetAdmissionCandidateCountersForTest()
+	tree, err := p.Parse(source)
+	if err != nil || tree == nil || tree.RootNode() == nil {
+		t.Fatalf("parse: %v", err)
+	}
+	defer tree.Release()
+	if routed, fallback := gotreesitter.AdmissionCandidateCounters(); routed != 1 || fallback != 0 {
+		t.Fatalf("owned sample route=%d fallback=%d", routed, fallback)
+	}
+	if runtime := tree.ParseRuntime(); runtime.NodesAllocated > 482 || tree.RootNode().HasError() || tree.RootNode().EndByte() != uint32(len(source)) {
+		t.Fatalf("owned sample work or coverage changed: %+v", runtime)
+	}
+}
+
+// Include the baseline's failed compact attempt and legacy fallback in timing.
+// The locked-C regression pins the same 8 KiB source independently.
+func BenchmarkAdmissionYAMLDocumentStreamOwned(b *testing.B) {
+	b.Cleanup(core.SetExternalLexerOwnershipProbeForTest(true))
+	document := append([]byte("---\n"), admissionYAMLDocumentStreamSample(b)...)
+	document = append(document, '\n')
+	source := bytes.Repeat(document, 4)
+	sum := sha256.Sum256(source)
+	if len(source) != 8012 || hex.EncodeToString(sum[:]) != "778d1dec01bef4da1cef26acff6b8012c9701a23af67bdb9511b419912f04400" {
+		b.Fatal("YAML EOF witness identity changed")
+	}
+	p := gotreesitter.NewParser(grammars.YamlLanguage())
+	p.SetAdmissionCandidateRoute(true)
+	parse := func() {
+		tree, err := p.Parse(source)
+		if err != nil || tree == nil || tree.RootNode() == nil {
+			b.Fatalf("parse: %v", err)
+		}
+		if tree.RootNode().HasError() || tree.RootNode().EndByte() != uint32(len(source)) {
+			b.Fatal("document stream is incomplete or erroneous")
+		}
+		tree.Release()
+	}
+	parse()
+	gotreesitter.ResetAdmissionCandidateCountersForTest()
+	b.ReportAllocs()
+	b.SetBytes(int64(len(source)))
+	b.ResetTimer()
+	for range b.N {
+		parse()
+	}
+	b.StopTimer()
+	routed, fallback := gotreesitter.AdmissionCandidateCounters()
+	if routed+fallback != uint64(b.N) {
+		b.Fatal("inconsistent document-stream route counters")
+	}
+	b.ReportMetric(float64(routed)/float64(b.N), "compact-routes/op")
+	b.ReportMetric(float64(fallback)/float64(b.N), "compact-fallbacks/op")
+}
+
 func benchmarkAdmissionR4(b *testing.B, compact bool) {
 	name := strings.TrimSpace(os.Getenv("GTS_ADMISSION_REAL_CORPUS_LANGS"))
 	if name == "" {

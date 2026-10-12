@@ -14,9 +14,8 @@ import (
 	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
 
-// Four documents reproduce the owned EOF frontier cap on 8 KiB instead of
-// requiring the 1 MiB memory probe. A future compact completion must preserve
-// the same locked-C structure; fallback is counted and reported explicitly.
+// Four documents reproduced the owned EOF frontier cap on 8 KiB. Keep compact
+// acceptance and the complete locked-C structure pinned together.
 func TestCompactYAMLDocumentStreamLockedC(t *testing.T) {
 	sample, err := os.ReadFile("../internal/benchfixtures/testdata/real/yaml")
 	if err != nil {
@@ -40,6 +39,7 @@ func TestCompactYAMLDocumentStreamLockedC(t *testing.T) {
 		{"one owned document", 1, true},
 		{"four ordinary documents", 4, false},
 		{"four owned documents", 4, true},
+		{"sixteen owned documents", 16, true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Cleanup(core.SetExternalLexerOwnershipProbeForTest(test.owned))
@@ -59,12 +59,16 @@ func TestCompactYAMLDocumentStreamLockedC(t *testing.T) {
 			defer tree.Release()
 			routed, fallback := gts.AdmissionCandidateCounters()
 			routed, fallback = routed-beforeRouted, fallback-beforeFallback
-			t.Logf("documents=%d bytes=%d sha256=%x compact=%d fallback=%d reason=%q", test.documents, len(source), sha256.Sum256(source), routed, fallback, gts.AdmissionCandidateLastFallbackReason())
+			reason := ""
+			if fallback != 0 {
+				reason = gts.AdmissionCandidateLastFallbackReason()
+			}
+			t.Logf("documents=%d bytes=%d sha256=%x compact=%d fallback=%d reason=%q", test.documents, len(source), sha256.Sum256(source), routed, fallback, reason)
 			if routed+fallback != 1 || routed > 1 || fallback > 1 {
 				t.Fatal("document-stream route counters are inconsistent")
 			}
-			if test.documents == 1 && (routed != 1 || fallback != 0) {
-				t.Fatal("the single owned document lost compact acceptance")
+			if test.owned && (routed != 1 || fallback != 0) {
+				t.Fatal("the owned document stream lost compact acceptance")
 			}
 			if tree.RootNode().HasError() || tree.RootNode().EndByte() != uint32(len(source)) {
 				t.Fatal("document stream is incomplete or erroneous")

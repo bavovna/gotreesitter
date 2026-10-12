@@ -1962,6 +1962,7 @@ func (c *Core) RunFreshSchedulerSession(fn func(SchedulerTransactionToken) error
 	if err := c.advanceDropCohortEpoch(); err != nil {
 		return err
 	}
+	c.reductionScratch.pressureSeen = false
 	frame.clearInactive()
 	frame.epoch++
 	c.nextTransaction++
@@ -1974,6 +1975,7 @@ func (c *Core) RunFreshSchedulerSession(fn func(SchedulerTransactionToken) error
 		// Historical certificate authentication is scoped to this fresh session.
 		// Clear the policy before invalidating the owner frame on every exit.
 		c.historicalCertificateAuthentication = false
+		c.reductionScratch.pressureSeen = false
 		if recovered != nil {
 			frame.clearInactive()
 			_ = c.ResetReleasingRetention()
@@ -2442,6 +2444,7 @@ func (c *Core) Reset() error {
 	c.work = Work{}
 	c.popScratch.resetLogical()
 	c.reductionScratch.finish()
+	c.reductionScratch.pressureSeen = false
 	c.historicalNodeScratch = c.historicalNodeScratch[:0]
 	c.derivationSummaryScratch.finish()
 	c.metadataConstructionAuthenticated = true
@@ -3056,6 +3059,10 @@ type reductionBoundaryOutput struct {
 // without hashing. Unusual wider reductions spill to an indexed map while the
 // slice remains the authoritative stable output order.
 type reductionOutputScratch struct {
+	selectCleanChildren bool
+	// Once a fresh session needs child selection, keep resolving eligible
+	// reconvergences through acceptance. Reset at the session boundary.
+	pressureSeen        bool
 	boundaries          []reductionBoundaryOutput
 	boundaryByKey       map[boundaryKey]int
 	batchParents        []SubtreeID
@@ -3066,6 +3073,7 @@ type reductionOutputScratch struct {
 }
 
 func (s *reductionOutputScratch) begin() {
+	s.selectCleanChildren = false
 	s.boundaries = s.boundaries[:0]
 	s.batchParents = s.batchParents[:0]
 	s.structuralPositions = s.structuralPositions[:0]
@@ -3075,6 +3083,7 @@ func (s *reductionOutputScratch) begin() {
 }
 
 func (s *reductionOutputScratch) finish() {
+	s.selectCleanChildren = false
 	s.boundaries = s.boundaries[:0]
 	s.batchParents = s.batchParents[:0]
 	s.structuralPositions = s.structuralPositions[:0]
@@ -3871,6 +3880,29 @@ func (c *Core) condenseWithOutcomeAtomic(key boundaryKey, in linkInput) (condens
 					}
 					return buildOutcome(head, condenseUpdated), err
 				default:
+					comparison, selected, err := c.compareReconvergedReductionChildren(oldLinks[incumbent], in)
+					if err != nil {
+						return condenseOutcome{}, err
+					}
+					if selected {
+						if comparison <= 0 {
+							c.recordLinkUnionDuplicateNoop()
+							if phase0AEnabled {
+								phase0AObserveCandidateDrop(c, key, in, oldID, incumbent, phase0ATransitionPrecedenceDrop)
+							}
+							return buildOutcome(Head{Node: oldID}, condenseUnchanged), nil
+						}
+						if phase0AEnabled {
+							phase0ABeginReplacement(c, key, in, oldID, incumbent)
+						}
+						head, err := c.replaceBoundaryLink(key, probe, oldID, old, oldLinks, incumbent, in)
+						if err != nil {
+							c.recordLinkUnionRejected()
+						} else {
+							c.recordLinkUnionPrecedenceReplaced()
+						}
+						return buildOutcome(head, condenseUpdated), err
+					}
 					// A precedence tie between two structurally different same-span
 					// payloads. Dynamic precedence cannot rank them, and the compact
 					// route does not own production's error-cost and structural
