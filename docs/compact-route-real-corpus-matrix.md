@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-12 (UTC).
-Latest shipped-route comparison baseline: `f569f9cc780da404e0703ff3dfe1fc9ddd5fed6f`.
+Latest ordinary-route timing baseline: `624b2a60c8f402f6c2adb24846b192a547a918ce`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -95,6 +95,48 @@ handling. Its ledger and focused C/invariant checks passed, but twenty pairs
 showed **1.213 → 1.201 ms**, an inconclusive change (p = 0.583), with unchanged
 1,696 bytes and 25 allocations. That prototype is discarded too.
 
+A second Go prototype combined owner and lineage publication under one
+capability check while preserving write order, failure-stage diagnostics and
+rollback. Core/phase-zero-A and focused root/C checks passed, all 412 ledger
+rows were byte-identical, and Go's 72-step invariant session allocated nothing
+on a no-edit reparse. Twenty pairs against `0a3bb30af0470526dd781d4a2657887ac05b011e`
+measured compact **1.679 → 1.575 ms** (p = 0.862) and legacy control
+**1.263 → 1.328 ms** (p = 0.659), with unchanged bytes and allocations.
+This is inconclusive, so the API and driver prototype are discarded.
+An initial prototype test incorrectly compared unused inline integer scratch
+slots after rollback; published membership, ownership, rank and flags were
+restored. Correcting that assertion preceded the successful gate and timing run.
+
+Fresh CPU profiles on retained commit `0a3bb30a` used the fixed R4 sources,
+one language per process, CPU 6 and a 6-second profiling benchmark. These
+attribute work and are not before/after timing evidence. Go spends 27.75% of
+sampled CPU time under reduction dispatch, 16.75% in its native reduction body,
+21.44% under materialization and 6.55% under lineage persistence. Owned YAML
+spends 18.84% under election, 14.79% under lexer requests and 13.42% under
+materialization. Cumulative shares overlap and must not be added. The next
+architectural investigations should test a proven linear reduction path for
+Go and reduce election/request work for YAML while keeping exact lexer-state
+and owner authentication. The profiles do not prove either change will win.
+
+The retained change also completed twenty shuffled pairs of the standard Go
+DFA trio against `624b2a60`, with the same Docker/CPU settings. Timing variation
+was wide; these results establish no Go speed win. Every median stays inside
+the 10% ratchet and every allocation count is unchanged:
+
+| Ordinary Go benchmark | Before | After | Direction / p | Bytes before → after | Allocations |
+| --- | ---: | ---: | --- | ---: | ---: |
+| Full DFA | 5.990 ms | 6.110 ms | +2.00% / 0.904 | 1,168 → 1,167 | 6 → 6 |
+| Single-byte edit DFA | 140.7 µs | 145.4 µs | +3.32% / 0.862 | 395 → 394.5 | 5 → 5 |
+| No-edit DFA | 4.124 ns | 4.385 ns | +6.32% / 1.000 | 0 → 0 | 0 → 0 |
+
+The ordinary YAML control also completed twenty alternating pairs against
+`624b2a60`. Legacy time is **164.7 → 163.5 µs (-0.74%, p = 0.301)**;
+candidate-attempt time is **222.6 → 227.4 µs (+2.16%, p = 0.620)**.
+Both are inconclusive and within the timing ratchet. Legacy keeps 1,440 bytes /
+16 allocations; the candidate attempt keeps 17,144 bytes / 37 allocations,
+zero compact acceptances and one fallback per parse. This validates the retained
+ordinary route separately from the discarded activation experiment.
+
 Raw overlay sources, before/after logs, benchstat summaries and gate logs are in
 `/home/draco/.local/state/gotreesitter-evidence/20261012-go-corridor-yaml-ownership`.
 The exact YAML proposal uses `yaml-diagnostic-early-overlay.json` and
@@ -180,7 +222,7 @@ only this diagnostic string; every numeric ratchet, fixture identity, route and
 other field stays pinned. The original owned YAML
 full/edit ledger is byte-identical, including **482 full-parse nodes**. A parser
 reuse regression parses the pressured stream before this sample and verifies the
-same node budget. The four approved Liquid exceptions remain the only exceptions.
+same node budget. Only the four approved Liquid exceptions applied to this earlier receipt.
 
 | Route and phase | Tokens before → after | Nodes before → after | Maximum versions before → after | Reused bytes before → after | Splices before → after |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -308,7 +350,7 @@ charged; the existing peak bounds pass in three fresh processes per witness.
 All **412 ledger rows / 206 languages** are byte-identical to baseline
 `d22b66a1ffbd5c34608f7953deb263e282602619`. The separate diagnostic-owned YAML
 ledger also matches. No counters, exemptions, allowlists, defaults or caps reset.
-The four previously approved Liquid exceptions remain the only exceptions.
+Only the four approved Liquid exceptions applied to this earlier receipt.
 
 | Route and phase | Tokens before → after | Nodes before → after | Maximum versions before → after | Reused bytes before → after | Splices before → after |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -974,7 +1016,7 @@ YAML C oracles pass. The owned-YAML before/after builds also pass their separate
 
 All 412 ordinary counter rows are byte-identical to baseline
 `7a1a14dde2a3e73370d5f031c2e17c080feaacb9`. The strict ledger passes without a
-reset; the four approved Liquid exceptions remain the only exceptions. The
+reset; only the four approved Liquid exceptions applied at that stage. The
 owned-YAML counter receipts are also byte-identical:
 
 | Route and phase | Tokens before → after | Nodes before → after | Maximum versions before → after | Reused bytes before → after | Splices before → after |
