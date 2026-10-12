@@ -45,11 +45,15 @@ per language, not a grammar-wide parity certificate.
 
 Keep singleton alternative-set membership inline and store larger sets in the
 existing exact, append-only arena. The set view narrows 16 → 12 bytes; graph
-lineage records narrow 36 → 32 bytes. Reorder the header's checkpoint beside
+lineage records narrow 36 → 32 bytes; action-output records narrow 48 → 40 bytes.
+Reorder the header's checkpoint beside
 its head to fill alignment padding: scheduler headers narrow **96 → 88 bytes**.
 Membership, sorted order, the 32-member ceiling, overflow conservatism and
 rollback remain unchanged. The out-of-order spill regression also holds an
 earlier inline snapshot alive and checks its exact membership after growth.
+CI exposed an old 48-byte action-output size assertion. The corrected 40-byte
+pin and CI's complete 335-pattern tagged-root selection pass in Docker.
+Runtime code and performance measurements remain unchanged by this correction.
 This is progress toward #1314, not completion of its 32-byte indexed-header
 requirement; optional version state still uses the existing immutable wrappers.
 

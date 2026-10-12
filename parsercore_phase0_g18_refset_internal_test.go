@@ -547,8 +547,8 @@ func TestG18RefSetSchedulerRecordSizeRatchets(t *testing.T) {
 	if got := unsafe.Sizeof(diagnosticParserCoreCanonicalGroup{}); got != 48 {
 		t.Fatalf("canonical group size=%d, want 48", got)
 	}
-	if got := unsafe.Sizeof(diagnosticParserCoreActionOutput{}); got != 48 {
-		t.Fatalf("action output size=%d, want 48", got)
+	if got := unsafe.Sizeof(diagnosticParserCoreActionOutput{}); got != 40 {
+		t.Fatalf("action output size=%d, want 40", got)
 	}
 	if got := unsafe.Sizeof(core.CondenseCandidate{}); got != 32 {
 		t.Fatalf("condense candidate size=%d, want 32", got)
