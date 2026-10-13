@@ -19,7 +19,6 @@ The **1,049,572-byte / 524-document YAML stream** accepts on compact, covers the
 The first fleet container exited with code 255 after the complete invariant/parity/census work; Docker reported no OOM. A second interruption occurred after core race checks. The remaining gates passed in a detached Docker run with exit 0, no OOM, and no timeout. Completed source-authenticated fleet work was reused, and no interrupted race check was counted as passing.
 
 Ordinary YAML routing, allowlists, and the global default remain unchanged. E-A2's header target and E-A7's throughput exit gate are still open. Raw evidence is retained at `/home/draco/.local/state/gotreesitter-evidence/20261013-snapshot-metadata`.
-<<<<<<< HEAD
 
 
 The snapshot metadata change merged after all CI passed as PR #1448, main revision `86e738c0a397acdf6d9fb6eec264cab7805118b4`. The following experiments used that same runtime source. Their receipts retain the rejected measurements without adding a header runtime change.
@@ -57,5 +56,3 @@ This runtime overlay is rejected. The next gated derivative suppresses unchanged
 Suppressing unchanged boolean writes, grouping cold-field publications, and unioning alternative sets in a local value before publishing only changed records preserves the targeted rollback/blended/owner regressions, focused root ownership/layout checks, **412 ordinary rows**, Go/YAML **72-step invariants**, and C witnesses. Twenty shuffled pairs still reject this version: compact Go **1.364→1.488 ms (+9.04%, p=.001)**, **1,696→15,344 B/op**, **25→55 allocations**; owned YAML **603.2→658.5 µs (+9.17%, p<.001)**, **12,936→about 35,817 B/op**, **111→135 allocations**. Legacy Go **1.036→1.077 ms (p=.369)** and the other Go timing controls are inconclusive.
 
 This ends the immutable append-only header prototypes. No header runtime change is retained. The measurements identify per-update cold publication and history retention as the costs to remove; the next header architecture must bind indexed cold storage to version lifetime and transaction rollback, with explicit fork ownership and unchanged memory ratchets. Source-pinned evidence is at `/home/draco/.local/state/gotreesitter-evidence/20261013-hot-header-cold-writes`.
-=======
->>>>>>> origin/main
