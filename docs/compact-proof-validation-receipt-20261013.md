@@ -16,7 +16,7 @@ Snapshot destination, reset-generation, scanner-contract, checkpoint-identity, a
 
 ## Isolated measurement
 
-Baseline: `f95c04fab71ccaadf542576a2c59e807a8cf8735`. YAML R4 sample: 1,998 bytes, SHA-256 `5aa2c70bccfe73254f13eca40476c3f88f522c6a47aea499f9d672dbc5aae8c4`.
+Baseline: `f95c04fab71ccaadf542576a2c59e807a8cf8735`, merged in #1446 as main commit `210d191b489e8e12b554f76c22b537d0d5b07389`. The Go/module source sets are byte-identical across those commits. YAML R4 sample: 1,998 bytes, SHA-256 `5aa2c70bccfe73254f13eca40476c3f88f522c6a47aea499f9d672dbc5aae8c4`.
 
 Every comparison uses `scripts/run_randomized_benchmarks.sh`, Docker with 6 GiB memory, one CPU pinned to CPU 6, `GOMAXPROCS=1`, `GOMEMLIMIT=5GiB`, Go 1.25.14, one process per explicit shuffle seed, `-count=1`, `-benchtime=750ms`, and `-benchmem`.
 
