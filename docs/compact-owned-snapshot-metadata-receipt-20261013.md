@@ -2,7 +2,7 @@
 
 Owned lexer snapshots now share immutable scanner-contract and checkpoint-identity metadata. Each cursor, private checkpoint copy, Language binding, and Core reset generation remains independently owned. A changed contract replaces the frozen metadata holder and never changes previously published snapshots. Destination authentication still checks the current scanner and grammar before publication and restoration. The memory budget conservatively charges both the retained scheduler holder and one holder per snapshot.
 
-The experiment uses baseline `562944a85bdf77d30207c3f91a404fe514ac41b9`; its Go/module sources equal the source of PR #1447, including main sync `f85b39fb4780b39c6d34fc033165dfdf7192905c`. Six overlay source hashes are pinned in `candidate-source.json`. Each comparison used the repository randomized script, alternating baseline/candidate order, one process per seed, GOMAXPROCS=1, 750ms, count=1 and benchmem, in a 6GiB single-CPU container pinned to CPU 6.
+The experiment uses baseline `562944a85bdf77d30207c3f91a404fe514ac41b9`; its Go/module sources equal the source of PR #1447, including main sync `f85b39fb4780b39c6d34fc033165dfdf7192905c`. Six overlay source hashes are pinned in `candidate-source.json`. PR #1447 merged as `7aec3727aac81ea7337da5116f9db6349e4315eb`; this branch then merged that main revision without changing the measured runtime. The frozen holder comment was clarified to state that pointer/interface members must themselves refer to immutable data; its implementation is unchanged. Each comparison used the repository randomized script, alternating baseline/candidate order, one process per seed, GOMAXPROCS=1, 750ms, count=1 and benchmem, in a 6GiB single-CPU container pinned to CPU 6.
 
 ## Measured memory improvement
 
