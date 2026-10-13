@@ -19,3 +19,10 @@ The **1,049,572-byte / 524-document YAML stream** accepts on compact, covers the
 The first fleet container exited with code 255 after the complete invariant/parity/census work; Docker reported no OOM. A second interruption occurred after core race checks. The remaining gates passed in a detached Docker run with exit 0, no OOM, and no timeout. Completed source-authenticated fleet work was reused, and no interrupted race check was counted as passing.
 
 Ordinary YAML routing, allowlists, and the global default remain unchanged. E-A2's header target and E-A7's throughput exit gate are still open. Raw evidence is retained at `/home/draco/.local/state/gotreesitter-evidence/20261013-snapshot-metadata`.
+
+
+## Discarded graph shape predicate
+
+A separate baseline-only overlay placed the valid ordinary-link predicate in an inline wrapper and retained the existing diagnostic validator for recovery and malformed records. The expanded equivalence test covered every flag byte, every higher flag bit, and representative payload/score/order extrema, preserving accept/reject results and exact error messages. Core tests, Go/YAML 72-step invariants, C witnesses, and all 412 ordinary work/reuse rows passed.
+
+Twenty shuffled pairs showed no measurable win: compact Go **1.434→1.531 ms, p=.989**, legacy control **1.110→1.267 ms, p=.341**, and owned YAML **495.1→488.0 µs, p=.678**. Compact bytes/allocations remained **1,696 / 25** for Go and **14,376 / 111** for YAML; all Go benchmark allocation counts stayed unchanged. No throughput improvement is established, so the runtime overlay is discarded. Evidence remains at `/home/draco/.local/state/gotreesitter-evidence/20261013-link-shape-fastpath`. The next architectural target is E-A2's at-most-32-byte dispatch header with rollback-safe indexed cold state.
