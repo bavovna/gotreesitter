@@ -46,3 +46,7 @@ The clean layout/API guards pass: **756 root Go files**, **12 API tag sets**, **
 Evidence is pinned under `/home/draco/.local/state/gotreesitter-evidence/20261013-fused-checkpoint-validation`. `candidate-source.json` records all 3,473 baseline Go/module file hashes and the three candidate engine-file hashes. Raw before/after benchmark files, benchstat reports, strict census results, and Docker metadata preserve the measurements and limits.
 
 The Go copy-attribution audit finds the largest `runtime.duffcopy` callers in materialization views and election, followed by canonicalization and DFA snapshots. Dispatch headers remain 88 bytes; the E-A2 target of at most 32 bytes is still open. Existing point caches, reduction-plan caches, small alternative sets, and owned-snapshot transfer are already implemented.
+
+## Discarded Go election experiment
+
+A separate overlay borrowed headers during election instead of copying them for state lookup. Full diagnostic receipts kept their existing copy. Focused root tests, Go/YAML edit sessions and C witnesses, and all 412 ordinary counters passed. Twenty shuffled alternating pairs gave compact Go **1.365 → 1.352 ms (p=.355)** and legacy control **1.031 → 1.028 ms (p=1.000)**. Bytes and allocations were unchanged. The runtime change is discarded; it establishes no throughput win and does not complete E-A2. Raw evidence lives at `/home/draco/.local/state/gotreesitter-evidence/20261013-go-election-borrow`.
