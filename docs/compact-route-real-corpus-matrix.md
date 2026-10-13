@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-12 (UTC).
-Latest ordinary-route timing baseline: `624b2a60c8f402f6c2adb24846b192a547a918ce`.
+Current evidence date: 2026-10-13 (UTC).
+Latest ordinary Go/YAML timing baseline: `624b2a60c8f402f6c2adb24846b192a547a918ce`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -40,6 +40,25 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### TSX conflict priority and runtime follow-up
+
+The exact TSX artifact now preserves C's conflict-action source-version priority,
+fixing [issue #1443](https://github.com/odvcencio/gotreesitter/issues/1443) when
+appending a typed function would change an earlier generic call into a binary
+expression. All six fresh/append regressions pass, and a surrounding-context
+probe improves 124/128 → 128/128 C-exact checks without changing any node,
+token, or maximum-stack counter. All 412 ordinary ledger rows remain
+byte-identical; TSX's 72-step session, container races, C fixtures and real-file
+oracle pass. Shared memory gates pass, and L0/R6 snapshots stay unchanged.
+
+Twenty pairs against `b9705970a208f0fc83ee676dc667669d715e3776` measure legacy
+528.6 → 539.8 µs (p = 0.583) and compact 631.5 → 656.2 µs (p = 0.221), with
+unchanged bytes and allocations. Both increases are inconclusive and below the
+10% ratchet; this establishes no speed win. Go's smaller native publication
+frame and YAML's snapshot/checkpoint reuse experiments were also inconclusive
+and are discarded. The [scoped receipt](runtime-tsx-conflict-order-20261012.md)
+records counters, timings, source identity, limits and raw evidence.
 
 ### Owned YAML early selection: approved measured trade
 
