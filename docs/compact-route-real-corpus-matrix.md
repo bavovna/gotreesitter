@@ -100,6 +100,22 @@ ten allocations, but the integration remains outside the runtime and advances
 neither ordinary YAML ownership nor graduation. Full C/fleet/RSS and lifecycle
 qualification is withheld after the failed Go screen.
 
+### Reduction copying and link validation: not promoted
+
+Borrowing a reduction path preserves all 412 work/reuse rows and focused Go,
+YAML and locked-C checks, but its profile contribution is too small to prioritize.
+An ordinary-link validation split then reduces compiler inline cost 101 → 74;
+twenty paired samples still show no supported Go or owned-YAML throughput gain.
+The Go edit control increases 0.39% (p=.024); all allocation medians stay exact.
+The [screen receipt](compact-link-validation-screen-receipt-20261014.md) keeps
+these rejected trials separate from #1485's qualified reduction win. No runtime,
+route or graduation change follows. A public `Parser.Parse` profile points back
+to generic dispatch and reduction application; its overlapping CPU shares are
+attribution only. The follow-up census finds zero no-lookahead elections on all
+four Go fixtures. Large Go already runs 91.07% of single-header passes through
+C4, while 41.58% of all passes have multiple headers. That ranks multiple-version
+bookkeeping above a no-lookahead corridor extension for these witnesses.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
