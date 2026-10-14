@@ -82,7 +82,11 @@ ordinary checkout passes **L0 756/756 root files / 12 tag sets**, **R6 454/101**
 104-byte Node layout, focused memory checks, and the promoted ordinary
 cap/cancellation tests. The three measured runtime files match the checkout
 byte-for-byte; test promotion removes only its former build constraint.
-All 3,477 baseline Go/module inputs remain verified. Earlier source/pair pins
+All 3,477 baseline Go/module inputs remain verified.
+CI also caught the moved facade's stale lifecycle read-site line (16→5). The
+registry pointer is corrected without changing proof policy; the full lifecycle
+suite passes with strict historical proof enabled in a non-shallow Git checkout.
+An initial container ownership/preflight failure is excluded from that proof. Earlier source/pair pins
 and final counter/completion comparisons remain intact.
 
 | Native safety control | Before | After | Direction | p |
