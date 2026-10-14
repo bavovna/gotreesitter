@@ -383,3 +383,18 @@ The first instrumentation hooked a traversal and condensation seam that the curr
 ## Selected supertype correctness prerequisite — 2026-10-14
 
 Buckley commit `78f24bcf06e71f758d0e7bf605a1669c50510a2d` and [PR #1484](https://github.com/odvcencio/gotreesitter/pull/1484) preserve hidden supertype masks through both selected-store builders and queries without increasing the 36-byte record. The new Go query witness fails on the baseline and matches independently emitted locked-C captures after the fix. Canonical/native masks, counters, selected backing, races, invariants, budgets and main-based layout/guard checks pass. Twenty shuffled pairs show no supported throughput change. The directional selected-query timing increase is recorded; ordinary Go/YAML and all other controls remain inconclusive. The initially interfered query timing set is excluded and a complete isolated repeat passes. Bucket this as correctness, not performance or graduation. The focused [receipt](https://github.com/odvcencio/gotreesitter/blob/codex/selected-supertype-projection/docs/compact-selected-supertype-projection-receipt-20261014.md) records scope and limits.
+
+## Qualified one-pass output projection
+
+Buckley commits `24c4f142` and `4c124dfa` update the existing output PR #1484
+with exact root framing and the one-pass selected-store promotion. The latter
+measures 2.08% / 3.06% faster selected Go parse/traversal and 32.85% / 33.68%
+less retained backing on the pinned 20 KiB / 235 KiB fixtures. Owned YAML
+selected projection is 0.83% faster with 103→101 allocations and 20.79% less
+backing. Final full invariants/C fixtures, exact counters/digests/fields/masks,
+races, caps, ordinary promoted regressions and L0/R6/layout pass. Native
+controls are inconclusive with identical byte/allocation medians. These wins
+are not native-parser throughput or ordinary YAML admission. They do not
+enable a route or graduation. The separate root-framing control regressions
+remain in its receipt. See the [one-pass qualification](https://github.com/odvcencio/gotreesitter/blob/codex/selected-supertype-projection/docs/compact-selected-onepass-receipt-20261014.md)
+and [root framing](https://github.com/odvcencio/gotreesitter/blob/codex/selected-supertype-projection/docs/compact-selected-root-framing-receipt-20261014.md).

@@ -41,6 +41,24 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### One-pass selected projection: qualified output win
+
+Buckley commits `24c4f142` and `4c124dfa` in
+[output PR #1484](https://github.com/odvcencio/gotreesitter/pull/1484) fix
+synthetic/padded root metadata and promote the qualified one-pass folder.
+Twenty paired samples measure selected Go **−2.08% / −3.06%** at 20 / 235 KiB,
+with **−32.85% / −33.68% retained selected backing**. Owned YAML selected
+projection is **−0.83%**, with 103→101 allocations and −20.79% store backing.
+All 412 rows, reported work, node counts and pinned digests stay exact; 206
+invariants, 618 C fixtures, races, caps, layout and final L0/R6 checks pass.
+Native Go/YAML controls remain inconclusive and allocation medians unchanged.
+The [one-pass receipt](https://github.com/odvcencio/gotreesitter/blob/codex/selected-supertype-projection/docs/compact-selected-onepass-receipt-20261014.md)
+and [root-framing receipt](https://github.com/odvcencio/gotreesitter/blob/codex/selected-supertype-projection/docs/compact-selected-root-framing-receipt-20261014.md)
+keep independent timings, every direction and qualification limits. Root
+framing's separate +4.49% full-DFA control direction remains recorded.
+This promotes an output builder; ordinary YAML ownership, native-parser
+throughput, the compact default/allowlist and graduation remain open.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
