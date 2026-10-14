@@ -352,3 +352,16 @@ Compact Go allocation medians stay **25/204/3,091**; small Go bytes **1,696**, Y
 ## Release hold fulfilled
 
 v0.56.0 was verified published at **2026-10-14T02:44:08Z**, satisfying the owner's merge-hold condition. Earlier sections record the hold as it applied while their evidence was gathered; they do not impose a new hold. PR #1452 subsequently merged, freeing the core lane. Buckley merge commit `a32d87b6d23b090fef2559380b44bfb2c86a800e` updates dependency PR #1480 with current main. Its release-integration gates pass: storage/memory units and races, Scala fuzz corpus, Go/YAML/Scala/Haskell invariants, 412 ledger rows and locked-C fuzz-route witnesses. GitHub's remaining CI and approval requirements still apply; repository auto-merge is disabled. The qualified runtime overlays and incomplete Go/ordinary-YAML graduation work remain separate from this receipt PR.
+
+## Accepted Go materialization construction census
+
+A read-only diagnostic traverses the accepted compact syntax after ordinary canonical parsing, verifies each source identity and pinned deep public-tree digest, and counts the owning arena's primary and overflow allocations exactly once. The allocation total is independently checked against `arena.used`. It changes no materialization or dispatch behavior. The first allocation-walk fixture incorrectly treated total usage as primary-slab usage and stopped on the large fixture; that run is excluded. The corrected isolated Docker test passes both fixtures and exits zero without OOM/timeout against release-integrated baseline `a32d87b6d23b090fef2559380b44bfb2c86a800e`.
+
+| Canonical Go source | Input bytes | Accepted terminals | Hidden terminals | Accepted parents | Hidden parents | Allocated nodes | Allocated hidden nodes with children |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `query_compile` | 20,168 | 5,125 | 475 | 6,079 | 3,226 | 11,326 | 2,645 (23.35%) |
+| `grammargen_lr` | 235,626 | 49,911 | 4,920 | 58,304 | 31,933 | 107,964 | 26,373 (24.43%) |
+
+The arenas report **5,125/5,498** leaf/parent constructions for `query_compile` and **49,911/52,744** for `grammargen_lr`. Visible aliases promote **21/406** otherwise hidden terminals. Those facts rule out dropping hidden leaves based on visibility alone. Hidden-parent counts also exceed actual surviving hidden allocations because existing unary collapse already elides some wrappers; the allocated-node census supplies the relevant construction bound.
+
+Bucket this as **architectural attribution**, not a throughput or memory win. Direct projection of hidden reductions is the next larger target. It must preserve padding, inherited/direct fields, alias retention, hidden-supertype provenance, fragility and parse-state replay proofs. Current public-node child helpers and pending-parent flag masks are not a drop-in replacement for that contract. Simply enabling eager construction remains unsuitable: its existing implementation writes both compact and public records and documents a Go slowdown. No routing, allowlist, graduation or representation change is claimed. Evidence: `/home/draco/.local/state/gotreesitter-evidence/20261014-materialization-projection-census`.
