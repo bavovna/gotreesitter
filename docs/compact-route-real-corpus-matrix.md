@@ -122,6 +122,18 @@ multiple same-action reduction cells. A conservative adjacent-pass census finds
 cells). This identifies a possible authenticated classification-reuse seam;
 no cache, stale-boundary reuse or speed claim is introduced.
 
+### Cohort lineage publication: not promoted
+
+Batching ordered owner and provenance publication preserves all 412 work/reuse
+rows and focused Go/YAML/C checks. Twenty pairs measure large public Go
+−1.18% / −1.00% in two independent variants; neither gain is combined with #1485.
+The full-DFA control regresses +3.95% / +4.38%, and a separate twenty-pair
+control-only run confirms +3.68%. The [scoped receipt](compact-cohort-lineage-screen-receipt-20261014.md)
+records all directions, the first version's YAML regression, exact pins and
+unrun qualification. This trade stays outside the runtime. The owner-only
+precursor has negligible coverage and its partial timing is excluded. No
+ownership rule, route, allowlist or graduation status changes.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
