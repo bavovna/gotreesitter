@@ -59,6 +59,21 @@ framing's separate +4.49% full-DFA control direction remains recorded.
 This promotes an output builder; ordinary YAML ownership, native-parser
 throughput, the compact default/allowlist and graduation remain open.
 
+### Native selected projection: promising construction reduction, unqualified
+
+A native-publication prototype removes 33.57% / 33.53% of Go node
+constructions and matches six clean Go/YAML trees on public structure, replay
+states and fragility. Its two 20-pair screens still fail the large-Go allocation
+ratchet (+28.05%, then +13.45%). The broader comparison also catches omitted
+lexer-read receipts. The corrected transfer matches all checked metadata on
+six fixtures; its third 20-pair screen measures large Go −2.40% (p=.001) but
+still fails the allocation ratchet at +11.33%. The prototype stays outside the
+runtime. The
+[architectural screen receipt](compact-native-projection-screen-receipt-20261014.md)
+records these limits, every measured direction and the optional-plane layout
+work. These are diagnostic screens, not qualified native-parser speed wins.
+Ordinary YAML ownership and compact graduation remain open.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
