@@ -3200,7 +3200,19 @@ func (c *Core) reductionParentForPath(
 		}
 		materializationPlan = &adjusted
 	}
-	fields, aliases, err := c.remapReductionPlan(path.children, materializationPlan, scratch)
+	var fields []FieldMapEntry
+	var aliases []Symbol
+	var err error
+	if !path.recoveryDiscontinuity && len(path.children) == int(materializationPlan.childCount) &&
+		(len(materializationPlan.aliases) == 0 || len(materializationPlan.aliases) == len(path.children)) {
+		// popPaths authenticates each child and emits exactly ChildCount
+		// non-extra children. Equality of those counts proves there are no
+		// interstitial extras, so the production's positions are unchanged.
+		// The immutable plan was validated for this exact production/count.
+		fields, aliases = materializationPlan.fields, materializationPlan.aliases
+	} else {
+		fields, aliases, err = c.remapReductionPlan(path.children, materializationPlan, scratch)
+	}
 	if err != nil {
 		return 0, 0, ForkOrder{}, err
 	}
