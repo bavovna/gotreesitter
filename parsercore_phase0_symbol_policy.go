@@ -87,6 +87,7 @@ func buildParserCoreSelectedStorePolicy(parser *Parser) (core.SelectedStorePolic
 		retainedAliases = append(retainedAliases, core.SelectedAliasChildPair{Alias: core.Symbol(pair.parent), Child: core.Symbol(pair.child)})
 	}
 	policy.SetRetainedAliasChildren(retainedAliases)
+	policy.ProjectSyntheticSiblingRoot = true
 	syms, _ := goCompatibilitySymbolsForLanguage(lang)
 	containers := make([]bool, width)
 	for _, symbol := range syms.semiContainers[:syms.semiContainerLen] {

@@ -282,10 +282,13 @@ func (c *Core) buildSelectedStoreOnePass(roots []SubtreeID, policy SelectedStore
 	if err := rightSizeSelectedOnePassStore(store, len(store.records), cap(store.children), c.limits.MaxSelectedBytes, poll); err != nil {
 		return nil, err
 	}
-	if err := store.finishRoots(rootIDs, policy, c.limits.MaxSelectedBytes, poll); err != nil {
+	if err := store.finishRoots(rootIDs, policy, precedenceDeltas, c.limits.MaxSelectedBytes, poll); err != nil {
 		return nil, err
 	}
 	if err := store.normalizeGoCompatibility(policy, source, poll); err != nil {
+		return nil, err
+	}
+	if err := store.normalizeResultRootSourceStart(policy, source); err != nil {
 		return nil, err
 	}
 	if err := store.recomputePrecedence(precedenceDeltas); err != nil {

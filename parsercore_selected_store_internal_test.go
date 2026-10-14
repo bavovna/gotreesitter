@@ -3,10 +3,13 @@
 package gotreesitter
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"hash"
+	"os"
 	"testing"
 
 	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
@@ -204,4 +207,114 @@ func (d *selectedStoreDigest) add32(value uint32) {
 	var buf [4]byte
 	binary.LittleEndian.PutUint32(buf[:], value)
 	_, _ = d.h.Write(buf[:])
+}
+
+var yamlSelectedProjectionLanguageForTest *Language
+
+func SetYAMLSelectedProjectionLanguageForTest(lang *Language) {
+	yamlSelectedProjectionLanguageForTest = lang
+}
+func TestOwnedYAMLSelectedProjectionAdmission(t *testing.T) {
+	t.Cleanup(core.SetExternalLexerOwnershipProbeForTest(true))
+	lang := yamlSelectedProjectionLanguageForTest
+	if lang == nil {
+		t.Fatal("YAML loader absent")
+	}
+	sample, err := os.ReadFile("internal/benchfixtures/testdata/real/yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(sample)
+	if len(sample) != 1998 || hex.EncodeToString(sum[:]) != "5aa2c70bccfe73254f13eca40476c3f88f522c6a47aea499f9d672dbc5aae8c4" {
+		t.Fatal("sample identity drift")
+	}
+	document := append([]byte("---\n"), sample...)
+	document = append(document, '\n')
+	for _, fixture := range []struct {
+		name   string
+		source []byte
+	}{{"r4", sample}, {"r4_leading_padding", append([]byte("  "), sample...)}, {"r4_leading_newline", append([]byte("\n  "), sample...)}, {"eof_8k", bytes.Repeat(document, 4)}} {
+		t.Run(fixture.name, func(t *testing.T) {
+			parser := NewParser(lang)
+			runner, err := newAdmissionCandidateRunner(parser)
+			if err != nil {
+				t.Fatal(err)
+			}
+			scheduler, tokens, err := runner.executeSchedulerOpen(fixture.source, runner.compact, true)
+			if tokens != nil {
+				defer tokens.Close()
+			}
+			if err != nil {
+				t.Fatalf("owned acceptance: %v", err)
+			}
+			for _, id := range scheduler.acceptedPayloads {
+				view, e := runner.compact.MaterializationView(id)
+				if e != nil {
+					t.Fatal(e)
+				}
+				t.Logf("YAML_RAW_ROOT fixture=%s id=%d symbol=%d production=%d extra=%v children=%d", fixture.name, id, view.Symbol, view.ProductionID, view.Extra, len(view.Children))
+			}
+			work := runner.compact.Work()
+			store, projectionErr := runner.compact.BuildAuthenticatedSelectedStore(scheduler.acceptedPayloads, fixture.source, func() error { return nil })
+			if projectionErr != nil {
+				t.Fatalf("YAML_SELECTED_PROJECTION fixture=%s bytes=%d declined=%q work=%+v", fixture.name, len(fixture.source), projectionErr, work)
+			}
+			defer store.Release()
+			tree, err := runner.materializeSelection(fixture.source, runner.compact, scheduler)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer tree.Release()
+			requireDiagnosticParserCoreSelectedStoreMatchesTree(t, store, tree.root, lang)
+			if runner.compact.Work() != work {
+				t.Fatal("projection changed committed work")
+			}
+			t.Logf("YAML_SELECTED_PROJECTION fixture=%s bytes=%d nodes=%d retained=%d admitted=true", fixture.name, len(fixture.source), store.NodeCount(), store.RetainedBytes())
+		})
+	}
+}
+
+func BenchmarkOwnedYAMLSelectedProjectionPublication(b *testing.B) {
+	b.Cleanup(core.SetExternalLexerOwnershipProbeForTest(true))
+	lang := yamlSelectedProjectionLanguageForTest
+	if lang == nil {
+		b.Fatal("YAML loader absent")
+	}
+	source, err := os.ReadFile("internal/benchfixtures/testdata/real/yaml")
+	if err != nil {
+		b.Fatal(err)
+	}
+	if len(source) != 1998 {
+		b.Fatal("YAML sample size drift")
+	}
+	runner, err := newAdmissionCandidateRunner(NewParser(lang))
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.SetBytes(int64(len(source)))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		selected, tokens, err := runner.executeSchedulerOpen(source, runner.compact, true)
+		if err != nil {
+			if tokens != nil {
+				tokens.Close()
+			}
+			b.Fatal(err)
+		}
+		store, err := runner.compact.BuildAuthenticatedSelectedStore(selected.acceptedPayloads, source, func() error { return nil })
+		if err != nil {
+			if tokens != nil {
+				tokens.Close()
+			}
+			b.Fatal(err)
+		}
+		if store.NodeCount() != 231 {
+			b.Fatalf("selected YAML node count=%d", store.NodeCount())
+		}
+		store.Release()
+		if tokens != nil {
+			tokens.Close()
+		}
+	}
 }
