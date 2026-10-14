@@ -88,6 +88,18 @@ race/lifecycle, borrowed-tree and publication qualification remain open. This
 prototype stays outside the runtime and supplies no graduation or ordinary
 YAML ownership claim.
 
+### Native projection public entrypoint: unqualified integration
+
+The [public-entrypoint receipt](compact-native-entrypoint-receipt-20261014.md)
+supersedes any inference that the direct-replay component timing is a runtime
+win. All four public Go/YAML timing directions are inconclusive across separate
+20-pair screens; large-Go bytes rise +10.43%, failing the ratchet. The
+construction reductions remain, public shape and error/coverage checks pass,
+and a forced live-working-set budget declines correctly. Owned YAML R4 saves
+ten allocations, but the integration remains outside the runtime and advances
+neither ordinary YAML ownership nor graduation. Full C/fleet/RSS and lifecycle
+qualification is withheld after the failed Go screen.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
