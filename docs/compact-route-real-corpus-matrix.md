@@ -74,6 +74,20 @@ records these limits, every measured direction and the optional-plane layout
 work. These are diagnostic screens, not qualified native-parser speed wins.
 Ordinary YAML ownership and compact graduation remain open.
 
+### Direct replay into native projection: component screen
+
+The [direct-replay receipt](compact-native-direct-replay-receipt-20261014.md)
+records exact metadata on seventeen accepted witnesses and a six-step edit
+session with unchanged reuse and zero no-edit allocations. Separate 20-pair
+screens measure large Go −2.49% (p=.043), owned YAML R4 −3.28% (p=.002), and
+the owned 8 KiB witness −1.22% (p=.030). Smaller Go timing is inconclusive.
+Large-Go bytes rise +9.60%, narrowly clearing the earlier allocation failure;
+YAML bytes rise +1.23% / +2.09%, and the EOF witness adds two allocations.
+The driver omits ordinary-entrypoint acceptance hooks. Full memory, C/fleet,
+race/lifecycle, borrowed-tree and publication qualification remain open. This
+prototype stays outside the runtime and supplies no graduation or ordinary
+YAML ownership claim.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
