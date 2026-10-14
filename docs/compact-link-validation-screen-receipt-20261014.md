@@ -108,6 +108,33 @@ its timings are not comparable. Core work, pass/election counts, public tree
 structure and reuse eligibility match between the two runs. No scheduling or
 ownership rule is changed. The census exits zero without OOM or timeout.
 
+A second read-only census accounts for every multiple-header pass and preserves
+the full scheduler work record, core work, public tree and reuse eligibility.
+On large Go, 18,402 passes have only shift cells; 3,166 have one reduction cell,
+but only 871 of those have every sibling already shifted. Only 208 passes have
+multiple reduction cells with the same action. These counts do not justify a
+general same-action reduction batch or a broad single-runnable-head shortcut.
+
+A final census counts repeated clean classifications between immediately
+adjacent generic passes. It requires the same election, frontier width and
+head ID, with no owned lexer, recovery, version state, relexed symbol or selected
+conflict policy, and only ordinary shift/reduce/extra-shift cells:
+
+| Go fixture | Classified cells in wide passes | Eligible clean cells | Repeated unchanged-head cells |
+| --- | ---: | ---: | ---: |
+| `rewrite` | 1,610 | 1,339 | 291 |
+| `query_compile` | 7,900 | 6,797 | 1,652 |
+| `language` | 9,669 | 6,236 | 1,562 |
+| `grammargen_lr` | 88,853 | 77,303 | 19,917 |
+
+Those 19,917 cells are **22.42% of classified large-Go wide-frontier cells**.
+They identify a possible reuse seam for immutable table classification, not a
+speed estimate or authority to retain a stale boundary. Any cache still needs
+exact table/session/election identity, fresh ownership authentication, retained
+lexer-read dependencies and correct invalidation when the frontier changes.
+No classification is skipped in this census. All four trees and complete work
+records remain equal, and both census Docker runs exit zero.
+
 Evidence directories under `/home/draco/.local/state/gotreesitter-evidence/`:
 
 - `20261014-borrowed-reduction-path`: pinned overlay, corrected signature,
@@ -117,6 +144,9 @@ Evidence directories under `/home/draco/.local/state/gotreesitter-evidence/`:
   the public-entrypoint CPU profile.
 - `20261014-corridor-no-lookahead-census`: pinned observation source and exact
   per-fixture work/pass mix and tree-equivalence checks.
+- `20261014-wide-frontier-census`: complete per-pass shape buckets.
+- `20261014-stable-sibling-classification-census`: conservative unchanged-head
+  classification counts, full work/tree checks and pinned observation sources.
 
 The runtime patches stay external. Ordinary YAML still needs its ownership
 proof, the Go throughput gap remains open, and no merge occurs in this bucket.

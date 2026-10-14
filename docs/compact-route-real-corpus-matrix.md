@@ -115,6 +115,12 @@ attribution only. The follow-up census finds zero no-lookahead elections on all
 four Go fixtures. Large Go already runs 91.07% of single-header passes through
 C4, while 41.58% of all passes have multiple headers. That ranks multiple-version
 bookkeeping above a no-lookahead corridor extension for these witnesses.
+The complete wide-frontier census also limits simple shortcuts: only 871 large-Go
+passes reduce one runnable cell with every sibling shifted, and only 208 have
+multiple same-action reduction cells. A conservative adjacent-pass census finds
+19,917 repeated clean head classifications (22.42% of wide-frontier classified
+cells). This identifies a possible authenticated classification-reuse seam;
+no cache, stale-boundary reuse or speed claim is introduced.
 
 ### Reduction replay source cache: discarded
 
