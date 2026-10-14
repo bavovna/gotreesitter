@@ -107,7 +107,7 @@ func requireDiagnosticParserCoreSelectedStoreMatchesTree(t testing.TB, store *co
 			record.Named() != current.node.IsNamed() || record.Extra() != current.node.IsExtra() || record.External() != current.node.hasFlag(nodeFlagExternalScannerToken) ||
 			record.Terminal() != terminal || record.Missing() != current.node.IsMissing() || record.HasError() != current.node.HasError() ||
 			int(record.ChildCount) != current.node.ChildCount() || FieldID(current.field) != treeField ||
-			record.ProductionID != current.node.productionID || record.DynamicPrecedence != current.node.dynamicPrecedence {
+			record.ProductionID != current.node.productionID || record.DynamicPrecedence != current.node.dynamicPrecedence || record.SupertypeMask != current.node.supertypeMask() {
 			t.Fatalf("selected store metadata mismatch visit=%d store=%+v tree={sym:%d span:%d..%d named:%t extra:%t external:%t terminal:%t missing:%t has_error:%t children:%d field:%d production:%d precedence:%d type:%s}", visited, record, current.node.symbol, current.node.startByte, current.node.endByte, current.node.IsNamed(), current.node.IsExtra(), current.node.hasFlag(nodeFlagExternalScannerToken), terminal, current.node.IsMissing(), current.node.HasError(), current.node.ChildCount(), treeField, current.node.productionID, current.node.dynamicPrecedence, current.node.Type(lang))
 		}
 		for index := int(record.ChildCount) - 1; index >= 0; index-- {

@@ -160,6 +160,9 @@ func (c *Core) buildSelectedStoreOnePass(roots []SubtreeID, policy SelectedStore
 				child := &store.records[childID-1]
 				rule := policy.unary(record.symbol, child.Symbol)
 				if !child.Extra() && (rule == SelectedUnaryPass || rule == SelectedUnaryRenameLeaf && child.ChildCount == 0) {
+					if rule == SelectedUnaryPass && record.symbol != child.Symbol {
+						child.SupertypeMask |= policy.supertypeMask(record.symbol)
+					}
 					if hasError {
 						child.flags |= selectedNodeFlagHasError
 					}
@@ -198,6 +201,13 @@ func (c *Core) buildSelectedStoreOnePass(roots []SubtreeID, policy SelectedStore
 				logical[logicalStart] = childID
 			}
 
+			if !folded && !meta.Visible && !record.extra {
+				if mask := policy.supertypeMask(record.symbol); mask != 0 {
+					for _, id := range logical[logicalStart:] {
+						store.records[id-1].SupertypeMask |= mask
+					}
+				}
+			}
 			if !folded && (meta.Visible || record.extra) {
 				childCount := len(logical) - logicalStart
 				if childCount > math.MaxUint16 || uint64(len(store.children))+uint64(childCount) > math.MaxUint32 || uint64(len(store.records)) >= math.MaxUint32 {

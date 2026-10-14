@@ -39,6 +39,7 @@ type SelectedStorePolicy struct {
 	Symbols               []SelectedSymbolPolicy
 	Unary                 []SelectedUnaryRule
 	RetainedAliasChildren []SelectedAliasChildPair
+	SupertypeMasks        []uint32
 	ExpectedRoot          Symbol
 	Semicolon             Symbol
 	SemicolonNUL          Symbol
@@ -132,6 +133,14 @@ func (p SelectedStorePolicy) validate() error {
 			return errors.New("parser-core phase zero: selected-store retained-alias policy is invalid")
 		}
 	}
+	if len(p.SupertypeMasks) != 0 && len(p.SupertypeMasks) != width {
+		return errors.New("parser-core phase zero: selected-store supertype policy width drifted")
+	}
+	for _, mask := range p.SupertypeMasks {
+		if mask&(mask-1) != 0 {
+			return errors.New("parser-core phase zero: selected-store supertype policy is not a single bit")
+		}
+	}
 	compatWidth := len(p.SemicolonContainers)
 	if compatWidth == 0 {
 		if len(p.Cases) != 0 || len(p.StatementLists) != 0 {
@@ -168,10 +177,11 @@ type SelectedNodeRecord struct {
 	FirstChild        uint32
 	StartByte         uint32
 	EndByte           uint32
+	DynamicPrecedence int32
+	SupertypeMask     uint32
 	Symbol            Symbol
 	Field             FieldID
 	ProductionID      uint16
-	DynamicPrecedence int32
 	ChildCount        uint16
 	ChildIndex        uint16
 	flags             uint8
@@ -569,6 +579,9 @@ func (c *Core) buildSelectedStoreStaged(roots []SubtreeID, policy SelectedStoreP
 			child := &store.records[childID-1]
 			rule := policy.unary(record.symbol, child.Symbol)
 			if !child.Extra() && (rule == SelectedUnaryPass || rule == SelectedUnaryRenameLeaf && child.ChildCount == 0) {
+				if rule == SelectedUnaryPass && record.symbol != child.Symbol {
+					child.SupertypeMask |= policy.supertypeMask(record.symbol)
+				}
 				if hasError {
 					child.flags |= selectedNodeFlagHasError
 				}
@@ -602,6 +615,11 @@ func (c *Core) buildSelectedStoreStaged(roots []SubtreeID, policy SelectedStoreP
 		}
 
 		if !meta.Visible && !record.extra {
+			if mask := policy.supertypeMask(record.symbol); mask != 0 {
+				for _, id := range logical {
+					store.records[id-1].SupertypeMask |= mask
+				}
+			}
 			resultHasError[index] = hasError
 			continue
 		}
