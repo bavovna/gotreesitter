@@ -1,6 +1,6 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-13 (UTC).
+Current evidence date: 2026-10-14 (UTC).
 Latest ordinary Go/YAML timing baseline: `624b2a60c8f402f6c2adb24846b192a547a918ce`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
@@ -40,6 +40,18 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Reduction replay source cache: discarded
+
+Twenty pairs establish no Go or owned-YAML throughput gain from capturing
+parent GOTO states. With replay enabled, 235 KiB Go regresses 0.87% (p=.035).
+All 412 work/reuse rows and the existing native-state differential stay exact;
+allocation counts are unchanged, while active contexts add 8 B/op. The
+[scoped receipt](compact-reduction-replay-source-cache-receipt-20261014.md)
+records every direction, final source identity, qualified witnesses and
+excluded attempts. The ten-file runtime prototype stays outside the repo.
+The independent reduction win in #1485 and publication-construction census
+remain separate buckets; this rejected cache advances no graduation claim.
 
 ### TSX conflict priority and runtime follow-up
 
