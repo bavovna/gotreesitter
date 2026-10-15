@@ -651,6 +651,37 @@ and graduation remain open, with routing and allowlists unchanged. No merge
 to main is performed. Evidence is local
 `gotreesitter-evidence/20261015-callback-binding-guard`.
 
+### Link-reference reduction scratch: no parser throughput gain
+
+A prototype on `0cb7017e6` replaces copied adjacency records with immutable
+`LinkID` frames and parallel reverse payload/score/order columns with a
+separate reverse-reference vector. It retains stable insertion/fold order,
+preflight/shape/cardinality checks, marker semantics and overflow behavior.
+Child selection keeps its separately typed `SubtreeID` scratch. The added
+reverse vector is accounted and cleared on reset/trim. The existing nested
+adjacency-frame accounting gap is unchanged; no complete-memory claim is made.
+
+Full core/phase-zero-A tests, 24 independent physical-route comparisons,
+focused Go/YAML C checks and edit invariants pass. All **414 work/reuse rows**
+and timed route/public-node counts remain exact. Buckley's source-only review
+establishes no concrete finding under the immutable-link premise.
+
+Twenty alternating shuffled pairs establish no compact throughput gain:
+Go query **+0.23% (p=.398)**, large Go **+0.17% (p=.301)**, Go R4
+**−0.16% (p=.947)**, owned YAML R4 **−0.05% (p=.820)** and the 8,012-byte stream
+**−0.10% (p=.529)**. Every allocation-count median stays unchanged. Query bytes
+move **138,739→138,738**; every other byte median is identical. Full-DFA is
+inconclusive at **−0.23% (p=.883)**; edit/no-edit controls improve
+**0.98% / 0.97%** (p<.001/.002), bypassing compact pop scratch and recorded
+without causal attribution. No-edit remains allocation-free.
+
+**The runtime prototype is discarded.** There is no transferred full-fleet,
+race, RSS or graduation qualification. All source pins, twenty samples per
+role, complete container exits and no-OOM/no-timeout receipts verify. One
+initial compile attempt exposed shared use of subtree scratch; the corrected
+candidate separates ID families and passes before timing. Evidence is local
+`gotreesitter-evidence/20261015-pop-link-reference-scratch`.
+
 ### Ordinary YAML stop census: the first decline is near byte 350
 
 A test-only inspection on `fb4c8acc4` holds the existing runner lease until
