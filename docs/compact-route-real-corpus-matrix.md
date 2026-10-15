@@ -863,9 +863,9 @@ Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain
 the initial wrong election filter and the passing direct/chained probes remain
 separate. Ordinary YAML and compact graduation stay gated.
 
-### Layout and dispatch follow-ups: six rejected screens
+### Layout and dispatch follow-ups: seven rejected screens
 
-Six independent screens on `c498e889e` production source preserve all 414 deterministic rows
+Seven independent screens on `c498e889e` production source preserve all 414 deterministic rows
 and pass focused correctness checks. Packing lineage flags shrinks each dense
 record 32→28 bytes but establishes no compact throughput win; its owned YAML
 stream direction is +0.67% (p=.040). Exact immutable wrapper reuse leaves public
@@ -877,6 +877,9 @@ p=.620). Moving the existing conflict-policy rejection guards before token
 projection also establishes no gain (query −0.22%, p=.461; large Go −0.99%,
 p=.076). Extracting the unchanged cold condensation body regresses large Go
 0.70% (p=.043), with other compact times inconclusive and unchanged allocations.
+Reusing a classified cell for one unchanged owned header also establishes no
+YAML gain (R4 −0.43%, p=.183; stream −0.24%, p=.314), with unchanged allocations;
+unfinished Go samples are deliberately excluded after rejection.
 All are rejected. The
 [focused receipt](compact-layout-dispatch-screens-20261015.md) records the paired
 measurements, controls, discarded partial run and qualification limits. No
@@ -884,6 +887,11 @@ runtime or graduation change follows; all merges to main remain held. Separate
 read-only censuses find exact duplicate parents in only 0.58% of large-Go
 subtrees and none in the two YAML witnesses; first-entry hits account for only
 about 11% of boundary lookups. No broad cache follows from those observations.
+The newer state/frontier census finds that all 129,327 successful large-Go
+lookups (44.94% of 287,787 probes) revisit the first published key for that
+state. Four observed/unobserved work comparisons and pinned Go digests pass.
+This motivates a bounded slot-hint experiment while retaining full-key and
+generation checks; it supplies no speed or graduation certificate.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 

@@ -1,7 +1,7 @@
 # Compact layout and dispatch screens
 
 Evidence date: 2026-10-15 UTC. Each independent comparison starts at
-`c498e889ec2d86382a3a0baad58020d7df7145b3`. All six prototypes remain outside
+`c498e889ec2d86382a3a0baad58020d7df7145b3`. All seven prototypes remain outside
 the checkout. None improves compact throughput enough to promote. All merges
 to main remain held.
 
@@ -13,6 +13,7 @@ to main remain held.
 | Inspect built-in rows directly; authenticate the selected reduction normally | −0.16%, p=.583 | −0.05%, p=.620 | −0.32%, p=.425 | −0.29%, p=.301 | Reject: no established throughput gain |
 | Check existing policy rejection guards before token projection | −0.22%, p=.461 | −0.99%, p=.076 | +0.24%, p=.547 | −0.05%, p=.640 | Reject: no established compact throughput gain |
 | Extract the unchanged existing-boundary condensation body | +0.17%, p=.583 | +0.70%, p=.043 | +0.26%, p=.698 | +0.36%, p=.758 | Reject: large Go slows down |
+| Reuse the classified cell only for one unchanged owned header | Not claimed | Not claimed | −0.43%, p=.183 | −0.24%, p=.314 | Reject: no supported gain on the affected YAML path |
 
 Negative time means less parse time. Inconclusive directions are retained in
 the table, not presented as wins. These percentages have independent paired
@@ -82,6 +83,23 @@ controls move +0.003% / +0.40% / −1.69% (p=.383/.007/<.001); they bypass compa
 condensation and receive no attribution. No-edit stays at zero bytes and objects.
 The split is rejected and receives no broad qualification.
 
+The owned single-header screen reuses the first classified cell only while one
+header and one candidate remain, with unchanged head and request references.
+Authentication before apply stays intact; multiple headers keep their second
+classification. Full focused correctness and all 414 rows pass. Twenty YAML
+pairs establish no gain: R4 353.451→351.939 µs (p=.183), stream
+1,380.119→1,376.745 µs (p=.314). Bytes remain 12,872 / 44,313 and objects
+109 / 336. The experiment is rejected after completing YAML; unfinished Go
+samples are deliberately stopped and excluded. The owned container exits 143
+because of that stop, not a crash or timeout. Buckley's supplied-source review
+finds no concrete defect but cannot inspect missing helper context; it does not
+validate execution evidence. No broader qualification follows.
+
+Blindly extending reuse to earlier cells on a multi-header frontier is unsafe:
+binding another request can advance the classification phase. Head/token
+equality does not reauthenticate the old capability. Existing fresh
+classification remains across that boundary; no broader reuse is promoted.
+
 ## Verification and limits
 
 Every experiment passes full core and phase-zero-A tests, focused Go/YAML root
@@ -105,6 +123,8 @@ the identical test-only diagnostic receipt refresh. The runtime guard is not
 promoted, and the test repair receives no performance claim.
 The condensation screen is `20261015-condense-hot-frame`; its complete source,
 sample, work/route and unchanged-body audits pass.
+The owned single-header screen is `20261015-owned-single-classification`, with
+separate completed-YAML and partial-Go provenance.
 
 The cohort run was interrupted for disk pressure after completing YAML. Its
 partial Go samples were discarded and all 20 Go pairs restarted from seed 1
@@ -139,3 +159,17 @@ the corrected run passes all named digest/work checks and source pins.
 These diagnostics live in `20261015-exact-subtree-duplicate-census` and
 `20261015-boundary-first-entry-census`. Neither changes the runtime or supplies
 a timing, C-fleet or graduation certificate.
+
+A new state/frontier census compares separately executed observed and
+unobserved parses on all four canonical Go files. Both work vectors and pinned
+deep digests remain exact. Each successful probe reaches that state's first
+published key in its frontier; no second byte/checkpoint/flag key for the same
+state appears in these witnesses. Large Go has 129,327 successful probes of
+287,787 (44.94%), with 479 distinct states across the parse and at most 14
+published primary states in one frontier. The 158,460 missing-key probes are
+different from the earlier census's probes against an entirely empty table.
+
+This supports testing state-indexed slot hints; it does not certify an index
+that omits full-key or generation checks. The diagnostic is pinned in
+`20261015-state-frontier-index-census`, with zero lost model keys, source audit
+and terminal exit zero. No throughput or graduation claim follows from counts.
