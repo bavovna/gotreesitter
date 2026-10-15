@@ -165,9 +165,69 @@ executes the tests or certifies the surrounding parser. Final focused tests,
 full core and phase-zero-A suites pass in Docker with frozen source pins in
 `20261015-linear-suffix-handoff-prototype`.
 
-This implements a private handoff layer outside the checkout. Real Go trace
-replay, full header alternative-set/certificate persistence, recovery and parser
-dispatch integration remain open. There is no whole-parser C, invariant, race,
-memory-budget, RSS or throughput qualification, and no graduation claim.
+This checkpoint implements a private handoff layer outside the checkout.
+The next receipt adds selected real-Go replay and deferred scalar/set header
+persistence; certificate handling, recovery and parser dispatch remain open.
+There is no whole-parser qualification or graduation claim.
 It advances the implementation boundary of [E-A7](https://github.com/odvcencio/gotreesitter/issues/1319),
 whose corpus-throughput exit requirement remains unproven. All merges stay held.
+
+## Real Go replay and deferred header lineage
+
+Four separate Go processes compare unobserved, profile-only and replay parses.
+Each preserves the full native core and scheduler work vectors and its pinned
+deep tree digest. The profile chooses the 24 largest graph-publication regions
+plus fixed region ordinals. These are selected traces, not all-region coverage.
+Detached graph/metadata snapshots prevent model appends from sharing live arena
+backing. The replay imports the actual authenticated terminals and independently
+builds reduction parents and stack state; it does not replace token production.
+
+The owner-only model stops mainly on inherited lineage. Deferred header
+persistence preserves the actual successful scheduler-call inputs, including
+the dirty bit and original alternative sets, then applies the existing GSS
+scalar/set helpers inside the graph-flush transaction. A populated overflowed
+input can produce a zero-member node set with overflow/blended flags; recording
+only that final node would lose the input needed to reproduce it. Focused
+inline, spill, overflow and repeated-update cases compare against GSS. Logical
+command caps, unresolved membership and malformed chains reject without a
+partial publication. Certificate references remain unsupported.
+
+| Go fixture | Selected regions | Owner-only replayed operations | Lineage replayed operations | Regions reaching their end | Prefix handoffs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `rewrite` | 25 | 125 | 193 | 2 | 23 |
+| `query_compile` | 28 | 80 | 176 | 2 | 26 |
+| `language` | 27 | 415 | 457 | 4 | 23 |
+| `grammargen_lr` | 70 | 107 | 795 | 36 | 34 |
+
+All 150 selected regions start successfully. The lineage model replays 900
+shifts and 721 reductions, up from 727 total operations with owners alone.
+Heads and every current frontier entry match graph/link/scanner facts and
+lineage membership; spill positions are compared by members in their separate
+arenas. Full model core work matches native work at every checked handoff.
+The model serializes 166 new graph states versus 1,695 native states **within
+those matched prefixes**. This is not a whole-parse memory or speed saving:
+the diagnostic also allocates snapshots and membership imports.
+
+The remaining 106 handoffs are reductions crossing below the deferred suffix
+into its opaque GSS prefix. Importing existing deterministic frames is the next
+implementation target; the observed header-lineage stops are eliminated.
+
+The broad Buckley report ends truncated and supplies no approval. Its partial
+evidence motivates a pending-command witness that fails before correction.
+Capture now queues only successful persistence calls; finish rejects native
+errors and unconsumed commands. The adapter checks snapshot ownership against
+the live node, and repeated-owner tests reject completed/reset sessions. A
+completed bounded review confirms those corrections and finds an uncapped
+waiting queue. Its before witness fails; the corrected queue stops diagnostic
+qualification at the logical cap while returning the native result unchanged.
+A completed guard-only follow-up confirms that correction; the source audit
+finds one production capture append path, with queues initialized empty.
+Review scopes and incomplete output are preserved with the raw evidence.
+
+Final focused diagnostic/vector tests, full core and phase-zero-A suites use
+the explicit detached-clone tag `gts_eof_recovery_shadow`; each Go fixture runs
+separately. Evidence is `20261015-linear-suffix-real-go-trace` and
+`20261015-linear-suffix-lineage-trace`, with frozen sources, archived attempts
+and terminal exits. No prior fleet/race/budget/RSS/timing certificate transfers.
+This code remains outside the checkout and parser routes. No allowlist,
+default, throughput or graduation change follows; all merges remain held.

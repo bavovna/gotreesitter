@@ -923,9 +923,15 @@ checks and transaction rollback. Forty 65-operation traces match all current
 frontier derivations and lineage records, including checkpoint modes and
 explicit owners. Six failure cases, ambiguous-prefix flush and a review-driven
 batch guard pass with full core/phase-zero-A coverage. This is implementation
-evidence, not throughput savings. Real Go trace replay, full header lineage,
-recovery and parser dispatch remain open; no route, full qualification or
-graduation change follows. All merges stay held.
+evidence, not throughput savings. Selected real-Go replay then adds deferred
+scalar/set lineage persistence: 150 chosen corridors/prefixes match full native
+work vectors, pinned trees and frontier graph/lineage semantics. Replay extends
+727→1,621 operations; 106 handoffs now reach the opaque-prefix boundary. The
+[focused receipt](compact-linear-suffix-census-20261015.md#real-go-replay-and-deferred-header-lineage)
+records command/overflow regressions, diagnostic review fixes and the limits of
+the selected coverage. Prefix import, certificate/recovery handling and parser
+dispatch remain open; no route, throughput or graduation change follows. All
+merges stay held.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 
