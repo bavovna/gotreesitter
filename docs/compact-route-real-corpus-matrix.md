@@ -178,6 +178,40 @@ raw samples, counter JSON, before/after assembly and the exact external patch.
 The runtime split is discarded; full fleet/race/RSS qualification is not run
 after this failed timing screen. The smaller frame is not counted as a speed win.
 
+### ASCII self-loop coalescing: discarded
+
+An independent trial on `70b27618117e60eecd6e1aaa26552aa81b37f22a` groups repeated
+non-skipping ASCII DFA transitions to the same state. Unicode, newline and SKIP
+handling remain scalar. The new `internal/lexrun` helper is inlineable at compiler
+cost 34 and its inputs do not escape. A frozen scalar scanner matches all 4,000
+seeded cases and explicit long-run cases, including tokens, private lookahead
+flags, accepted cursors and failure extents. All 412 ordinary work/reuse rows and
+owned-YAML rows stay exact. Focused Go/YAML parser, invariant and C checks pass.
+
+Twenty shuffled alternating pairs still establish no compact Go/YAML time win:
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Public Go, 20 KiB | 10.214 → 10.221 ms | .799 |
+| Public Go, 235 KiB | 109.716 → 109.608 ms | .758 |
+| Go R4 compact | 850.350 → 862.893 µs | .301 |
+| Go full DFA | 3.932 → 4.199 ms (**+6.80%**) | .015 |
+| Go single-byte edit | 99.732 → 101.703 µs (**+1.98%**) | .012 |
+| Go no edit | 3.162 → 3.2605 ns | .126 |
+| Owned YAML R4 | 385.482 → 384.508 µs | .678 |
+| Owned YAML 8 KiB | 1.495 → 1.506 ms | .698 |
+
+Full-DFA bytes rise 1,159→1,160 (+0.09%, p=.015); all other byte medians and all
+allocation medians remain unchanged. No-edit stays 0 B/op and 0 allocations.
+The run uses the same pinned Docker/CPU/settings and randomized runner as the
+condensation split. All roles complete with exact source hashes and exit zero;
+Go timing has wide distributions, retained in the raw evidence. An initial run's
+differential tests pass but vet rejects an overlay-only package directory; that
+wrapper is excluded. The complete gate creates/removes the empty directory and
+passes with vet enabled. Evidence: `gotreesitter-evidence/20261015-ascii-self-loop`.
+The runtime patch is discarded, with full fleet/race/RSS qualification withheld.
+No ownership, proof, route, allowlist or graduation change follows either screen.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
