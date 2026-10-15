@@ -78,8 +78,10 @@ runtime ledger rows remain unchanged; no engine counters or ratchets are reset.
 Broadened diagnostic/context tests, the diagnostic race suite and four canonical
 Go locked-C comparisons pass in Docker. Source and promotion audits pass in
 `20261015-generic-scheduler-receipts`. Only two existing test files are committed;
-production source remains unchanged and no throughput win is claimed. All
-merges remain held until the owner lifts the 0.56.0 release hold.
+production source remains unchanged and no throughput win is claimed. The
+exact PR head's CI finishes with 74 successful and four skipped checks, no
+failures, including editor latency. All merges remain held until the owner
+lifts the 0.56.0 release hold.
 
 ### Ordinary YAML route gate: measured throughput gap
 
@@ -910,10 +912,13 @@ not authority to omit states or a speed/memory estimate.
 
 A private transition prototype matches separate GSS pop/reduction behavior on
 61 fixture shapes through arity 255, including extras and epsilon reductions,
-with equal abstract link work and no graph publication. Lease, prefix-mutation,
-failure and cap tests plus full core/phase-zero-A pass. Parent construction,
-history and import/dispatch integration remain open; no parser route changes
-or full qualification follows. All merges stay held.
+with equal abstract link work and no graph publication. The continuation adds
+private parent construction: 80 seeded shapes and epsilon cases match the
+actual scheduler's metadata, next pops, head facts and abstract counters.
+Actual-scheduler witnesses correct migrated-extra order and bind commits to
+saved pop facts; callback/cap/failure checks and full core/phase-zero-A pass.
+History and import/dispatch integration remain open; no parser route changes,
+full qualification or throughput claim follows. All merges stay held.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 

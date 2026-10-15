@@ -75,7 +75,50 @@ are supplied-source comparisons, not independent execution or parser approval.
 A missing container utility interrupts the first post-fix runner; that attempt
 is excluded, and the portable runner completes all final gates.
 
-This remains a transition layer outside the checkout. Parent construction,
-frontier-history preservation, GSS import/flush and parser dispatch integration
-are not implemented. There is no whole-parser C, invariant, race, memory-budget,
-RSS or throughput qualification, and no graduation claim.
+At this checkpoint parent construction, frontier-history preservation, GSS
+import/flush and parser dispatch integration are absent. The next receipt below
+adds private parent construction; it supplies no whole-parser qualification.
+
+## Parent construction against the actual scheduler
+
+The continuation resolves the actual vector state's sole ordinary reduction
+cell, production plan and predecessor goto. It rechecks owner, prefix, revision,
+classification phase and ordinary context after table callbacks. Parent fields
+and aliases use the existing remapper and raw-store seam; no graph predecessor
+is invented. All frame precedence and logical capacity checks precede parent
+publication, and arena caps fail before any store mutation. Session pressure
+history survives temporary scratch reset.
+
+The actual scheduler exposes a gap in the earlier hand-built reference:
+migrated extras clear branch order. A focused witness fails before correction
+and passes afterward. Both private vector reduction operations now follow that
+rule; this is a prototype correction, not a production bug fix. The initial
+test's link-order type error is archived separately and supplies no evidence.
+
+Eighty seeded shapes and an empty-stack epsilon case compare actual parent
+metadata, migrated extras, subsequent pops, head facts and parent/pop/abstract
+link counters against `ReduceOutputs`. Fifteen callback, context, plan, goto,
+arena-cap and overflow cases reject without publishing a parent, frames or work;
+a reentrant goto callback invalidates the borrowed pop. Existing transition
+tests and full core/phase-zero-A suites pass in Docker. Frozen sources and
+terminal exits are in `20261015-linear-suffix-parent-prototype`.
+
+The parent review's epsilon concern is contradicted by the original GSS
+zero-child branch and an explicit actual-scheduler witness above two extras,
+with distinct gotos per predecessor state. The witness passes without changing
+epsilon behavior. Its mutable-pop concern produces failing keep/span/trailing
+witnesses. Commit now treats the returned description as a lease, consumes
+saved scalar facts and reads migrated extras from original frames. All six
+description-mutation cases pass afterward, along with the state-specific goto
+comparisons and full core/phase-zero-A suites. Borrowed child descriptions keep
+the existing read-only scratch contract; this does not make arbitrary writes
+within the trusted package safe.
+
+Buckley's completed follow-up considers the lease finding addressed and
+establishes no remaining epsilon mismatch in the supplied source. It does not
+independently execute the witnesses or certify parser integration/performance.
+
+The parent layer remains outside the checkout and parser routing. Frontier
+history, GSS import/flush and dispatch integration remain open. There is no
+whole-parser C, invariant, race, memory-budget, RSS or throughput qualification,
+and no graduation claim.
