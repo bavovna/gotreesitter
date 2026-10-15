@@ -1,6 +1,6 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-14 (UTC).
+Current evidence date: 2026-10-15 (UTC).
 Latest ordinary Go/YAML timing baseline: `624b2a60c8f402f6c2adb24846b192a547a918ce`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
@@ -99,6 +99,20 @@ and a forced live-working-set budget declines correctly. Owned YAML R4 saves
 ten allocations, but the integration remains outside the runtime and advances
 neither ordinary YAML ownership nor graduation. Full C/fleet/RSS and lifecycle
 qualification is withheld after the failed Go screen.
+
+### Streaming native construction: scoped YAML pathway
+
+The [streaming receipt](compact-native-streaming-screen-receipt-20261015.md)
+removes the selected plan and fuses raw replay with native construction. After
+fixing pointer cleanup and publication-purpose gating, twenty pairs measure
+owned YAML **−3.70% / −3.71%** on R4 / 8 KiB, with one extra allocation and
+248 B/op (**+1.92% / +0.56%**). The same generic source regresses public Go
+**+2.57% / +1.17%**, so it is not promoted. Native construction counts decrease
+roughly 33.5% for Go and 52% for YAML, but those counts are not speed estimates.
+Seventeen checked witnesses, six Go edits and zero-allocation no-edit reparsing
+pass. The receipt separates earlier noisy screens, direct C/memory qualification
+and final-source limits. Ordinary YAML ownership, all-language graduation and
+runtime integration remain open; the qualified reduction/output PRs are unchanged.
 
 ### Reduction copying and link validation: not promoted
 
