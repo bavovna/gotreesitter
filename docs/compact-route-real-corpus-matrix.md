@@ -148,6 +148,36 @@ unrun qualification. This trade stays outside the runtime. The owner-only
 precursor has negligible coverage and its partial timing is excluded. No
 ownership rule, route, allowlist or graduation status changes.
 
+### Condensation cold split: discarded
+
+Baseline `70b27618117e60eecd6e1aaa26552aa81b37f22a`. Moving the existing-boundary
+fold/history body into `internal/parsercorephase0/condense_existing.go` reduces
+the common condensation stack frame **1,032→280 bytes**. All 412 work/reuse rows
+and owned-YAML rows remain exact. Both full core unit runs, canonical Go/lifecycle
+checks, Go/YAML/owned-YAML edit invariants, Go C fixtures/R4 and YAML document,
+version-ownership and recovery C checks pass. No language predicate or proof rule
+changes. Twenty alternating shuffled pairs establish no throughput gain:
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Public Go, 20 KiB | 10.136 → 10.180 ms | .640 |
+| Public Go, 235 KiB | 108.122 → 108.007 ms | .904 |
+| Go R4 compact | 852.773 → 854.679 µs | .369 |
+| Go full DFA | 3.933 → 3.921 ms | .369 |
+| Go single-byte edit | 99.989 → 99.822 µs | .398 |
+| Go no edit | 3.149 → 3.1505 ns | .250 |
+| Owned YAML R4 | 388.429 → 388.570 µs | .883 |
+| Owned YAML 8 KiB | 1.497 → 1.504 ms | .640 |
+
+Every time direction is inconclusive; byte/allocation medians remain identical,
+and no-edit allocation remains zero. The randomized runner uses twenty seeds,
+750 ms, `-count=1`, `-benchmem`, `GOMAXPROCS=1`, CPU 6 and serialized 6 GiB Docker.
+All roles complete, source hashes remain exact and containers exit zero.
+Evidence: local `gotreesitter-evidence/20261015-condense-cold-split`, including
+raw samples, counter JSON, before/after assembly and the exact external patch.
+The runtime split is discarded; full fleet/race/RSS qualification is not run
+after this failed timing screen. The smaller frame is not counted as a speed win.
+
 ### Reduction replay source cache: discarded
 
 Twenty pairs establish no Go or owned-YAML throughput gain from capturing
