@@ -1,7 +1,7 @@
 # Compact layout and dispatch screens
 
 Evidence date: 2026-10-15 UTC. Each independent comparison starts at
-`c498e889ec2d86382a3a0baad58020d7df7145b3`. All seven prototypes remain outside
+`c498e889ec2d86382a3a0baad58020d7df7145b3`. All eight prototypes remain outside
 the checkout. None improves compact throughput enough to promote. All merges
 to main remain held.
 
@@ -14,6 +14,7 @@ to main remain held.
 | Check existing policy rejection guards before token projection | −0.22%, p=.461 | −0.99%, p=.076 | +0.24%, p=.547 | −0.05%, p=.640 | Reject: no established compact throughput gain |
 | Extract the unchanged existing-boundary condensation body | +0.17%, p=.583 | +0.70%, p=.043 | +0.26%, p=.698 | +0.36%, p=.758 | Reject: large Go slows down |
 | Reuse the classified cell only for one unchanged owned header | Not claimed | Not claimed | −0.43%, p=.183 | −0.24%, p=.314 | Reject: no supported gain on the affected YAML path |
+| Hint hash-table slots by state, then verify the current complete key | +0.09%, p=.779 | +0.25%, p=.640 | −0.58%, p=.478 | −0.09%, p=.383 | Reject: no supported compact throughput gain |
 
 Negative time means less parse time. Inconclusive directions are retained in
 the table, not presented as wins. These percentages have independent paired
@@ -100,6 +101,32 @@ binding another request can advance the classification phase. Head/token
 equality does not reauthenticate the old capability. Existing fresh
 classification remains across that boundary; no broader reuse is promoted.
 
+The slot-hint screen retains the complete boundary hash table. Sixty-four hints
+store positions only; a hit checks the current slot's bounds, generation and
+complete state/byte/checkpoint/flag key before reading its canonical node ID.
+The final buffer is lazy, has explicit capacity accounting, restores its slice
+header on rollback, and is dropped and disabled in recovery clones. No proof,
+node identity or scanner equality is cached. Found publications do not grow;
+cold re-probes recompute the complete key hash.
+
+The initial inline attempt omits the new fixed storage from the footprint
+gauge; its partial timing is excluded. Charging it unconditionally then fails
+the idle/reservation contracts, so that attempt is rejected before timing.
+A slice-declaration build error is separately archived. The final lazy source
+passes the unchanged reservation/cap tests, focused core/root/C/edit checks,
+all 414 rows and six one-process memory-budget trials. Peaks are
+1,073,116 / 13,316 bytes, each 256 bytes above production and within the existing
+bounds. The final source-only Buckley review establishes no defect, while
+leaving broader snapshot-held backing accounting outside its supplied scope.
+
+Twenty final-source pairs still establish no compact speed gain. Go R4 moves
++0.36% (p=.157); query/large Go and both YAML directions are in the table.
+All affected byte and object medians remain equal. Default full/edit/no-edit
+controls move −3.67% / −0.44% / −1.99% (p<.001/.035/<.001), bypassing the
+changed index; their improvements are not attributed to the hints. Full-DFA
+bytes round 1,159.5→1,159, while no-edit stays at zero bytes and objects. The
+runtime is rejected. No full fleet, race or RSS certificate follows.
+
 ## Verification and limits
 
 Every experiment passes full core and phase-zero-A tests, focused Go/YAML root
@@ -125,6 +152,8 @@ The condensation screen is `20261015-condense-hot-frame`; its complete source,
 sample, work/route and unchanged-body audits pass.
 The owned single-header screen is `20261015-owned-single-classification`, with
 separate completed-YAML and partial-Go provenance.
+The slot-hint screen is `20261015-boundary-slot-hints`, with all earlier attempts
+excluded from the final source, sample and work/route audit.
 
 The cohort run was interrupted for disk pressure after completing YAML. Its
 partial Go samples were discarded and all 20 Go pairs restarted from seed 1
@@ -132,9 +161,10 @@ after serialized cleanup of old rebuildable Docker cache. Completed source,
 fixtures, raw evidence and CPU profiles were preserved. This interruption is
 not a parser failure or an out-of-memory result.
 
-No full 206-session invariant fleet, 618-fixture C fleet, strict census, race,
-memory-budget or large-file RSS qualification transfers to these rejected
-prototypes. Runtime, admission allowlists and global defaults remain unchanged.
+No full 206-session invariant fleet, 618-fixture C fleet, strict census, race or
+large-file RSS qualification transfers to these rejected prototypes. The six
+focused budget trials belong only to the final slot-hint source above. Runtime,
+admission allowlists and global defaults remain unchanged.
 
 ## Censuses that rule out broad caches
 

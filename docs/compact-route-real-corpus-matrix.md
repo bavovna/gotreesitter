@@ -863,9 +863,9 @@ Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain
 the initial wrong election filter and the passing direct/chained probes remain
 separate. Ordinary YAML and compact graduation stay gated.
 
-### Layout and dispatch follow-ups: seven rejected screens
+### Layout and dispatch follow-ups: eight rejected screens
 
-Seven independent screens on `c498e889e` production source preserve all 414 deterministic rows
+Eight independent screens on `c498e889e` production source preserve all 414 deterministic rows
 and pass focused correctness checks. Packing lineage flags shrinks each dense
 record 32→28 bytes but establishes no compact throughput win; its owned YAML
 stream direction is +0.67% (p=.040). Exact immutable wrapper reuse leaves public
@@ -880,6 +880,11 @@ p=.076). Extracting the unchanged cold condensation body regresses large Go
 Reusing a classified cell for one unchanged owned header also establishes no
 YAML gain (R4 −0.43%, p=.183; stream −0.24%, p=.314), with unchanged allocations;
 unfinished Go samples are deliberately excluded after rejection.
+State-indexed slot hints preserve full-key/generation validation but establish
+no compact gain across twenty pairs (query Go +0.09%, p=.779; large Go +0.25%,
+p=.640; YAML −0.58% / −0.09%, p=.478/.383). All affected allocation medians
+remain exact. The final lazy, accounted cache passes six focused budget trials;
+the earlier inline, reservation and build attempts are excluded. It is rejected.
 All are rejected. The
 [focused receipt](compact-layout-dispatch-screens-20261015.md) records the paired
 measurements, controls, discarded partial run and qualification limits. No
@@ -890,8 +895,25 @@ about 11% of boundary lookups. No broad cache follows from those observations.
 The newer state/frontier census finds that all 129,327 successful large-Go
 lookups (44.94% of 287,787 probes) revisit the first published key for that
 state. Four observed/unobserved work comparisons and pinned Go digests pass.
-This motivates a bounded slot-hint experiment while retaining full-key and
-generation checks; it supplies no speed or graduation certificate.
+This motivated the bounded slot-hint screen above, which preserves full-key
+and generation checks but establishes no supported compact throughput gain.
+
+### Go linear suffix: a larger publication target, not a runtime win
+
+The [linear-suffix receipt](compact-linear-suffix-census-20261015.md) compares
+four observed/unobserved canonical Go parses with exact work and deep digests.
+After retaining live heads, frontier history and predecessor closure at every
+C4 exit, plus checked later node reads, 49,246 of 148,368 large-Go states remain
+candidates for a different representation (33.19%; other fixtures 33–37%).
+Direct array reads are not exhaustively hooked, so this is an upper bound,
+not authority to omit states or a speed/memory estimate.
+
+A private transition prototype matches separate GSS pop/reduction behavior on
+61 fixture shapes through arity 255, including extras and epsilon reductions,
+with equal abstract link work and no graph publication. Lease, prefix-mutation,
+failure and cap tests plus full core/phase-zero-A pass. Parent construction,
+history and import/dispatch integration remain open; no parser route changes
+or full qualification follows. All merges stay held.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 
