@@ -5368,7 +5368,16 @@ func (c *Core) replaceBoundaryLink(key boundaryKey, probe boundaryProbe, oldID N
 	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
 		return Head{}, errors.New("parser-core phase zero: node arena cap")
 	}
-	rebuilt := slices.Clone(oldLinks)
+	// A single incoming replacement is consumed synchronously below. Keep
+	// its private copy on this frame; historical graph links remain immutable.
+	var singleReplacement [1]linkRecord
+	var rebuilt []linkRecord
+	if len(oldLinks) == 1 {
+		singleReplacement[0] = oldLinks[0]
+		rebuilt = singleReplacement[:]
+	} else {
+		rebuilt = slices.Clone(oldLinks)
+	}
 	rebuilt[candidate].prev = in.prev
 	rebuilt[candidate].payload = in.payload
 	rebuilt[candidate].scoreDelta = in.scoreDelta
