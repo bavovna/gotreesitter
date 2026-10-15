@@ -826,6 +826,22 @@ Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain
 the initial wrong election filter and the passing direct/chained probes remain
 separate. Ordinary YAML and compact graduation stay gated.
 
+### Lineage proof sharing: smaller storage, rejected throughput
+
+On `c498e889e`, an exact immutable interner reduces retained large-Go lineage
+storage **5,655,040 → 2,364,032 bytes (−58.20%)** while preserving all metadata,
+rollback and memory accounting. Twenty shuffled pairs reject it: query/large
+Go time rises **9.12% / 10.60%**, Go R4 **9.06%**, and owned YAML R4/stream
+**6.31% / 5.65%** (all p<.001). All 414 rows are exact, and allocation counts
+are unchanged. The private runtime is discarded; broader qualification is not
+transferred. The [focused receipt](compact-lineage-sharing-screen-20261015.md)
+records the complete samples, scope, controls and storage census.
+
+A separate current-source YAML replay probe narrows the preceding same-token
+snapshot mismatch to **`extZeroState`**. State-819 replay still converges from
+that divergent marker snapshot. This identifies an active retry-cache key;
+it does not authorize an ownership bypass or ordinary-YAML routing change.
+
 ### Exact classification recurrence: rejected cache
 
 Baseline is `c498e889ec2d86382a3a0baad58020d7df7145b3`. A read-only census
