@@ -4771,9 +4771,9 @@ func (s *diagnosticParserCoreGenericScheduler) headerReceipt(header diagnosticPa
 // election — that digest has no reader on this path. Full-receipt mode keeps
 // paying it, since diagnosticParserCoreHeaderReceipt is also what tests and
 // diagnostics observe and must stay byte-identical there.
-func (s *diagnosticParserCoreGenericScheduler) electHeaderState(header diagnosticParserCoreHeader) (StateID, error) {
+func (s *diagnosticParserCoreGenericScheduler) electHeaderState(header *diagnosticParserCoreHeader) (StateID, error) {
 	if s.fullReceipts() {
-		receipt, err := diagnosticParserCoreHeaderReceipt(s.compact, header)
+		receipt, err := diagnosticParserCoreHeaderReceipt(s.compact, *header)
 		if err != nil {
 			return 0, err
 		}
@@ -14066,7 +14066,8 @@ func (s *diagnosticParserCoreGenericScheduler) elect(first bool) error {
 	if cap(states) < len(s.headers) {
 		states = make([]StateID, 0, max(len(s.headers), 2*cap(states)))
 	}
-	for _, header := range s.headers {
+	for index := range s.headers {
+		header := &s.headers[index]
 		state, err := s.electHeaderState(header)
 		if err != nil {
 			return err
