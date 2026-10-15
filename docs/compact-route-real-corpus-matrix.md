@@ -374,6 +374,113 @@ accept with complete coverage and no error/fallback; source pins and terminal
 exit zero verify. Evidence is local
 `gotreesitter-evidence/20261015-version-publication-census` and its `shape` run.
 
+### Baseline-state batching: discarded
+
+On core baseline `fb4c8acc4`, a separate trial allocates baseline-only immutable
+version states in bounded pages. Every publication still receives a distinct
+pointer, reset drops pages without overwriting old values, and complete page
+capacity is charged before allocation. Focused lifetime, ownership, C and edit
+checks pass; all 412 ordinary and owned-YAML ledger rows remain exact.
+
+Twenty alternating shuffled pairs reduce large-Go objects **3,092→1,553**,
+but raise bytes **3,295,728→3,316,464**. The smaller Go file changes
+**205→99 objects / 141,139→143,187 bytes**; Go R4 changes **25→23 objects /
+1,696→1,824 bytes**. Compact Go and YAML throughput directions are
+inconclusive. The full-DFA control regresses **4.90% (p<.001)** and no-edit
+**2.38% (p<.001)**; full-DFA bytes rise **1,159→1,160**. These controls bypass
+the allocator, so no causal attribution follows. The trade is declined, rather
+than reported as a hard 10% ratchet failure. No runtime source is promoted and
+no full fleet/race/RSS qualification follows. Evidence is local
+`gotreesitter-evidence/20261015-batched-baseline-states`.
+
+### Single-link replacement: qualified Go throughput and allocation win
+
+The next trial on the same `fb4c8acc4` baseline replaces one temporary heap
+clone with a private one-element stack buffer. Larger adjacencies retain the
+existing clone. All graph, capacity, precedence and provenance checks remain
+unchanged; the surviving link is copied into the graph arena before the buffer
+leaves scope. Restoring the single clone statement reproduces the entire
+baseline `core.go` byte-for-byte. Compiler escape analysis, assembly and the
+allocation measurements agree that the common buffer stays on the stack.
+
+Twenty fresh alternating shuffled pairs use the repository runner and the
+same pinned settings as above:
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Compact Go query_compile | 10.079 → 9.967 ms | .165 |
+| Compact Go grammargen_lr | **107.274 → 105.821 ms (−1.35%)** | .040 |
+| Go R4 compact | 841.982 → 839.197 µs | .925 |
+| Owned YAML R4 | 361.700 → 364.085 µs | .165 |
+| Owned YAML 8,012-byte stream | 1.404118 → 1.399334 ms | .925 |
+| Go full DFA control | 3.955280 → 3.922137 ms | .242 |
+| Go single-byte edit control | 100.240 → 100.514 µs | .820 |
+| Go no-edit control | **3.140 → 3.109 ns (−0.99%)** | .021 |
+
+Only the large-Go compact time has a supported improvement. Other compact and
+edit/full-control directions are inconclusive. The no-edit control bypasses
+replacement construction; its direction is recorded without attribution.
+
+| Compact workload | B/op before → after | Allocations before → after |
+| --- | ---: | ---: |
+| Go query_compile | **141,139 → 138,739** | **205 → 130** |
+| Go grammargen_lr | **3,295,728 → 3,251,728** | **3,092 → 1,717 (−44.47%)** |
+| Go R4 | **1,696 → 1,600** | **25 → 22** |
+| Owned YAML R4 | **12,936 → 12,872** | **111 → 109** |
+| Owned YAML stream | **44,601 → 44,313** | **345 → 336** |
+
+Default-control byte/allocation medians remain **1,159 / 6**, **394 / 5** and
+**0 / 0**. Timed node-work and route/fallback counters remain exact; all 412
+ordinary and owned-YAML ledger rows match before timing. No counter exception
+or baseline reset is requested.
+
+Final source passes **206 invariant sessions**, **618 locked-C fixture checks**,
+full core/correct-tag phase0A suites, **all core race tests**, root/YAML races
+and six bounded-stop budget trials. All **204 strict census rows are exactly
+unchanged: 159 PASS / 45 known FAIL**, including **120 actual compact/C-exact
+acceptances**. Four additional canonical Go/C comparisons pass. Budget peaks
+stay **1,072,860 / 13,060 bytes**. The **1,049,572-byte / 524-document YAML
+stream** remains C-exact with full coverage, no error/fallback and **156,836 KiB
+process RSS**. The previous separate header probe measured 156,876 KiB; these
+single Go+C process probes are not a controlled RSS comparison or a graduation
+memory certificate.
+
+L0 remains **756 root files / 12 API tag sets**; R6 **454 language-name uses /
+101 environment reads**. Package-execution coverage, workflow selectors and
+source pins pass. Core/phase0A suites rerun on the promoted source so the
+source-inspection ratchets read the actual candidate file. The initial compiled
+test-binary invocation used the wrong working directory for source inspection;
+it is excluded and corrected without runtime changes. All final containers
+exit zero without OOM or timeout. Buckley commit
+`bb5022df4c950fa9881351cbd3896354ca714d61` promotes the win in
+[core PR #1485](https://github.com/odvcencio/gotreesitter/pull/1485).
+Earlier percentages are independent and are not added. Evidence is local
+`gotreesitter-evidence/20261015-single-link-replacement`.
+
+### Ordinary YAML stop census: the first decline is near byte 350
+
+A test-only inspection on `fb4c8acc4` holds the existing runner lease until
+after the production compact entrypoint returns. Engine code and options are
+unchanged. Standalone and inspected attempts have identical acceptance and
+decline reasons; accepted trees also match S-expressions, end spans and error
+flags. The pinned R4 source and its four-/sixteen-document wrappers report:
+
+| Source bytes | Ordinary tokens before decline | Current token byte span | Diagnostic-owned tokens / requests | Owned result |
+| ---: | ---: | ---: | ---: | --- |
+| 1,998 | 17 | 346–350 | 102 / 18 | Accepted |
+| 8,012 | 18 | 350–354 | 403 / 68 | Accepted |
+| 32,048 | 18 | 350–354 | 1,603 / 284 | Accepted |
+
+All ordinary attempts decline with two headers because a converged-path
+no-action drop lacks alternative-set coverage by one non-blended survivor.
+This identifies the current first blocker independently of the later EOF
+diagnostics. Keep the coverage proof mandatory and investigate how owned relex
+supplies valid viability decisions. The post-run ownership flag is false even
+for successful owned parses; the request counters above establish actual owned
+execution. This census is diagnostic evidence, not throughput or graduation
+evidence. All six cases, pins and terminal exit zero verify. Evidence is local
+`gotreesitter-evidence/20261015-yaml-stop-census`.
+
 ### Packed leaf receipts: qualified Go allocation win
 
 On incremental-lane baseline `a32d87b6d`, pack the two leaf-provenance flags
