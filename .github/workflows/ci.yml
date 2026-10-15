@@ -461,6 +461,7 @@ jobs:
           TestDiagnosticParserCoreSummaryConflictFailureRollsBack
           TestDiagnosticParserCoreSummaryFailurePublishesNothing
           TestDiagnosticParserCoreUpdatedReductionAdoptsActiveSibling
+          TestDiagnosticParserCoreVersionLexerCloneEqualityPreservesDistinctOwners
           TestDiagnosticParserCoreVersionLexerElectionCaptureReusesScratch
           TestDiagnosticParserCoreVersionLexerElectionReusesCheckpointSerialization
           TestDiagnosticParserCoreVersionLexerElectionScratchFootprintAndReset

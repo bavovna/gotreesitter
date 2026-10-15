@@ -5540,7 +5540,7 @@ func (s *diagnosticParserCoreGenericScheduler) relexExternalTokenForState(state 
 	// ownership for the next election.
 	candidateAfter := d.snapshotRelexStateWithScratch(&s.relexAfterScratch)
 	sharedAfter := prior
-	if tokensSameLex(candidate, shared) && candidateAfter.equal(sharedAfter) {
+	if tokensSameLex(candidate, shared) && candidateAfter.equal(&sharedAfter) {
 		return shared, false
 	}
 	return candidate, true
@@ -5846,7 +5846,7 @@ func (s *diagnosticParserCoreGenericScheduler) equivalentVersionLexerSnapshot(
 				checkpointIdentityRequired: identityRequired, checkpointIdentityValid: identityValid,
 			}) &&
 			snapshot.beforeCheckpoint == beforeID &&
-			snapshot.afterCheckpoint == afterID && snapshot.dfa.equal(dfa) &&
+			snapshot.afterCheckpoint == afterID && snapshot.dfa.equal(&dfa) &&
 			(!identityRequired || identityValid) &&
 			snapshot.validate() == nil
 	}

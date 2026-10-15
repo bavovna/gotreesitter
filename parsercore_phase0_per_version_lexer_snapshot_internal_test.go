@@ -192,6 +192,38 @@ func TestDiagnosticParserCoreVersionLexerSnapshotCloneDoesNotAlias(t *testing.T)
 }
 
 func TestDiagnosticParserCoreVersionLexerCloneEqualityPreservesDistinctOwners(t *testing.T) {
+	t.Run("borrowed equality preserves values", func(t *testing.T) {
+		_, snapshot := newDiagnosticParserCoreVersionLexerTestSnapshot(t)
+		if !diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, snapshot) {
+			t.Fatal("immutable snapshot is not reflexive")
+		}
+		clone := snapshot.clone()
+		if clone == snapshot || !diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, clone) {
+			t.Fatal("equivalent distinct snapshot rejected")
+		}
+		clone.dfa.lexerCol++
+		if diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, clone) {
+			t.Fatal("distinct cursor accepted")
+		}
+		clone = snapshot.clone()
+		clone.coreGeneration++
+		if diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, clone) {
+			t.Fatal("distinct core generation accepted")
+		}
+		clone = snapshot.clone()
+		clone.beforeCheckpoint++
+		if diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, clone) {
+			t.Fatal("distinct checkpoint accepted")
+		}
+		if diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, nil) || !diagnosticParserCoreVersionLexerSnapshotEqual(nil, nil) {
+			t.Fatal("nil snapshot comparison changed")
+		}
+		var absent *dfaRelexSnapshot
+		if !absent.equal(nil) || absent.equal(&snapshot.dfa) || snapshot.dfa.equal(nil) {
+			t.Fatal("nil DFA comparison changed")
+		}
+		t.Logf("DFA_EQUALITY borrowed_bytes_per_argument=%d prior_value_bytes_per_argument=%d", unsafe.Sizeof(absent), unsafe.Sizeof(snapshot.dfa))
+	})
 	compact, snapshot := newDiagnosticParserCoreVersionLexerTestSnapshot(t)
 	clone := snapshot.clone()
 	if !diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, clone) {
@@ -828,7 +860,7 @@ func TestDiagnosticParserCoreVersionLexerSnapshotBindsCheckpointIdentity(t *test
 	if err := snapshot.restore(compact, target); err == nil {
 		t.Fatal("restore accepted a changed checkpoint identity")
 	}
-	if got := target.snapshotRelexState(); !got.equal(beforeTarget) {
+	if got := target.snapshotRelexState(); !got.equal(&beforeTarget) {
 		t.Fatalf("identity-mismatch restore mutated target state: got=%+v want=%+v", got, beforeTarget)
 	}
 	var header diagnosticParserCoreHeader

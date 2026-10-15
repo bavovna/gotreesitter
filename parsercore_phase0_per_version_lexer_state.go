@@ -106,19 +106,22 @@ func (s diagnosticParserCoreVersionLexerScannerContract) equal(other diagnosticP
 }
 
 // diagnosticParserCoreVersionLexerSnapshotEqual compares the complete
-// immutable identity of two owned lexer snapshots. Do not use pointer
-// identity here. A scheduler rollback can publish an equivalent copy.
+// immutable identity of two owned lexer snapshots. Identical immutable objects
+// can short-circuit; distinct rollback copies still compare their complete values.
 func diagnosticParserCoreVersionLexerSnapshotEqual(
 	left, right *diagnosticParserCoreVersionLexerSnapshot,
 ) bool {
+	if left == right {
+		return true
+	}
 	if left == nil || right == nil {
-		return left == right
+		return false
 	}
 	return left.compact == right.compact &&
 		left.coreGeneration == right.coreGeneration &&
 		left.language == right.language &&
-		left.metadata.Value() == right.metadata.Value() &&
-		left.dfa.equal(right.dfa) &&
+		(left.metadata == right.metadata || left.metadata.Value() == right.metadata.Value()) &&
+		left.dfa.equal(&right.dfa) &&
 		left.beforeCheckpoint == right.beforeCheckpoint &&
 		left.afterCheckpoint == right.afterCheckpoint &&
 		bytes.Equal(left.beforeCheckpointBytes, right.beforeCheckpointBytes) &&
