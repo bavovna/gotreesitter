@@ -279,7 +279,7 @@ func TestCompactLegacyReadsPreserveBoundaryAndProjectionProofs(t *testing.T) {
 	nodes[3].endPoint.Column++ // A compatibility rewrite also revokes proof.
 	failedID := core.SubtreeID(len(nodes) - 1)
 	s.reuseDependencies.leafWords = make([]uint32, len(nodes))
-	s.reuseDependencies.leafWords[7] = legacyReuseLeafKnown | legacyReuseKeyword
+	incr.SetLeafReceipt(s.reuseDependencies.leafWords, 7, legacyReuseLeafKnown|legacyReuseKeyword)
 	err := s.publishCompactLegacyReads(arena, nodes, func(id core.SubtreeID) (core.SubtreeGeometry, error) {
 		if id == failedID {
 			return core.SubtreeGeometry{}, errors.New("unavailable projection")
@@ -398,6 +398,25 @@ func TestCompactLegacyProjectionMarkersClearOnFailure(t *testing.T) {
 }
 
 func TestCompactLegacyReadScratchReuse(t *testing.T) {
+	t.Run("packed_tail_revocation", func(t *testing.T) {
+		s := &diagnosticParserCoreGenericScheduler{compact: &core.Core{}}
+		s.reuseDependencies.reads = incr.NewReads(1)
+		s.reuseDependencies.leafWords = make([]uint32, 2)
+		for _, id := range []uint32{7, 16} {
+			incr.SetLeafReceipt(s.reuseDependencies.leafWords, id, legacyReuseLeafKnown|legacyReuseKeyword)
+		}
+		var err error
+		s.endCompactLeafReceipt(0, Token{}, &err)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, id := range []uint32{7, 16} {
+			if got := incr.LeafReceipt(s.reuseDependencies.leafWords, id); got != 0 {
+				t.Fatalf("truncated leaf receipt %d retained provenance %x", id, got)
+			}
+		}
+	})
+
 	d := &dfaTokenSource{language: &Language{}, lexer: NewLexer(nil, make([]byte, 512))}
 	s := &diagnosticParserCoreGenericScheduler{tokenSource: d}
 	s.beginCompactLegacyReads()
