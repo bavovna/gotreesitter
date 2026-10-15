@@ -509,6 +509,22 @@ verify; observation is separate from performance measurements. Evidence is
 local `gotreesitter-evidence/20261015-yaml-frontier-census` and its `requests`
 subdirectory, including complete request comparisons and pinned overlays.
 
+Two further probes on the same `bb5022df4` source compare each owned request's
+complete after-DFA/scanner snapshot with the shared election's saved checkpoint
+payload and current cursor. Both requests match the shared **before and after**
+values on all three witnesses. Six observed/unobserved cases preserve work,
+headers, routes and trees; the observers neither re-lex nor publish ownership.
+
+The ordinary survivor's shared shift originates in state **819**, at byte
+**345 / 349 / 349** for R4/four/sixteen documents. It uses exactly the shared
+token and begins at the shared before-cursor. The owned request retained for
+that sequence instead originates in **1756**. Reductions can separate a
+lookahead request from its later shift state; the last shift cannot stand in
+for the original request's identity. A cheaper certificate must preserve the
+actual request state and sequence through those reductions. These are
+read-only diagnostics, not an admitted proof or throughput improvement.
+Evidence adds `shared-after` and `shared-shift` beneath the frontier census.
+
 ### Go read-history census: exact bounds need less storage
 
 A diagnostic on `bb5022df4` records the history immediately before sealing.
@@ -672,6 +688,77 @@ materialization **19.61%** cumulative CPU, with **4.22%** flat copies. These
 shares overlap. They identify dispatch/reduction work for the next throughput
 experiment; they do not establish a further speedup or close #1313/#1319.
 Ordinary YAML activation and compact graduation remain gated.
+
+### Fresh reduction publication split: discarded
+
+On core parent `bb5022df4`, a two-file overlay separates the existing fresh
+single-output publication from the general frontier builder. The internal
+eligibility predicate retains all original freshness/history/pop/reference
+conditions. The adapter restricts the small publisher to fresh, single-header,
+non-recovery, shared-lexer, ordinary-token rows without an action-selection
+override or full receipts. Core still performs the same authenticated reduction. Other cases
+retain the general publisher. Native assembly changes the reduction function's
+reserved frame from **1,400 to 800 bytes**, plus **112 bytes** in the publisher;
+these static reservations are not total stack usage or a speed measurement.
+
+Core units, focused C4/root ownership/rollback tests, Go/YAML edit invariants
+and focused locked-C comparisons pass. All **412 ordinary rows** and **two
+owned-YAML rows** are exactly unchanged before timing. Twenty alternating
+shuffled pairs use the repository runner, one language/process/seed/role,
+`GOMAXPROCS=1`, 750 ms, `-count=1`, `-benchmem`, CPU 6 and serialized 6 GiB Docker:
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Compact Go query_compile | 9.814483 → 9.786957 ms | .841 |
+| Compact Go grammargen_lr | 104.989754 → 104.506568 ms | .461 |
+| Go R4 compact | 826.524 → 822.353 µs | .314 |
+| Owned YAML R4 | 354.9105 → 356.623 µs | .779 |
+| Owned YAML 8 KiB | 1.379104 → 1.383649 ms | .547 |
+| Go full DFA control | 3.881011 → 4.004763 ms (**+3.19%**) | <.001 |
+| Go single-byte edit control | 99.172 → 99.2015 µs | .826 |
+| Go no-edit control | 3.069 → 3.1685 ns (**+3.24%**) | <.001 |
+
+All byte/allocation medians remain identical, including no-edit zero. Timed
+node-work and routes stay exact. There is no supported affected-path speed or
+allocation benefit. The full/no-edit controls bypass the changed publication
+path; retain their directions without causal attribution. Reject this trade
+and keep runtime unchanged. It is not a hard 10% ratchet failure. No full-fleet,
+race or RSS qualification follows this timing screen, and no earlier
+qualification transfers. All samples, source pins and terminal exits verify
+without OOM/timeout. Evidence is local
+`gotreesitter-evidence/20261015-fresh-reduction-publication`, including the
+external patch, assembly, complete medians, benchstat and disposition.
+
+### Graph-link storage: a larger representation target
+
+A separate read-only census on `bb5022df4` inspects completed Go graph arenas.
+Observed and unobserved parses retain identical complete core/scheduler work,
+public structure and reuse eligibility. The current node and link records each
+occupy **32 bytes**. Counts include retained history, not rolled-back records:
+
+| File | Node / link records | Single-link nodes | Single-path nodes with one link | Unique zero-score/order-free links | Largest branch order |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| rewrite | 2,996 / 2,995 | 2,850 | 2,499 | 1,513 | 168 |
+| query_compile | 14,663 / 14,662 | 14,051 | 13,608 | 8,956 | 685 |
+| language | 15,074 / 15,073 | 14,263 | 13,097 | 7,311 | 618 |
+| grammargen_lr | 148,368 / 148,367 | 140,932 | 121,312 | 72,699 | 8,155 |
+
+Large Go retains **176,720 slots / 5,655,040 bytes in each arena**. Among the
+72,699 uniquely referenced zero-score/order-free single-path links, their
+nodes retain nonzero running precedence in **72,638** cases. That 64-bit
+precedence remains required. All recorded branch-order values fit fourteen
+bits on these witnesses; the general runtime still needs the full 64-bit
+range, including a wide form. No absent-order record has a nonzero stored
+order on these inputs.
+
+This ranks physical link storage as a larger target than another scheduler
+frame split. A representation change must preserve exact scores, full order
+values, stable LinkIDs, adjacency, ownership, rollback and checked budgets.
+The census omits external LinkID references and rollback lifetimes and cannot
+authorize link removal or merging. It establishes neither an RSS saving nor a
+throughput result. All four cases pass with pinned source and terminal exit
+zero. Evidence is local `gotreesitter-evidence/20261015-gss-link-storage-census`
+and its `orders` subdirectory. No runtime or graduation policy changes.
 
 ### One-pass selected projection: qualified output win
 
