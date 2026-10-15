@@ -826,6 +826,19 @@ Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain
 the initial wrong election filter and the passing direct/chained probes remain
 separate. Ordinary YAML and compact graduation stay gated.
 
+### Layout and dispatch follow-ups: three rejected screens
+
+Three independent screens on `c498e889e` preserve all 414 deterministic rows
+and pass focused correctness checks. Packing lineage flags shrinks each dense
+record 32→28 bytes but establishes no compact throughput win; its owned YAML
+stream direction is +0.67% (p=.040). Exact immutable wrapper reuse leaves public
+allocation counts unchanged and slows the two affected YAML benchmarks
+0.84% / 0.81%. Compiled pure-reduction cohorts slow canonical query and large
+Go about 1.67% each (p<.001). All are rejected. The
+[focused receipt](compact-layout-dispatch-screens-20261015.md) records the paired
+measurements, controls, discarded partial run and qualification limits. No
+runtime or graduation change follows; all merges to main remain held.
+
 ### Lineage proof sharing: smaller storage, rejected throughput
 
 On `c498e889e`, an exact immutable interner reduces retained large-Go lineage

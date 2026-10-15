@@ -70,9 +70,9 @@ claim. No source-only review substitutes for tests or merge approval.
 
 **No full 206-session invariant fleet, 618-fixture C fleet, strict 204-row census,
 race, memory-budget, or large-file RSS qualification is transferred to this
-rejected runtime.** The prior qualified core is unchanged. The next independent
-screen packs two booleans in the existing dense record, avoiding the interner;
-it has no performance or promotion claim in this receipt.
+rejected runtime.** The prior qualified core is unchanged. The independent
+[dense flag-packing follow-up](compact-layout-dispatch-screens-20261015.md)
+also fails to establish a compact throughput gain and remains unpromoted.
 
 ## YAML retry-cache attribution
 
