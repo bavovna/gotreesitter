@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-15 (UTC).
-Latest Go/YAML screen baseline: `dbdf56887b37f769dad88f4563b01e6f5fd92dde`.
+Latest Go/YAML route and attribution baseline: `fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -293,6 +293,72 @@ the remaining graduation obligations stay gated. Evidence is local
 `gotreesitter-evidence/20261015-borrowed-header-accessors`, including the exact
 source pins, reference/build-tag audit, counter JSON and before/after assembly
 with checked `duffcopy` address ranges.
+
+### Current public routes: small Go and owned YAML remain behind
+
+A fresh route comparison pins the qualified `fb4c8acc4` runtime. Twenty seeds
+compare each route in its own shuffled process with the repository runner,
+750 ms, `-count=1`, `-benchmem`, `GOMAXPROCS=1`, CPU 6 and serialized 6 GiB Docker.
+Go route order alternates evenly; every route occupies each position ten times.
+The three YAML routes occupy each position six or seven times. The initial
+YAML order audit found an 8/6/6 imbalance before its timing medians were
+inspected; those samples are excluded and YAML alone is rerun with balanced
+order. Normalized comparison files change benchmark names only.
+
+| Witness | Legacy time | Compact time | Compact / legacy | p |
+| --- | ---: | ---: | ---: | ---: |
+| Go R4 | 668.821 µs | 860.107 µs | **1.286× (+28.60%)** | <.001 |
+| Go query_compile, 20 KiB | 10.947 ms | 9.812 ms | **0.896× (−10.37%)** | <.001 |
+| Go grammargen_lr, 235 KiB | 128.251 ms | 104.678 ms | **0.816× (−18.38%)** | <.001 |
+| YAML R4, ordinary attempt and fallback | 151.747 µs | 202.416 µs | **1.334× (+33.39%)** | <.001 |
+| YAML R4, diagnostic owned compact | 151.747 µs | 366.641 µs | **2.416× (+141.61%)** | <.001 |
+
+Go compact accepts every timed parse without fallback; all eight locked-C
+comparisons on four canonical Go files and both routes pass. The ordinary YAML
+attempt still falls back every time, while the owned route accepts every time.
+The qualified runtime's earlier YAML correctness evidence remains separate
+from this throughput measurement. Small Go and ordinary YAML remain graduation
+blockers; the larger Go wins do not establish the all-language E-A gate.
+
+Allocation medians show another gap. Go legacy/compact bytes and allocations
+are **2,712 / 11 versus 1,696 / 25** for R4, **3,552 / 18 versus 141,136 / 205**
+for 20 KiB, and **16,632 / 146 versus 3,295,728 / 3,092** for 235 KiB. YAML
+legacy, ordinary attempt and owned compact retain **1,440 / 16**, **17,144 / 37**
+and **12,936 / 111**. These are current-route comparisons, not accumulated
+improvement percentages or C speed measurements. All processes exit zero
+without OOM or timeout and all source pins verify. Evidence is local
+`gotreesitter-evidence/20261015-public-route-gap`, with the accepted YAML samples
+and order audit in `yaml-balanced` and the initial exclusion recorded separately.
+
+### Steady Go allocations: dependency storage and immutable publication
+
+Separate allocation profiles on `fb4c8acc4` use allocation sampling rate one
+and 32 warm Parse/Release iterations per Go file. Fixture setup is outside a
+unique profiled caller; collections run only after the loop to flush delayed
+records without clearing warm pools before measurement. These diagnostic runs
+allocate **4,516,680 bytes / 6,565 objects** for 20 KiB and **105,463,904 bytes /
+98,953 objects** for 235 KiB. Their per-parse totals agree closely with the
+unprofiled allocation medians above; profile timing is not throughput evidence.
+
+For large Go, lexer `Reads.Record` allocates **2,096,128 bytes per parse** and
+compact leaf-receipt storage allocates **1,048,064 bytes per parse**. Together
+they account for about **95.4% of steady allocated bytes**. Immutable version
+state accounts for **1,569 objects per parse**, principally through recovery
+baseline publication; link-record clones account for another **1,376 objects**.
+These are about **50.7% and 44.5% of steady objects** respectively. Percentages
+use the isolated steady-loop totals, not pprof's whole-process denominator.
+The lexer-read buffer is distinct from incremental PR #1480's arena dependency
+index; that PR's full-parse allocation medians remain unchanged.
+
+Separate small-Go CPU profiles put dispatch at **46.35% cumulative CPU**,
+reduction at **17.49%**, election at **15.45%** and materialization at **15.28%**
+on the compact route. Legacy-read publication accounts for **4.41% cumulative**
+and copies for **3.57% flat**. The compact profile contains 5.89 CPU seconds;
+legacy contains 6.65. Cumulative shares overlap and differing totals do not
+establish speedups. No storage, ownership or proof rule changes follow from
+this attribution alone. Both profiling processes and the allocation runs exit
+zero on pinned source. Evidence is local
+`gotreesitter-evidence/20261015-go-allocation-attribution`.
 
 ### One-pass selected projection: qualified output win
 
