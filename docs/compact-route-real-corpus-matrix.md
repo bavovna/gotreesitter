@@ -525,6 +525,19 @@ actual request state and sequence through those reductions. These are
 read-only diagnostics, not an admitted proof or throughput improvement.
 Evidence adds `shared-after` and `shared-shift` beneath the frontier census.
 
+A read-only grammar-table probe further narrows that state relationship.
+The ordinary election state **809**, owned request origins **1756 / 1748**,
+and ordinary shift state **819** have identical complete lexer modes: DFA
+state 0, external state 9, and the same 17-symbol external validity row. The
+resulting survivor state **696** instead uses external state **44**, whose row
+contains only symbols 20 and 112. The original lexer request must therefore
+remain tied to its origin through reduction and shift; the resulting head's
+state cannot reconstruct it. Equal lexer modes alone do not authenticate
+request ownership or all state-dependent token-source behavior. No certificate,
+route change, or speed result follows. The probe passes on pinned `bb5022df4`
+with terminal exit zero; evidence is
+`gotreesitter-evidence/20261015-yaml-frontier-census/lex-modes`.
+
 ### Go read-history census: exact bounds need less storage
 
 A diagnostic on `bb5022df4` records the history immediately before sealing.
@@ -759,6 +772,126 @@ authorize link removal or merging. It establishes neither an RSS saving nor a
 throughput result. All four cases pass with pinned source and terminal exit
 zero. Evidence is local `gotreesitter-evidence/20261015-gss-link-storage-census`
 and its `orders` subdirectory. No runtime or graduation policy changes.
+
+### Packed graph links: storage saving, rejected throughput screen
+
+On core parent `bb5022df4`, an external overlay stores physical graph links in
+24 bytes instead of 32. It preserves LinkIDs, full signed score deltas, and
+full unsigned 64-bit orders. Common orders share the flags word; wide orders
+use a sorted sparse history keyed by LinkID. Rollback truncates that history
+with the graph, and EOF recovery shadows copy it independently. A regression
+first reproduces an aliased wide-order shadow, then passes after the copy fix.
+Unknown flags and malformed or missing wide orders fail closed.
+
+A deterministic retained-capacity comparison preserves node/link counts and
+capacities on all four canonical Go files. Large Go's link arena falls from
+**5,655,040 to 4,241,280 bytes (−25%)**, and recorded total core footprint falls
+from **26,056,865 to 24,643,105 bytes (−5.43%)**. No wide orders occur on these
+four files. These are core capacity measurements, not process RSS or per-parse
+allocations. A wide record instead needs 40 bytes on amd64, versus 32 before;
+the common-case compression does not bound the general order domain.
+
+The complete standard, phase0A, and EOF-shadow core suites, focused Go/YAML
+72-step incremental invariants, no-edit zero allocations, and focused locked-C
+checks pass. All **412 ordinary plus two diagnostic-owned ledger rows are
+exactly unchanged** before timing. Twenty paired shuffled seeds then use the
+repository randomized runner, alternating roles, 750 ms, `-count=1`, `-benchmem`,
+`GOMAXPROCS=1`, CPU 6, and serialized 6 GiB Docker:
+
+| Witness | Before | Packed links | Change | p |
+| --- | ---: | ---: | ---: | ---: |
+| Go query_compile, 20.2 kB | 9.872462 ms | 10.336749 ms | **+4.70%** | <.001 |
+| Go grammargen_lr, 235.6 kB | 106.417349 ms | 109.173475 ms | **+2.59%** | .009 |
+| Go R4 | 835.763 µs | 866.577 µs | **+3.69%** | <.001 |
+| Owned YAML R4 | 352.574 µs | 363.330 µs | **+3.05%** | <.001 |
+| Owned YAML stream, 8,012 bytes | 1.370737 ms | 1.422958 ms | **+3.81%** | <.001 |
+| Full-DFA control | 3.951727 ms | 3.924229 ms | −0.70%, inconclusive | .678 |
+| Single-byte-edit control | 99.719 µs | 99.310 µs | −0.41%, inconclusive | .277 |
+| No-edit control | 3.098 ns | 3.188 ns | **+2.91%** | <.001 |
+
+All five compact witnesses retain identical allocation medians: respectively
+138,739 / 130, 3,251,728 / 1,717, 1,600 / 22, 12,872 / 109, and 44,313 / 336
+bytes / allocations. The no-edit control bypasses the link codec and remains
+zero bytes / zero allocations; its change is recorded without causal
+attribution. The smaller physical layout does not qualify as a throughput win.
+A tagged CPU profile identifies link expansion during reduction and publication
+validation, plus the new packing call, for a separate follow-up. An initial
+profile omitted the required tag, executed no benchmark, and is excluded.
+
+The measured revision is not promoted. No full 206-language invariant fleet,
+618-check C fleet, strict corpus sweep, race qualification, or RSS gate is
+claimed for it. All focused, capacity, and randomized jobs exit zero without
+OOM or timeout, and source pins verify. Evidence is local
+`gotreesitter-evidence/20261015-packed-graph-links`, including the frozen source,
+414-row comparison, capacity records, raw samples, medians, profiles, and the
+first-screen disposition.
+
+### Packed-link hot readers: rejected follow-up
+
+A second frozen overlay keeps the same representation but reads packed links
+directly in single-link reduction and node publication validation. Common
+appends pack their fields locally; wide-order and invalid-flag cases retain
+the checked fallback. Additional tests preserve wide orders through the hot
+pop path, including trailing extras, and reject missing, malformed, or reserved
+storage in both hot readers. These hot-reader and default codec tests pass on
+amd64 and 386. The standard, phase0A, and EOF-shadow core suites, focused
+Go/YAML invariants and C checks pass again; all **414 ledger rows remain exact**.
+
+Twenty new paired shuffled seeds use the same runner and settings. These are
+separate comparisons against `bb5022df4`, not paired with the first screen:
+
+| Witness | Before | Packed hot readers | Change | p |
+| --- | ---: | ---: | ---: | ---: |
+| Go query_compile | 9.745135 ms | 9.899591 ms | **+1.58%** | <.001 |
+| Go grammargen_lr | 102.708431 ms | 104.682848 ms | **+1.92%** | <.001 |
+| Go R4 | 819.702 µs | 828.331 µs | **+1.05%** | <.001 |
+| Owned YAML R4 | 352.158 µs | 354.520 µs | +0.67%, inconclusive | .096 |
+| Owned YAML stream, 8,012 bytes | 1.373524 ms | 1.381539 ms | +0.58%, inconclusive | .221 |
+| Full-DFA control | 3.862722 ms | 3.853248 ms | −0.25%, inconclusive | .583 |
+| Single-byte-edit control | 98.594 µs | 99.052 µs | **+0.46%** | .011 |
+| No-edit control | 3.0665 ns | 3.0925 ns | **+0.85%** | .001 |
+
+Every allocation median is unchanged, including zero-byte, zero-allocation
+no-edit parsing. The edit and no-edit controls bypass the packed-link code;
+their changes are recorded without causal attribution. This revision also
+remains outside the runtime PR. It has no full fleet, race, or RSS qualification.
+All gate and randomized jobs exit zero without OOM or timeout; frozen source
+pins verify. Evidence is the `lazy-view` subdirectory of
+`gotreesitter-evidence/20261015-packed-graph-links`.
+
+### Packed-link scalar views: rejected final screen
+
+A third frozen overlay extends direct packed-record access to the remaining
+scalar-only readers. Full logical records are expanded where scratch or an API
+actually requires one; those common decodes no longer return a Boolean tuple.
+The same full-width fallback, storage validation, rollback, clone isolation,
+and error checks remain. Standard, phase0A, and EOF-shadow core suites, focused
+Go/YAML invariants and locked-C checks, and hot/default codec tests on amd64
+and 386 pass. All **414 work/reuse rows are exactly unchanged before timing**.
+
+Twenty independent paired seeds against `bb5022df4` use the same randomized
+runner and stable settings:
+
+| Witness | Before | Packed scalar views | Change | p |
+| --- | ---: | ---: | ---: | ---: |
+| Go query_compile | 9.753381 ms | 9.859785 ms | **+1.09%** | <.001 |
+| Go grammargen_lr | 103.421419 ms | 105.471250 ms | **+1.98%** | <.001 |
+| Go R4 | 822.777 µs | 831.296 µs | **+1.04%** | .012 |
+| Owned YAML R4 | 352.152 µs | 352.462 µs | +0.09%, inconclusive | .883 |
+| Owned YAML stream, 8,012 bytes | 1.368129 ms | 1.374845 ms | +0.49%, inconclusive | .063 |
+| Full-DFA control | 3.878085 ms | 3.862955 ms | −0.39%, inconclusive | .134 |
+| Single-byte-edit control | 99.156 µs | 99.149 µs | −0.01%, inconclusive | .512 |
+| No-edit control | 3.0565 ns | 3.0750 ns | **+0.61%** | .001 |
+
+Every allocation median remains unchanged; no-edit parsing stays at zero
+bytes and allocations. The no-edit control bypasses the codec, so its direction
+is recorded without causal attribution. All jobs exit zero without OOM or
+timeout, and all frozen source pins verify. This revision is also rejected
+without full-fleet, race, or RSS qualification. The 24-byte layout has not
+produced a throughput win across these three independently paired revisions;
+none enters the runtime PR. Evidence is the `scalar-views` subdirectory of
+`gotreesitter-evidence/20261015-packed-graph-links`, including its unchanged
+ledger, source, regressions, raw samples, medians, and disposition.
 
 ### One-pass selected projection: qualified output win
 
