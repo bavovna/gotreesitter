@@ -570,6 +570,10 @@ jobs:
           TestParserCoreCorridorPassMixReceipt
           TestParserCoreCorridorReduceChainIncrementalReceipt
           TestParserCoreCorridorReduceShiftIncrementalReceipt
+          TestParserCoreCorridorReduceShiftLandingMismatchFallsBack
+          TestParserCoreCorridorReduceShiftPreservesDispatchPolls
+          TestParserCoreCorridorReduceShiftRejectsInvalidLanding
+          TestParserCoreCorridorReduceShiftRequiresUnaryProof
           TestParserCoreCorridorRuntimeEquivalence
           TestParserCoreCorridorStreamValidation
           TestParserCoreCorridorTableShapeReceipt
