@@ -1,8 +1,9 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-15 (UTC).
-Latest Go/YAML route and attribution baseline: `fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054`.
-The newer leaf-allocation comparison uses incremental-lane baseline `a32d87b6d23b090fef2559380b44bfb2c86a800e`.
+Latest core link-comparison baseline: `fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054`.
+The read-history comparison uses incremental-lane parent `a977238f9eb1548ea671dedecb6750f58906bc43`.
+The earlier leaf-allocation comparison uses incremental-lane baseline `a32d87b6d23b090fef2559380b44bfb2c86a800e`.
 Earlier comparisons below name their own baselines. Canonical Go files
 `query_compile` and `grammargen_lr` contain 20,168 and 235,626 bytes respectively.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
@@ -481,6 +482,53 @@ execution. This census is diagnostic evidence, not throughput or graduation
 evidence. All six cases, pins and terminal exit zero verify. Evidence is local
 `gotreesitter-evidence/20261015-yaml-stop-census`.
 
+### YAML live frontier: identify the missing lexer certificate
+
+A follow-up on `bb5022df4` observes the live frontier immediately before the
+first drop decision. The observer preserves complete scheduler/core work and
+header values; observed and unobserved parses retain identical routes, public
+node/token counts, S-expressions, spans and error flags on all six cases above.
+Ordinary and owned parsing reach the same two states (**696 / 1748**), header
+sequences (**0 / 2**), scanner checkpoints and alternative sets. The survivor
+is blended in both modes. Ordinary parsing therefore still lacks the required
+non-blended coverage witness.
+
+Owned parsing instead authenticates one request per header: originating states
+**1756 / 1748**, equal before/after checkpoint IDs, equal complete before/after
+snapshots, identical tokens and no ragged spans. Both before snapshots equal
+the shared election's saved DFA/scanner state. The shifted survivor consumes
+its own sequence-matched request; the paused dropped header retains its own.
+The ordinary shared election lists state **809**, which is not proof that
+either eventual header independently requested this token. Token equality or
+checkpoint equality alone cannot replace that missing provenance.
+
+This narrows the next design question to the cost of authenticating each
+header's lexical viability. It authorizes no coverage waiver, owner shortcut,
+ordinary-route change or graduation. All six cases and terminal exit zero
+verify; observation is separate from performance measurements. Evidence is
+local `gotreesitter-evidence/20261015-yaml-frontier-census` and its `requests`
+subdirectory, including complete request comparisons and pinned overlays.
+
+### Go read-history census: exact bounds need less storage
+
+A diagnostic on `bb5022df4` records the history immediately before sealing.
+Observed and unobserved compact parses have identical public trees, spans,
+error flags and actual routes on four canonical Go files:
+
+| File | Recorded entries | Distinct origins | Prefix-bound increases | Largest read width |
+| --- | ---: | ---: | ---: | ---: |
+| rewrite | 1,676 | 1,667 | 1,665 | 92 bytes |
+| query_compile | 8,177 | 8,137 | 8,112 | 94 bytes |
+| language | 8,332 | 8,307 | 8,303 | 85 bytes |
+| grammargen_lr | 85,028 | 84,740 | 84,622 | 92 bytes |
+
+Large Go retains nearly every bound, so deduplication has little coverage.
+Its backing array grows to **131,072 eight-byte entries**, while its narrow
+read widths suggest a smaller exact representation. This is storage
+attribution, not a throughput result or permission to weaken dependency
+bounds. All four cases pass and the pinned container exits zero. Evidence is
+local `gotreesitter-evidence/20261015-read-history-census`.
+
 ### Packed leaf receipts: qualified Go allocation win
 
 On incremental-lane baseline `a32d87b6d`, pack the two leaf-provenance flags
@@ -546,6 +594,84 @@ It is independent of the core/header timing comparison above. Ordinary YAML
 activation, compact graduation and #1317's mutex removal remain open. Evidence
 is local `gotreesitter-evidence/20261015-packed-leaf-receipts-bounded`; the
 excluded initial comparison is `20261015-packed-leaf-receipts-incr`.
+
+### Packed read history: qualified Go allocation win
+
+On incremental-lane parent `a977238f9`, encode each lexer scan origin and
+exact examined width in one 32-bit word when they fit. Source size determines
+the split; a wider read promotes the history to two words per record. Charge
+storage before growth or promotion, and abstain when unfunded. Sealing retains
+all failed reads and the same prefix maxima, including separate parent and
+leaf boundary rules. An earlier probe's width bounds its contribution at any
+later origin, so sealed prefix maxima still fit the packed form. Reset clears
+authorization; the shared **64 KiB** retention ceiling stays unchanged.
+
+Twenty alternating shuffled pairs use the repository runner, one
+language/process/seed/role, `GOMAXPROCS=1`, 750 ms, `-count=1`, `-benchmem`, CPU 6
+and serialized 6 GiB Docker. All 412 ordinary rows and two owned-YAML rows
+remain exactly identical before timing. All measured node counts and routes
+stay exact.
+
+| Compact Go file | B/op before → after | Allocations before → after |
+| --- | ---: | ---: |
+| query_compile, 20,168 bytes | **140,563 → 10,512 (−92.52%)** | **203 → 196 (−3.45%)** |
+| grammargen_lr, 235,626 bytes | **2,247,664 → 1,199,600 (−46.63%)** | **3,081 → 3,081** |
+
+The smaller file's complete history now fits within the existing retained
+allowance, avoiding repeated buffer growth. Larger histories still drop
+oversized capacity. Other byte/allocation medians remain identical: Go R4
+**1,696 / 25**, owned YAML **12,936 / 111** and **44,601 / 345**, and default
+full/edit/no-edit controls **1,159 / 6**, **394 / 5**, **0 / 0**.
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Compact Go query_compile | 10.222411 → 10.102711 ms | .127 |
+| Compact Go grammargen_lr | 108.562575 → 107.897197 ms | .698 |
+| Go R4 compact | 861.4215 → 867.2055 µs | .429 |
+| Owned YAML R4 | 415.106 → 418.064 µs | .779 |
+| Owned YAML 8 KiB | 1.545531 → 1.570377 ms | .718 |
+| Go full DFA control | 3.919085 → 3.916125 ms | .327 |
+| Go single-byte edit control | 100.471 → 99.1855 µs | .091 |
+| Go no-edit control | 3.1235 → 3.1565 ns (**+1.06%**) | .048 |
+
+This is an allocation win; all affected throughput directions are
+inconclusive. The no-edit control bypasses history construction and retains
+zero allocation. Record its 0.033 ns increase without attributing it to this
+change. No deterministic-counter exception or baseline reset is requested.
+
+Final engine source passes **206 invariant sessions**, **618 locked-C fixture
+checks**, full incremental/core suites, correct-tag phase0A,
+incremental/core/root/YAML races and six memory-budget trials. All **204 strict
+census rows are exactly identical: 159 PASS / 45 known FAIL**, including
+**120 actual compact/C-exact acceptances**. Four canonical Go/C comparisons
+pass. Long-comment and raw-string Go witnesses force wide storage after short
+probes and match C on initial, incremental-edited and fresh-edited trees (six
+further comparisons). Reference-model tests exercise both cursor directions,
+source-width limits, restores, promotion, budget denial and reset. The initial
+screen's old eight-byte budget expectation is corrected while retaining its
+one-growth/next-growth-refusal assertions; that screen is excluded. A launcher
+race refused timing before the correctness exit file existed and produced no
+samples; the unchanged runner starts only after observed correctness exit zero.
+
+Native promoted source repeats incremental units and root retention/budget
+tests. Budget peaks are **1,049,072 / 12,556 bytes**. The **1,049,572-byte /
+524-document YAML stream** stays C-exact with complete coverage, no
+error/fallback and **156,396 KiB process RSS**. This single Go+C probe is not a
+controlled RSS comparison or graduation memory certificate. L0 stays
+**756 root files / 12 API tag sets** and R6 **454 language-name uses / 101
+environment reads**. Package execution coverage, 64 workflow selectors and
+selector units pass. All pins and terminal exits verify without OOM/timeout.
+Buckley `16c4519298cc41027b4dff47c0f2821b837ee293` promotes the win in
+[incremental PR #1480](https://github.com/odvcencio/gotreesitter/pull/1480).
+Evidence is local `gotreesitter-evidence/20261015-packed-read-history/bounded`.
+Earlier allocation comparisons remain independent and are not added.
+
+The final-source Go CPU profile has **6.63 seconds** of samples: dispatch
+**41.78%**, reduction application **26.70%**, election **17.50%** and
+materialization **19.61%** cumulative CPU, with **4.22%** flat copies. These
+shares overlap. They identify dispatch/reduction work for the next throughput
+experiment; they do not establish a further speedup or close #1313/#1319.
+Ordinary YAML activation and compact graduation remain gated.
 
 ### One-pass selected projection: qualified output win
 
