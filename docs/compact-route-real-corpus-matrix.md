@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-15 (UTC).
-Latest Go/YAML screen baseline: `70b27618117e60eecd6e1aaa26552aa81b37f22a`.
+Latest Go/YAML screen baseline: `dbdf56887b37f769dad88f4563b01e6f5fd92dde`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -163,6 +163,93 @@ publication. This keeps dispatch/copy and publication work ahead of a raw
 lexer cache as the next Go investigation. It is attribution, not an additional
 throughput result, and its allocation output is not mixed into the twenty-pair
 comparison.
+
+### Direct snapshot capture: discarded
+
+On baseline `dbdf56887b37f769dad88f4563b01e6f5fd92dde`, a separate six-file
+trial changes the existing scratch-snapshot method to fill a caller-provided
+destination. It preserves scanner serialization, scratch clearing and snapshot
+restoration, and adapts all ordinary, owned and EOF-quiescence callers. An
+expanded zero-payload regression checks stale destination slices as well as
+the existing zero-allocation and independent before/after scratch contracts.
+Focused lexer/rollback/ownership/EOF tests, Go/YAML edit invariants and locked-C
+checks pass. All 412 ordinary work/reuse rows and the owned-YAML rows remain
+identical before timing.
+
+Twenty alternating shuffled pairs use the same runner and pinned settings as
+the qualified equality comparison:
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Public compact Go, 20 KiB | 10.193 → 10.076 ms | .211 |
+| Public compact Go, 235 KiB | 107.741 → 107.562 ms | .529 |
+| Go R4 compact | 852.587 → 845.779 µs | .698 |
+| Go full DFA control | 3.890 → 3.942 ms (**+1.34%**) | .009 |
+| Go single-byte edit control | 99.693 → 99.487 µs | .995 |
+| Go no-edit control | 3.1315 → 3.1275 ns | .794 |
+| Owned YAML R4 | 362.671 → 360.558 µs | .149 |
+| Owned YAML 8 KiB | 1.410 → 1.401 ms (**−0.65%**) | .014 |
+
+Every compact Go direction is inconclusive. The small YAML gain does not
+justify the full-DFA control regression, so the runtime trial is discarded.
+All byte/allocation medians remain identical, including no-edit zero. The
+8 KiB byte sample distributions differ (p=.008), while both medians remain
+44,601 B/op. Public-node and route/fallback counts stay exact. All samples and
+source pins verify, and the pipeline exits zero without OOM or timeout. Full
+fleet/race/RSS qualification is withheld after this timing screen. The qualified
+equality win and PR #1485 remain unchanged. Evidence is local
+`gotreesitter-evidence/20261015-direct-snapshot-capture`, including the external
+patch, raw samples, benchstat, exact medians and disposition.
+
+### Retained subtree duplication: limited interning coverage
+
+A read-only, post-parse census on the same `dbdf56887` baseline compares retained
+compact subtree records, their field/alias vectors and either exact child IDs
+or recursively canonicalized child-record identities:
+
+| Go witness | Retained records | Nonterminal records | Exact-child duplicates | Recursive duplicates |
+| --- | ---: | ---: | ---: | ---: |
+| rewrite | 2,613 | 1,504 | 12 | 28 |
+| query_compile | 12,961 | 7,415 | 21 | 64 |
+| language | 12,998 | 7,623 | 80 | 231 |
+| grammargen_lr | 129,665 | 75,769 | 728 | 1,857 |
+
+For large Go, exact-child duplicates are **0.96% of nonterminal records**;
+recursive duplicates are **2.45%**, or **1.43% of all retained records**. Every
+reported duplicate nonterminal has a nonempty span. These are retained-record
+counts, not a census of records removed by rollback or a CPU saving estimate.
+The identity deliberately omits sparse provenance, ownership and dependency
+receipts, so it cannot authorize interning or merging. Observation preserves
+complete core/scheduler work, public structure and reuse eligibility on all four
+witnesses. The container exits zero on verified source pins. This ranks a new
+record-interning table below the measured dispatch/copy and publication targets;
+no cache or merge rule is added. Evidence is local
+`gotreesitter-evidence/20261015-subtree-duplication-census`, with source, raw
+logs and parsed census JSON.
+
+### Borrowed header accessors: verified copy removal, timing pending
+
+A separate one-file trial on `dbdf56887` borrows headers for seven read-only
+version-state/recovery accessors. Their bodies and the 88-byte header layout
+remain unchanged. A scan of all 756 explicitly named root Go files finds no
+bound getter method values; the four same-name numeric field references are
+reviewed separately. All 25 caller files' build constraints are covered by the
+checked default and `gts_parsercorephase0` builds.
+
+All 412 ordinary rows and owned-YAML rows remain identical. Focused root,
+canonical/ownership/lifecycle, Go/YAML edit-invariant and locked-C checks pass.
+Assembly confirms that the canonicalizer's static calls into `runtime.duffcopy`
+decrease **11→4**; the seven removed sites copied complete headers for field
+reads, including an inlined getter. The remaining four sites belong to the
+generic ownership-remap adapter. This function's explicit stack reservation
+decreases **408→400 bytes**. These are static compiler results, not executed
+copy counts or a throughput gain.
+
+The candidate remains external while twenty shuffled Go/YAML pairs run. Full
+fleet/race/RSS qualification remains pending. Evidence is local
+`gotreesitter-evidence/20261015-borrowed-header-accessors`, including the exact
+source pins, reference/build-tag audit, counter JSON and before/after assembly
+with checked `duffcopy` address ranges.
 
 ### One-pass selected projection: qualified output win
 
