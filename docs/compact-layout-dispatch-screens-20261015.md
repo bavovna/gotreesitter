@@ -1,7 +1,7 @@
 # Compact layout and dispatch screens
 
 Evidence date: 2026-10-15 UTC. Each independent comparison starts at
-`c498e889ec2d86382a3a0baad58020d7df7145b3`. All five prototypes remain outside
+`c498e889ec2d86382a3a0baad58020d7df7145b3`. All six prototypes remain outside
 the checkout. None improves compact throughput enough to promote. All merges
 to main remain held.
 
@@ -12,6 +12,7 @@ to main remain held.
 | Select the first pure reduction through compiled cohort rows | +1.67%, p<.001 | +1.67%, p<.001 | +0.92%, p=.063 | +0.37%, p=.547 | Reject: both canonical Go files slow down |
 | Inspect built-in rows directly; authenticate the selected reduction normally | −0.16%, p=.583 | −0.05%, p=.620 | −0.32%, p=.425 | −0.29%, p=.301 | Reject: no established throughput gain |
 | Check existing policy rejection guards before token projection | −0.22%, p=.461 | −0.99%, p=.076 | +0.24%, p=.547 | −0.05%, p=.640 | Reject: no established compact throughput gain |
+| Extract the unchanged existing-boundary condensation body | +0.17%, p=.583 | +0.70%, p=.043 | +0.26%, p=.698 | +0.36%, p=.758 | Reject: large Go slows down |
 
 Negative time means less parse time. Inconclusive directions are retained in
 the table, not presented as wins. These percentages have independent paired
@@ -68,6 +69,19 @@ The source-only Buckley review finds no concrete defect in the supplied diff
 and cannot independently verify the calibration receipts or qualification.
 Its lack of findings does not override the performance result.
 
+The condensation screen moves 326 lines of existing-boundary fold handling
+into an internal helper. It preserves the frontier, predecessor, payload,
+stored-cost and independent-owner checks before the same direct-append path;
+the extracted body is byte-for-byte equal. This tests the large condensation
+frame and instruction layout without changing a cache, proof or algorithm.
+The test-only baseline head is `7b016214d`; production source still equals
+`c498e889e`. All 414 rows remain exact. Twenty pairs regress large Go 0.70%
+(p=.043), while query Go, Go R4 (+0.09%, p=.738) and both YAML times are
+inconclusive. All byte and object medians remain equal. Default full/edit/no-edit
+controls move +0.003% / +0.40% / −1.69% (p=.383/.007/<.001); they bypass compact
+condensation and receive no attribution. No-edit stays at zero bytes and objects.
+The split is rejected and receives no broad qualification.
+
 ## Verification and limits
 
 Every experiment passes full core and phase-zero-A tests, focused Go/YAML root
@@ -89,6 +103,8 @@ Go audit. Local evidence directories are `20261015-packed-lineage-flags`,
 The policy follow-up is `20261015-conflict-policy-preflight`; both roles share
 the identical test-only diagnostic receipt refresh. The runtime guard is not
 promoted, and the test repair receives no performance claim.
+The condensation screen is `20261015-condense-hot-frame`; its complete source,
+sample, work/route and unchanged-body audits pass.
 
 The cohort run was interrupted for disk pressure after completing YAML. Its
 partial Go samples were discarded and all 20 Go pairs restarted from seed 1

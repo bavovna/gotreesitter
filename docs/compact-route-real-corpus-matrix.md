@@ -863,9 +863,9 @@ Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain
 the initial wrong election filter and the passing direct/chained probes remain
 separate. Ordinary YAML and compact graduation stay gated.
 
-### Layout and dispatch follow-ups: five rejected screens
+### Layout and dispatch follow-ups: six rejected screens
 
-Five independent screens on `c498e889e` preserve all 414 deterministic rows
+Six independent screens on `c498e889e` production source preserve all 414 deterministic rows
 and pass focused correctness checks. Packing lineage flags shrinks each dense
 record 32→28 bytes but establishes no compact throughput win; its owned YAML
 stream direction is +0.67% (p=.040). Exact immutable wrapper reuse leaves public
@@ -875,7 +875,9 @@ Go about 1.67% each (p<.001). Direct built-in row inspection removes that
 regression but establishes no gain (query −0.16%, p=.583; large Go −0.05%,
 p=.620). Moving the existing conflict-policy rejection guards before token
 projection also establishes no gain (query −0.22%, p=.461; large Go −0.99%,
-p=.076). All are rejected. The
+p=.076). Extracting the unchanged cold condensation body regresses large Go
+0.70% (p=.043), with other compact times inconclusive and unchanged allocations.
+All are rejected. The
 [focused receipt](compact-layout-dispatch-screens-20261015.md) records the paired
 measurements, controls, discarded partial run and qualification limits. No
 runtime or graduation change follows; all merges to main remain held. Separate
