@@ -1,7 +1,7 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-15 (UTC).
-Latest ordinary Go/YAML timing baseline: `624b2a60c8f402f6c2adb24846b192a547a918ce`.
+Latest Go/YAML screen baseline: `70b27618117e60eecd6e1aaa26552aa81b37f22a`.
 Earlier comparisons below name their own baselines.
 Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
@@ -40,6 +40,61 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Ordinary YAML route gate: measured throughput gap
+
+On baseline `70b27618117e60eecd6e1aaa26552aa81b37f22a`, twenty shuffled seeds
+compare the three existing R4 entrypoints on the same pinned 1,998-byte YAML
+file. Each seed runs in its own process with `GOMAXPROCS=1`, `-count=1`, 750 ms
+and `-benchmem`, in serialized 6 GiB Docker on CPU 6.
+
+| Route | Median time | B/op | Allocations/op | Compact / fallback per operation |
+| --- | ---: | ---: | ---: | ---: |
+| Legacy | 148.966 µs | 1,440 | 16 | 0 / 0 |
+| Shipped compact attempt and fallback | 199.713 µs | 17,144 | 37 | 0 / 1 |
+| Diagnostic owned compact | 387.804 µs | 12,936 | 111 | 1 / 0 |
+
+Owned compact takes **2.603× legacy time (+160.33%, p<.001)**. The shipped
+attempt-and-fallback entrypoint takes **1.341× (+34.07%, p<.001)**. Activating
+owned parsing alone would therefore worsen ordinary throughput on this witness.
+It needs about **61.6% less time** to equal legacy here. This is a single pinned
+file, not the all-language E-A corpus or a C speed comparison. No runtime,
+ownership, allowlist or graduation change follows. Evidence is local
+`gotreesitter-evidence/20261015-yaml-owned-route-gate`: raw samples, verified
+routes, source pins and separate benchstat comparisons. The comparison files
+normalize benchmark names only; measurements are unchanged. All twenty seeds
+complete and the container exits zero.
+
+### Go lexer census and owned-YAML attribution
+
+A raw GLR lexer census on the same baseline checks identical lex-state/cursor
+requests within each union election. Observed and unobserved parses retain
+identical core work, public structure and reuse eligibility on four canonical
+Go files:
+
+| Go witness | Union rounds | Raw scans | Repeated scans across parser states | Result/cursor mismatches |
+| --- | ---: | ---: | ---: | ---: |
+| rewrite | 171 | 359 | 17 | 0 |
+| query_compile | 927 | 1,901 | 45 | 0 |
+| language | 664 | 1,418 | 90 | 0 |
+| grammargen_lr | 8,901 | 18,842 | 1,012 | 0 |
+
+Only **5.37%** of large-Go raw union scans repeat. This limits the coverage of
+a raw-result cache; it does not estimate total parse speed. The existing
+preferred-result cache remains keyed by parser state because promotion and
+sentinel handling depend on that state. No new cache is introduced. The census
+passes with source pins and terminal exit zero; evidence is local
+`gotreesitter-evidence/20261015-glr-raw-lex-census`.
+
+A separate owned-YAML CPU profile attributes 84.25% cumulative CPU to scheduler
+execution, 25.41% to owned reduction application, 19.41% to election and 14.33%
+to materialization. Snapshot equality accounts for 6.10% cumulative CPU;
+the by-value DFA snapshot comparison accounts for 2.54%. These shares overlap
+and are not additive speed estimates. The owned profile contains 9.84 CPU
+seconds of samples. Its separate legacy profile has a different total, so
+percentage differences do not establish an absolute saving. Both profiling
+processes exit zero on pinned source; evidence is local
+`gotreesitter-evidence/20261015-owned-yaml-profile`.
 
 ### One-pass selected projection: qualified output win
 
