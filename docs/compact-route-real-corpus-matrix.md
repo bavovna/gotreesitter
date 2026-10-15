@@ -733,10 +733,98 @@ The untouched baseline reproduces that stale-receipt failure, and its regenerate
 206 rows exactly equal the repaired default-off candidate. The receipt refresh
 changes no default compiled table. This is static program storage, not per-parse
 allocation or measured RSS. With no supported throughput gain or allocation
-savings, default activation is rejected. The correctness repair remains a separate opt-in candidate pending
-final-source qualification. Routing and graduation do not change. Frozen source,
+savings, default activation is rejected. The separately qualified opt-in repair is recorded below. Routing and graduation do not change. Frozen source,
 failed witnesses, all forty samples per workload and the completed audit remain
 in local `gotreesitter-evidence/20261015-c4-reduce-shift-promotion`.
+
+### Qualified opt-in reduce-shift correctness
+
+Buckley commit `c498e889ec2d86382a3a0baad58020d7df7145b3` in #1485 keeps
+reduce-shift fusion opt-in and repairs its compiler proof and VM boundary. It
+requires a unary reduction, records the expected landing in a fourth word,
+validates its range and checks the actual post-reduction state before shifting.
+A mismatch resumes ordinary dispatch. Intermediate stop control, token gating
+and contextual deferral remain intact. Four explicit CI regressions cover arity,
+invalid landing, forced fallback and exact polls. Incremental receipts compare
+both routes to fresh parsing. The completed source-only Buckley review is
+qualification evidence with no merge approval.
+
+Against `0cb7017e6`, default and promoted opt-in ledgers each retain **all 414
+rows exactly**. Each mode independently passes **206 invariant sessions**,
+**618 C fixture checks**, and **204 exactly unchanged strict rows: 159 PASS /
+45 known FAIL**, including **120 actual compact/C-exact** samples. Full core,
+phase-zero-A, core/root/YAML and explicit opt-in C4 races pass. Six memory-budget
+trials per mode preserve **1,072,860 / 13,060 bytes**. The C-exact 1,049,572-byte
+owned-YAML safety probes record **164,212 / 157,092 KiB Go+C process RSS** for
+default/opt-in mode; these are single probes, not controlled RSS comparisons.
+No root 32-bit test-suite pass is claimed.
+
+The refreshed default fleet artifact fixes a stale receipt for 18 grammars,
+reproduced on untouched baseline. Baseline and repaired-default tables match
+exactly on all 206 current blobs: **155,201,856 bytes**, with no default compiled
+table change. Native source checks, four further canonical Go/C comparisons,
+386 helper tests and library build pass. L0 stays **756 / 12**; R6 **454 / 101**;
+all **64** CI selectors resolve against **7,681** defined functions.
+
+The final source completes twenty alternating shuffled pairs with the standard
+serialized Docker/CPU-6 settings. Every affected timing is inconclusive:
+
+| Workload | Before → after | Direction | p |
+| --- | ---: | ---: | ---: |
+| Go 20,168 bytes | 9,719.624 → 9,687.507 µs | -0.33% | .904 |
+| Go 235,626 bytes | 103,160.799 → 102,952.433 µs | -0.20% | .758 |
+| Go R4 | 827.835 → 824.152 µs | -0.44% | 1.000 |
+| Owned YAML R4 | 362.393 → 365.041 µs | +0.73% | .602 |
+| Owned YAML 8 KiB | 1,395.058 → 1,408.569 µs | +0.97% | .883 |
+
+Allocation-count medians stay exact. Query bytes move **138,739→138,738**;
+other compact byte medians stay exact. Full/edit/no-edit controls move **+0.27% /
+−0.22% / −0.48%**, all inconclusive; no-edit stays allocation-free. This is a
+correctness bucket with **no new throughput claim** and no ledger exception.
+Source, native promotion and sample audits pass. Evidence is local
+`gotreesitter-evidence/20261015-c4-reduce-shift-correctness`.
+
+### Cold reduction-boundary frame split: discarded
+
+The independent prototype extracts historical/certificate aggregation from the
+common reducer without removing a proof or changing publication order. Native
+assembly shrinks its active stack frame **1,064→752 bytes (−29.32%)**. Full core,
+phase-zero-A, 414 exact rows, focused Go/YAML invariant/C checks and the completed
+source-only Buckley review pass. An unused import in the first compilation is
+fixed before the frozen gate and excluded from timing.
+
+Twenty pairs establish no public parser gain: Go query **−0.27%** (p=.114),
+large Go **+0.12%** (p=.529), Go R4 **−0.48%** (p=.414), owned YAML R4 **+0.63%**
+(p=.231), and its stream **+0.21%** (p=.157). Allocation counts stay exact;
+query bytes move **138,739→138,738.5** and other compact bytes stay exact.
+Full/no-edit controls move **+0.18% / −0.59%**, inconclusively. The edit control
+improves **0.36%** (p=.009) but bypasses the compact reducer and supplies no
+causal win. The runtime change is discarded; no full-fleet, race, budget or RSS
+certificate transfers to it. Raw samples and pins remain in local
+`gotreesitter-evidence/20261015-reduction-boundary-frame-split`.
+
+### Actual YAML shift-origin replay and checkpoint convergence
+
+A read-only diagnostic replays actual shared shifts from their pre-shift parser
+states, restoring the original lexer after every probe. Both the 1,998-byte R4
+fixture and four-document 8 KiB witness retain their route, tree, root span,
+error status, token/node work and scheduler/core work. Frozen inputs verify.
+
+The preceding zero-width token **111**, shifted from state **176**, reproduces
+the complete token but **not** the shared post-scan snapshot. Thus token equality
+does not establish snapshot equality. At the actual subsequent shift from state
+**819**, independent replay reproduces token **93** and the complete shared
+after-snapshot. Carrying the divergent token-111 replay snapshot into that next
+scan also converges: token and after-snapshot both match. R4 observes bytes
+**346–350**; the document-stream witness observes **350–354**.
+
+This is a two-step lexical witness, not a version-ownership or alternative-set
+certificate. It does not authorize borrowing the request made from state 1756,
+dropping an alternative, or changing admission. The next proof must bind actual
+shift history and all participants. No runtime/routing or timing change follows.
+Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain`;
+the initial wrong election filter and the passing direct/chained probes remain
+separate. Ordinary YAML and compact graduation stay gated.
 
 ### Ordinary YAML stop census: the first decline is near byte 350
 
