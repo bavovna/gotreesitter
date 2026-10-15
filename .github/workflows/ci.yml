@@ -467,6 +467,9 @@ jobs:
           TestDiagnosticParserCoreVersionLexerElectionScratchFootprintAndReset
           TestDiagnosticParserCoreVersionLexerElectionScratchPreservesZeroPayload
           TestDiagnosticParserCoreVersionLexerProductionActivation
+          TestVersionLexerPairedValidationKeepsEverySecondSnapshotGuard
+          TestVersionLexerPairedValidationRechecksDestinationAtEveryCall
+          TestVersionLexerValidationRejectsBindingSwapDuringCapabilityCallback
           TestDiagnosticParserCoreVersionLexerRequestsOwnRaggedSpans
           TestDiagnosticParserCoreVersionLexerSidecarFootprintAndReset
           TestDiagnosticParserCoreVersionLexerSnapshotAcceptsEmptyCheckpointIDs
