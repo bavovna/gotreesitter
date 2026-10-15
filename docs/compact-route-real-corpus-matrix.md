@@ -682,6 +682,57 @@ initial compile attempt exposed shared use of subtree scratch; the corrected
 candidate separates ID families and passes before timing. Evidence is local
 `gotreesitter-evidence/20261015-pop-link-reference-scratch`.
 
+### Reduce-then-shift fusion: default activation rejected
+
+Baseline is `0cb7017e6b3809b238283b740d178ea98045c7e7`. The first default-on
+screen fails the deterministic gate before timing: previously accepted CMake,
+HTML and Python samples fail to complete. The executable compiler uses immediate
+predecessors even for zero-child and multi-child reductions. A synthetic witness
+reproduces all three unsafe arities on the baseline. Restricting the proof to
+unary reductions restores the three complete ledger rows exactly.
+
+The corrected experiment also records and checks the actual post-reduction
+landing before using the fused shift row. It retains the intermediate stop poll,
+token gate and contextual-close-angle check. An independent baseline regression
+finds 31 / 104 / 98 / 822 missing polls on the four canonical Go files; corrected
+fusion matches all unfused poll and semantic-work counts. Forced landing-mismatch
+fallback and invalid-landing validation tests pass. The incremental receipt now
+compares each route to its own fresh parse, replacing a legacy-materialization
+assertion that also fails on untouched baseline with fusion enabled.
+
+All **414 work/reuse rows** remain exact after correction. Scoped C4, five-language
+edit invariants and locked-C comparisons, owned-YAML checks, and regenerated
+206-grammar static receipts pass. Buckley's completed source-only review finds
+no established defect, while explicitly leaving full compiler and runtime
+qualification to the gates. No full-fleet invariant, race, budget or RSS receipt
+is transferred to this experiment.
+
+Twenty alternating shuffled pairs use the standard Docker/CPU-6 settings,
+`GOMAXPROCS=1`, `750ms`, `-count=1` and `-benchmem`:
+
+| Workload | Before → after | Direction | p |
+| --- | ---: | ---: | ---: |
+| Go 20,168 bytes | 9,699.272 → 9,676.291 µs | -0.24% | .369 |
+| Go 235,626 bytes | 103,374.777 → 102,698.303 µs | -0.65% | .253 |
+| Go R4 | 837.054 → 839.086 µs | +0.24% | .738 |
+| Owned YAML R4 | 376.302 → 378.103 µs | +0.48% | .904 |
+| Owned YAML 8 KiB | 1,466.824 → 1,453.550 µs | -0.90% | .445 |
+
+Every affected timing direction is inconclusive. Allocation-count medians stay
+identical. Query bytes rise **138,738→138,739**; other compact bytes stay exact.
+The bypassed full/edit/no-edit controls move **+2.01%** (p=.698), **−0.42%**
+(p=.056), and **−2.91%** (p=.005); full-control bytes rise **1,159→1,160** and
+no-edit stays allocation-free. These controls do not establish a fusion win.
+
+Retained bytecode rises **152,984,576→155,539,164 bytes (+1.67%)** across the
+fleet. OCaml rises **1,831,720→3,134,456 (+71.12%)**; Go rises **0.58%** and YAML
+**4.63%**. This is static program storage, not per-parse allocation or measured
+RSS. With no supported throughput gain or allocation savings, default activation
+is rejected. The correctness repair remains a separate opt-in candidate pending
+final-source qualification. Routing and graduation do not change. Frozen source,
+failed witnesses, all forty samples per workload and the completed audit remain
+in local `gotreesitter-evidence/20261015-c4-reduce-shift-promotion`.
+
 ### Ordinary YAML stop census: the first decline is near byte 350
 
 A test-only inspection on `fb4c8acc4` holds the existing runner lease until
