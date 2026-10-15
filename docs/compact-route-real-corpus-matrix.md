@@ -724,11 +724,16 @@ The bypassed full/edit/no-edit controls move **+2.01%** (p=.698), **−0.42%**
 (p=.056), and **−2.91%** (p=.005); full-control bytes rise **1,159→1,160** and
 no-edit stays allocation-free. These controls do not establish a fusion win.
 
-Retained bytecode rises **152,984,576→155,539,164 bytes (+1.67%)** across the
-fleet. OCaml rises **1,831,720→3,134,456 (+71.12%)**; Go rises **0.58%** and YAML
-**4.63%**. This is static program storage, not per-parse allocation or measured
-RSS. With no supported throughput gain or allocation savings, default activation
-is rejected. The correctness repair remains a separate opt-in candidate pending
+Retained bytecode rises **155,201,856→155,539,164 bytes (+0.22%)** across the
+fleet; Go rises **0.58%**, YAML **4.63%**, and OCaml stays exact. This comparison
+uses the regenerated, untouched `0cb7017e6` baseline on the same current blobs.
+The first calculation used a stale committed fleet receipt for 18 grammars and
+overstated the fusion cost; its **+1.67% / +71.12% OCaml** figures are withdrawn.
+The untouched baseline reproduces that stale-receipt failure, and its regenerated
+206 rows exactly equal the repaired default-off candidate. The receipt refresh
+changes no default compiled table. This is static program storage, not per-parse
+allocation or measured RSS. With no supported throughput gain or allocation
+savings, default activation is rejected. The correctness repair remains a separate opt-in candidate pending
 final-source qualification. Routing and graduation do not change. Frozen source,
 failed witnesses, all forty samples per workload and the completed audit remain
 in local `gotreesitter-evidence/20261015-c4-reduce-shift-promotion`.
