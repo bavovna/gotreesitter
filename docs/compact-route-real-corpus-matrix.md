@@ -929,9 +929,15 @@ work vectors, pinned trees and frontier graph/lineage semantics. Replay extends
 727→1,621 operations; 106 handoffs now reach the opaque-prefix boundary. The
 [focused receipt](compact-linear-suffix-census-20261015.md#real-go-replay-and-deferred-header-lineage)
 records command/overflow regressions, diagnostic review fixes and the limits of
-the selected coverage. Prefix import, certificate/recovery handling and parser
-dispatch remain open; no route, throughput or graduation change follows. All
-merges stay held.
+the selected coverage. Lazy deterministic-prefix import then reuses original
+graph identities without new work or budget charges. In the same 150 selected
+regions, completion rises 44→129 and replay 1,621→9,378 operations; native
+counters/pinned trees and model frontier semantics remain exact. Remaining
+handoffs are 16 canonical collisions and five ambiguous prefixes. Error-base
+and logical-membership retry regressions pass after correction, alongside full
+core/phase-zero-A tests. Runtime dispatch, terminal production,
+certificate/recovery handling and memory integration remain open; no route,
+throughput or graduation change follows. All merges stay held.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 

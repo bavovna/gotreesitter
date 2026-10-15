@@ -208,9 +208,9 @@ The model serializes 166 new graph states versus 1,695 native states **within
 those matched prefixes**. This is not a whole-parse memory or speed saving:
 the diagnostic also allocates snapshots and membership imports.
 
-The remaining 106 handoffs are reductions crossing below the deferred suffix
-into its opaque GSS prefix. Importing existing deterministic frames is the next
-implementation target; the observed header-lineage stops are eliminated.
+At this checkpoint 106 handoffs reach below the deferred suffix into its opaque
+GSS prefix. The next receipt adds deterministic-prefix import; the observed
+header-lineage stops are already eliminated here.
 
 The broad Buckley report ends truncated and supplies no approval. Its partial
 evidence motivates a pending-command witness that fails before correction.
@@ -231,3 +231,63 @@ separately. Evidence is `20261015-linear-suffix-real-go-trace` and
 and terminal exits. No prior fleet/race/budget/RSS/timing certificate transfers.
 This code remains outside the checkout and parser routes. No allowlist,
 default, throughput or graduation change follows; all merges remain held.
+
+## Lazy deterministic-prefix import
+
+The continuation imports only the existing single-link frames needed to
+complete a pop. It validates the complete required chain before changing the
+representation. Original graph IDs, checkpoints, owner/lineage, score/order,
+path counts and recorded precedence maxima remain intact. A stored single-link
+maximum can include an earlier fold, so import does not recompute it from the
+link. Imported frames consume neither new-publication work nor new node/link
+budget; flush reuses their existing graph identities.
+
+Deferred publications retain fixed graph predecessors. Moving the opaque base
+therefore cannot reinterpret older frontier history, and no existing journal
+entry acquires a forward virtual predecessor. Imported snapshots are checked
+before operations and flush. Validation reads bounded raw links without an
+adjacency allocation; a 12-origin check measures zero allocations. It still
+scans the origins, so this is no throughput estimate.
+
+| Go fixture | Selected regions | Previous replay operations | Imported-prefix operations | Regions reaching their end | Handoffs | Imported original frames |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `rewrite` | 25 | 193 | 866 | 23 | 2 | 308 |
+| `query_compile` | 28 | 176 | 1,650 | 25 | 3 | 404 |
+| `language` | 27 | 457 | 2,469 | 21 | 6 | 316 |
+| `grammargen_lr` | 70 | 795 | 4,393 | 60 | 10 | 403 |
+
+All 150 selected regions start. Completion rises 44→129; replay rises
+1,621→9,378 operations (4,663 shifts and 4,715 reductions). All native work
+vectors/pinned trees and model work/frontier semantics remain exact. The 21
+handoffs now distinguish **16 canonical-boundary collisions and five ambiguous
+prefixes**. Import totals 1,431 original frames, with a region peak of 37.
+The model adds 958 graph states versus 9,664 native states within the matched
+prefixes. Existing graph storage, diagnostic snapshots and membership imports
+remain present; these counts are not whole-parse memory or timing savings.
+
+Thirty-two seeded prefix shapes cover all available arities, extras, both
+checkpoint modes and origin-only flush preserving IDs/work. Focused tests
+cover base movement with older history, folded maxima, exhausted budgets,
+partial/capped imports, revision limits and node/link/lineage/checkpoint
+mutation. Original-node metadata changes roll back and retry.
+
+Buckley finds that the loop rejects ERROR-state nodes, but initially accepts
+a zero-cost ERROR-state final predecessor. A real recovery-discontinuity
+witness fails before correction and passes after the guard; its bounded
+follow-up confirms that guard. The metadata rollback test then exposes an
+over-strict private snapshot check: core rollback restores logical membership
+but can leave bytes in unused inline capacity. Detailed evidence confirms
+owner, flags, counts, graph and work were restored. Before witnesses reject a
+legitimate retry and unused-tail change. The corrected comparison preserves
+all header fields and recorded inline members; active-member mutation still
+rejects, and rollback/retry passes. Spilled membership relies on the core's
+append-only arena contract. A completed bounded comparison covers this fix;
+no shared-core rollback change or bug is claimed.
+
+Final focused/import/diagnostic tests, full core and phase-zero-A suites plus
+four separately executed Go trace checks pass with frozen pins in
+`20261015-linear-suffix-prefix-import`. Reviews inspect supplied source only.
+Runtime dispatch, terminal production, certificate/recovery handling and
+memory integration remain open. There is no whole-parser C, incremental,
+fleet, race, RSS or shuffled-timing qualification, no route/default change,
+and no graduation claim. All merges remain held.
