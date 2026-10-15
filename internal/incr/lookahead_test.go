@@ -327,6 +327,10 @@ func TestReadHistoryPackedBudgetAndWidePromotion(t *testing.T) {
 func TestReadHistoryAllWidthBoundaries(t *testing.T) {
 	random := rand.New(rand.NewSource(409))
 	for _, source := range []uint32{1, 31, 256, 65536, 235626, 1 << 24, 1 << 28, (1 << 31) - 1, ^uint32(0) - 1} {
+		// NewReads takes an int source size; larger sources do not exist on 32-bit Go.
+		if uint64(source) > uint64(^uint(0)>>1) {
+			continue
+		}
 		for _, wide := range []bool{false, true} {
 			r := NewReads(int(source))
 			var probes []read
