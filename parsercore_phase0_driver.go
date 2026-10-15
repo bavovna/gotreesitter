@@ -1360,7 +1360,7 @@ const (
 )
 
 // recoveryRegion returns the optional open strategy-2 region.
-func (h diagnosticParserCoreHeader) recoveryRegion() *diagnosticParserCoreS3Region {
+func (h *diagnosticParserCoreHeader) recoveryRegion() *diagnosticParserCoreS3Region {
 	if h.versionState == nil {
 		return nil
 	}
@@ -1369,35 +1369,35 @@ func (h diagnosticParserCoreHeader) recoveryRegion() *diagnosticParserCoreS3Regi
 
 // versionLexerSnapshot returns the immutable DFA/scanner state owned by this
 // parser version. The nil value is the single-version fast-path state.
-func (h diagnosticParserCoreHeader) versionLexerSnapshot() *diagnosticParserCoreVersionLexerSnapshot {
+func (h *diagnosticParserCoreHeader) versionLexerSnapshot() *diagnosticParserCoreVersionLexerSnapshot {
 	if h.versionState == nil {
 		return nil
 	}
 	return h.versionState.relexSnapshot
 }
 
-func (h diagnosticParserCoreHeader) versionLexerRequestReference() uint32 {
+func (h *diagnosticParserCoreHeader) versionLexerRequestReference() uint32 {
 	if h.versionState == nil {
 		return 0
 	}
 	return h.versionState.lexerRequest
 }
 
-func (h diagnosticParserCoreHeader) recoveryGroupIdentity() uint64 {
+func (h *diagnosticParserCoreHeader) recoveryGroupIdentity() uint64 {
 	if h.versionState == nil {
 		return 0
 	}
 	return h.versionState.recoveryGroup
 }
 
-func (h diagnosticParserCoreHeader) recoveryMissingGroupIdentity() uint64 {
+func (h *diagnosticParserCoreHeader) recoveryMissingGroupIdentity() uint64 {
 	if h.versionState == nil {
 		return 0
 	}
 	return h.versionState.missingGroup
 }
 
-func (h diagnosticParserCoreHeader) recoveryNodeBaseline() (uint32, bool) {
+func (h *diagnosticParserCoreHeader) recoveryNodeBaseline() (uint32, bool) {
 	if h.versionState == nil {
 		return 0, false
 	}
@@ -1461,7 +1461,7 @@ func (h *diagnosticParserCoreHeader) clearAcceptanceGroup() {
 	}
 }
 
-func (h diagnosticParserCoreHeader) isRecoveryCosted() bool {
+func (h *diagnosticParserCoreHeader) isRecoveryCosted() bool {
 	return h.recoveryFlags&diagnosticParserCoreRecoveryCostedFlag != 0
 }
 
