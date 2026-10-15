@@ -227,7 +227,7 @@ no cache or merge rule is added. Evidence is local
 `gotreesitter-evidence/20261015-subtree-duplication-census`, with source, raw
 logs and parsed census JSON.
 
-### Borrowed header accessors: verified copy removal, timing pending
+### Borrowed header accessors: qualified Go/YAML win
 
 A separate one-file trial on `dbdf56887` borrows headers for seven read-only
 version-state/recovery accessors. Their bodies and the 88-byte header layout
@@ -245,8 +245,51 @@ generic ownership-remap adapter. This function's explicit stack reservation
 decreases **408→400 bytes**. These are static compiler results, not executed
 copy counts or a throughput gain.
 
-The candidate remains external while twenty shuffled Go/YAML pairs run. Full
-fleet/race/RSS qualification remains pending. Evidence is local
+Twenty alternating shuffled pairs measure the complete public entrypoint:
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Public compact Go, 20 KiB | 10.051 → 9.897 ms (**−1.53%**) | <.001 |
+| Public compact Go, 235 KiB | 107.875 → 105.530 ms (**−2.17%**) | <.001 |
+| Go R4 compact | 846.295 → 837.083 µs (**−1.09%**) | .002 |
+| Owned YAML R4 | 364.713 → 354.156 µs (**−2.89%**) | <.001 |
+| Owned YAML 8 KiB | 1.410 → 1.386 ms (**−1.72%**) | .001 |
+| Go full DFA control | 3.901 → 3.906 ms | .301 |
+| Go single-byte edit control | 99.430 → 99.738 µs | .081 |
+| Go no-edit control | 3.116 → 3.1215 ns | .223 |
+
+All default-control directions are inconclusive. All byte/allocation medians
+remain identical: public Go **141,139 B / 205 allocations** and
+**3,295,728 B / 3,092 allocations**; owned YAML **12,936 / 111** and
+**44,601 / 345**; Go R4 **1,696 / 25**; the default trio **1,159 / 6**,
+**394 / 5** and **0 / 0**. Public-node and route/fallback counts remain exact.
+The runner uses twenty explicit seeds, one language/process per seed/role,
+750 ms, `-count=1`, `-benchmem`, `GOMAXPROCS=1`, CPU 6 and serialized 6 GiB Docker.
+
+Final source passes **206 invariant sessions**, **618 locked-C fixture checks**,
+both full core/tagged phase0A suites, core/root/YAML races and six budget trials.
+All **204 strict census rows remain exactly identical: 159 PASS / 45 known FAIL**,
+including **120 actual compact/C-exact acceptances**. Four additional public
+compact Go canonical files match locked C, including both timed large files.
+The **1,049,572-byte / 524-document YAML stream** is C-exact, has complete
+coverage and no error/fallback, and peaks at **156,876 KiB process RSS**. The
+previous separately pinned probe reported 156,508 KiB (+0.24%); these single
+Go+C process probes are not a controlled RSS comparison or a graduation memory
+certificate. Budget peaks remain **1,072,860 / 13,060 bytes**.
+
+L0 retains **756 files / 12 API tag sets**, R6 **454 language-name uses /
+101 environment reads**; CI selector checks pass. All source pins and terminal
+Docker exits verify without OOM or timeout. A byte comparison proves the runtime
+change consists only of seven receiver signatures. Buckley commit
+`fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054` promotes this win in
+[core PR #1485](https://github.com/odvcencio/gotreesitter/pull/1485).
+
+A separate final-source Go profile has 5.80 CPU seconds of samples and attributes
+**2.93% flat CPU** to `duffcopy`, versus 5.04% in the earlier profile. This is
+attribution, not an additional timing gain or completion of #1313's wider
+checkpoint/recovery scope. Earlier snapshot/reduction percentages remain
+separate and are not added to this comparison. Ordinary YAML activation and
+the remaining graduation obligations stay gated. Evidence is local
 `gotreesitter-evidence/20261015-borrowed-header-accessors`, including the exact
 source pins, reference/build-tag audit, counter JSON and before/after assembly
 with checked `duffcopy` address ranges.
