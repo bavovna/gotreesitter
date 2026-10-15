@@ -470,6 +470,7 @@ jobs:
           TestVersionLexerPairedValidationKeepsEverySecondSnapshotGuard
           TestVersionLexerPairedValidationRechecksDestinationAtEveryCall
           TestVersionLexerValidationRejectsBindingSwapDuringCapabilityCallback
+          TestVersionLexerStandaloneRejectsBindingSwapDuringCapabilityCallback
           TestDiagnosticParserCoreVersionLexerRequestsOwnRaggedSpans
           TestDiagnosticParserCoreVersionLexerSidecarFootprintAndReset
           TestDiagnosticParserCoreVersionLexerSnapshotAcceptsEmptyCheckpointIDs

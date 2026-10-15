@@ -1206,3 +1206,105 @@ func TestVersionLexerValidationRejectsBindingSwapDuringCapabilityCallback(t *tes
 		t.Fatal("capability callback did not run")
 	}
 }
+
+type validationIdentityBindingSwapScanner struct {
+	byteStateExternalScanner
+	language *Language
+	armed    bool
+}
+
+func (*validationIdentityBindingSwapScanner) UsesExternalScannerCheckpoints() bool { return true }
+func (s *validationIdentityBindingSwapScanner) CheckpointIdentity() (ExternalScannerCheckpointIdentity, bool) {
+	if s.armed {
+		s.armed = false
+		s.language.ExternalScanner = byteStateExternalScanner{}
+	}
+	return ExternalScannerCheckpointIdentity{Scanner: []byte("callback-scanner"), Grammar: []byte("callback-grammar")}, true
+}
+
+type validationValueBindingSwapScanner struct {
+	byteStateExternalScanner
+	language   *Language
+	armed      *bool
+	generation uint8
+	tags       []byte
+}
+
+func (s validationValueBindingSwapScanner) ExternalScannerIsStateless() bool {
+	if *s.armed {
+		*s.armed = false
+		s.generation++
+		s.language.ExternalScanner = s
+	}
+	return false
+}
+
+func TestVersionLexerStandaloneRejectsBindingSwapDuringCapabilityCallback(t *testing.T) {
+	for _, capability := range []string{"stateless", "identity", "value"} {
+		for _, stage := range []string{"destination", "validate", "publication", "restore"} {
+			t.Run(capability+"/"+stage, func(t *testing.T) {
+				c, beforeID, afterID := newDiagnosticParserCoreVersionLexerTestCore(t)
+				lang := &Language{Name: "callback-binding-test"}
+				var arm func()
+				var armed func() bool
+				if capability == "stateless" {
+					scanner := &validationBindingSwapScanner{language: lang}
+					lang.ExternalScanner = scanner
+					arm = func() { scanner.armed = true }
+					armed = func() bool { return scanner.armed }
+				} else if capability == "identity" {
+					scanner := &validationIdentityBindingSwapScanner{language: lang}
+					lang.ExternalScanner = scanner
+					arm = func() { scanner.armed = true }
+					armed = func() bool { return scanner.armed }
+				} else {
+					active := false
+					scanner := validationValueBindingSwapScanner{language: lang, armed: &active, generation: 1, tags: []byte{7}}
+					lang.ExternalScanner = scanner
+					arm = func() { active = true }
+					armed = func() bool { return active }
+				}
+				dfa := diagnosticParserCoreVersionLexerTestDFA()
+				dfa.externalScannerPresent = true
+				var snapshot *diagnosticParserCoreVersionLexerSnapshot
+				if err := c.ApplySchedulerAtomic(func(owner core.SchedulerTransactionToken) error {
+					var err error
+					snapshot, err = newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(c, lang, owner, dfa, beforeID, afterID, nil)
+					return err
+				}); err != nil {
+					t.Fatal(err)
+				}
+				if err := snapshot.validate(); err != nil {
+					t.Fatalf("initial binding: %v", err)
+				}
+				target := &dfaTokenSource{lexer: &Lexer{source: []byte("abc"), pos: 4, row: 5, col: 6}, language: lang, hasExternalScanner: true, externalPayload: lang.ExternalScanner.Create()}
+				beforeTarget := target.snapshotRelexState()
+				var header diagnosticParserCoreHeader
+				arm()
+				var err error
+				switch stage {
+				case "destination":
+					err = snapshot.validateDestination(c, lang)
+				case "validate":
+					err = snapshot.validate()
+				case "publication":
+					err = header.publishOwnedVersionLexerSnapshot(c, lang, snapshot)
+				case "restore":
+					err = snapshot.restore(c, target)
+				}
+				if err == nil {
+					t.Fatal("changed scanner binding accepted after standalone capability callback")
+				}
+				if armed() {
+					t.Fatal("capability callback did not run")
+				}
+				if header.versionState != nil {
+					t.Fatal("failed validation published version state")
+				}
+				if got := target.snapshotRelexState(); !got.equal(&beforeTarget) {
+					t.Fatal("failed validation changed destination lexer")
+				}
+			})
+		}
+	}
+}

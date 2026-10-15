@@ -359,6 +359,7 @@ func (s *diagnosticParserCoreVersionLexerSnapshot) validateDestination(compact *
 	if s.language != language {
 		return errors.New("parser-core phase zero: version lexer snapshot belongs to a different Language")
 	}
+	binding := language.ExternalScanner
 	metadata := s.metadata.Value()
 	scanner, err := diagnosticParserCoreVersionLexerScannerContractForLanguage(language)
 	if err != nil {
@@ -368,6 +369,12 @@ func (s *diagnosticParserCoreVersionLexerSnapshot) validateDestination(compact *
 		return errors.New("parser-core phase zero: version lexer snapshot scanner contract changed")
 	}
 	identity, identityRequired, identityValid := diagnosticParserCoreVersionLexerCheckpointIdentity(language)
+	// Capability methods are user callbacks. Reject a changed live descriptor
+	// before publication or restore; keep every existing contract and identity
+	// check authoritative for equal value bindings.
+	if !core.ScannerBindingUnchanged(binding, language.ExternalScanner) {
+		return errors.New("parser-core phase zero: version lexer snapshot scanner binding changed during capability validation")
+	}
 	if metadata.checkpointIdentityRequired != identityRequired {
 		return errors.New("parser-core phase zero: version lexer snapshot checkpoint capability changed")
 	}
