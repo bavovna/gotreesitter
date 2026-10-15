@@ -96,6 +96,74 @@ percentage differences do not establish an absolute saving. Both profiling
 processes exit zero on pinned source; evidence is local
 `gotreesitter-evidence/20261015-owned-yaml-profile`.
 
+### Borrowed lexer equality: qualified owned-YAML win
+
+The next screen uses the same `70b27618117e60eecd6e1aaa26552aa81b37f22a`
+baseline. DFA equality borrows two snapshots instead of passing two 232-byte
+values. Identical immutable owned snapshots and metadata holders can return
+equal immediately; distinct snapshots retain every prior value comparison.
+Scheduler ownership still requires the original owner pointers. No scanner,
+checkpoint, rollback, proof or table check is removed.
+
+Twenty alternating shuffled pairs use the repository runner, one language per
+process, `GOMAXPROCS=1`, 750 ms, `-count=1`, `-benchmem`, CPU 6 and serialized
+6 GiB Docker. All samples and source pins verify; the container exits zero
+without OOM or timeout.
+
+| Workload | Before → after | p |
+| --- | ---: | ---: |
+| Owned YAML R4 | 395.132 → 373.650 µs (**−5.44%**) | .002 |
+| Owned YAML 8 KiB | 1.505 → 1.433 ms (**−4.81%**) | .001 |
+| Public compact Go, 20 KiB | 10.098 → 10.020 ms | .495 |
+| Public compact Go, 235 KiB | 107.739 → 107.530 ms | .529 |
+| Go R4 compact | 849.363 → 850.246 µs | .883 |
+| Go full DFA control | 3.952 → 3.882 ms (**−1.79%**) | .001 |
+| Go single-byte edit control | 99.658 → 99.702 µs | .883 |
+| Go no-edit control | 3.1435 → 3.111 ns (**−1.03%**) | .007 |
+
+All byte/allocation medians stay identical: YAML **12,936 B / 111 allocations**
+and **44,601 B / 345 allocations**; public Go **141,139 B / 205 allocations**
+and **3,295,728 B / 3,092 allocations**; Go R4 **1,696 B / 25 allocations**;
+the default trio **1,159 B / 6**, **394 B / 5**, and **0 B / 0**. All public
+node counts and route/fallback measurements remain exact. The compact Go and
+edit timing directions are inconclusive. The no-edit result is a control
+measurement, not evidence of work saved by snapshot comparison.
+
+Before timing, all **412 ordinary work/reuse rows** and the diagnostic-owned
+YAML rows remain exact. Final engine source passes **206 invariant sessions**,
+**618 locked-C fixture checks**, both full core/tagged phase0A runs, focused
+snapshot/ownership/lifecycle tests and core/root/YAML races. All 204 real-file
+census rows remain exactly identical: **159 PASS / 45 known FAIL**, including
+**120 actual compact/C-exact acceptances**. All six budget trials pass at
+**1,072,860 / 13,060 bytes**. The **1,049,572-byte / 524-document YAML stream**
+remains C-exact with complete coverage, no error/fallback and **156,508 KiB**
+peak process RSS. This Go+C process probe is not a controlled before/after RSS
+comparison or a graduation memory certificate.
+
+L0 retains **756 root files / 12 API tag sets** and R6 retains **454 language-name
+uses / 101 environment reads**. The regression assertions move into the existing
+clone/ownership test, preserving the root file inventory; CI now explicitly
+includes that test. Selector validation and its unit tests pass. Engine hashes
+remain identical to the measured screen. Buckley commit `dbdf56887b37f769dad88f4563b01e6f5fd92dde`
+promotes this win in [core PR #1485](https://github.com/odvcencio/gotreesitter/pull/1485).
+All qualification and final-guard containers exit zero without OOM or timeout.
+Evidence is local
+`gotreesitter-evidence/20261015-borrowed-lexer-equality`, including raw samples,
+benchstat, metric medians, both source-pin sets and the excluded initial failed
+compile. The earlier reduction win is an independent comparison and is not
+added to these percentages. Ordinary YAML activation and graduation remain
+gated.
+
+A fresh profile on this final source contains 5.56 CPU seconds of samples on
+the 235 KiB Go witness. Dispatch accounts for 39.75% cumulative CPU, owned
+reduction for 24.64%, materialization for 20.68% and election for 18.71%; these
+shares overlap. Copies account for 5.04% flat CPU. Copy callers include
+canonicalization, external relex, snapshot capture, election and subtree-view
+publication. This keeps dispatch/copy and publication work ahead of a raw
+lexer cache as the next Go investigation. It is attribution, not an additional
+throughput result, and its allocation output is not mixed into the twenty-pair
+comparison.
+
 ### One-pass selected projection: qualified output win
 
 Buckley commits `24c4f142` and `4c124dfa` in
