@@ -118,7 +118,56 @@ Buckley's completed follow-up considers the lease finding addressed and
 establishes no remaining epsilon mismatch in the supplied source. It does not
 independently execute the witnesses or certify parser integration/performance.
 
-The parent layer remains outside the checkout and parser routing. Frontier
-history, GSS import/flush and dispatch integration remain open. There is no
-whole-parser C, invariant, race, memory-budget, RSS or throughput qualification,
-and no graduation claim.
+The parent checkpoint remains outside the checkout and parser routing. The
+next receipt adds private frontier preservation and graph flush. It supplies
+no whole-parser qualification.
+
+## Frontier preservation and atomic graph handoff
+
+The continuation assigns publications typed virtual ordinals, separate from
+graph `NodeID`s. Each journal record retains its predecessor. The current
+frontier keeps complete state/byte/checkpoint/shifted keys, including popped
+states that are no longer active frames. A duplicate virtual or existing graph
+key requests GSS handling before a shift or parent publication. A changed
+frontier expires the old key list; active frames and their predecessor closure
+still retain any necessary older records.
+
+Flush marks active references and every current virtual frontier entry, follows
+their predecessor closure, and serializes retained records in DAG order through
+the existing graph publication checks. It preserves every preexisting graph and
+index entry. The existing core transaction restores graph/index/work after a
+failed flush; successful flush closes the vector capability. Serialization adds
+no abstract parse work: virtual stack-link work was already counted when the
+operation occurred. Logical node/link caps still include every publication.
+
+Scheduler owners are explicit per virtual head, rather than inferred from its
+predecessor. Zero/conflicting owners and stale pop plans are rejected. Scanner
+quiescence is frozen at entry; both recorded-checkpoint and quiescent modes are
+covered. Unsupported recovery/conflict/certificate contexts and active reduction
+scratch decline. Journal, reference, history, retention and remap buffers are
+included in the private object's footprint; this is not a parser budget gate.
+
+Forty seeded traces execute 65 operations each against actual GSS reductions.
+Twenty use each scanner capability mode; 26 persist explicit scheduler owners.
+Heads and **every current frontier entry** match reference derivations, scanner
+facts and lineage records after flush. Parent payloads, parent constructions,
+reductions, emitted pop paths/payloads and abstract stack-link counters match.
+Six flush-failure cases
+preserve logical graph/index/work state, including a late index-cap failure
+after partial writes; repaired cases retry. A direct history witness retains
+four graph states in the original frontier and three after expiry, with equal
+abstract work. Ambiguous-prefix handoff preserves both branches.
+
+Buckley identifies a missing active-batch guard. Its witness fails before the
+correction and passes afterward; the completed bounded follow-up considers the
+guard addressed and establishes no defect in that correction. Neither review
+executes the tests or certifies the surrounding parser. Final focused tests,
+full core and phase-zero-A suites pass in Docker with frozen source pins in
+`20261015-linear-suffix-handoff-prototype`.
+
+This implements a private handoff layer outside the checkout. Real Go trace
+replay, full header alternative-set/certificate persistence, recovery and parser
+dispatch integration remain open. There is no whole-parser C, invariant, race,
+memory-budget, RSS or throughput qualification, and no graduation claim.
+It advances the implementation boundary of [E-A7](https://github.com/odvcencio/gotreesitter/issues/1319),
+whose corpus-throughput exit requirement remains unproven. All merges stay held.

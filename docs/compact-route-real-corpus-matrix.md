@@ -917,8 +917,15 @@ private parent construction: 80 seeded shapes and epsilon cases match the
 actual scheduler's metadata, next pops, head facts and abstract counters.
 Actual-scheduler witnesses correct migrated-extra order and bind commits to
 saved pop facts; callback/cap/failure checks and full core/phase-zero-A pass.
-History and import/dispatch integration remain open; no parser route changes,
-full qualification or throughput claim follows. All merges stay held.
+A further private handoff layer retains active references and every current
+frontier key plus predecessor closure, then serializes through existing DAG
+checks and transaction rollback. Forty 65-operation traces match all current
+frontier derivations and lineage records, including checkpoint modes and
+explicit owners. Six failure cases, ambiguous-prefix flush and a review-driven
+batch guard pass with full core/phase-zero-A coverage. This is implementation
+evidence, not throughput savings. Real Go trace replay, full header lineage,
+recovery and parser dispatch remain open; no route, full qualification or
+graduation change follows. All merges stay held.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 
