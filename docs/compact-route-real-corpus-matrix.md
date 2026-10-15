@@ -519,6 +519,62 @@ verified. Evidence is local
 `gotreesitter-evidence/20261015-checkpoint-copy-alias-validation`; the retained
 test/CI patch is in `20261015-checkpoint-validation-guards`.
 
+### Qualified borrowed election headers
+
+Buckley commit `b7225ca0a` borrows each 88-byte scheduler header while election
+reads its LR state and flags. The full diagnostic path keeps its existing
+value snapshot. It preserves all state, checkpoint and callback ordering;
+there is no new field or retained pointer. The measured production baseline
+is `bb5022df4`; intervening `83463617e` adds only tests and CI.
+
+All **414 work/reuse rows**, timed public-node counts, routing/fallbacks and
+allocation medians remain exact. Twenty alternating shuffled pairs, using
+the repository runner at one process/seed/role, `GOMAXPROCS=1`, 750 ms,
+`-benchmem`, CPU 6 and serialized 6 GiB Docker, measure:
+
+| Workload | Before → after | Direction | p |
+| --- | ---: | ---: | ---: |
+| Compact Go query_compile, 20,168 bytes | 9.801 → 9.631 ms | -1.74% | <.001 |
+| Compact Go grammargen_lr, 235,626 bytes | 103.418 → 102.220 ms | -1.16% | .026 |
+| Go R4 compact | 815.684 → 815.750 µs | +0.01% | .512 |
+| Owned YAML R4 | 352.661 → 349.137 µs | -1.00% | .003 |
+| Owned YAML 8,012-byte stream | 1.377 → 1.373 ms | -0.28% | .495 |
+| Go full DFA control | 3.871 → 3.889 ms | +0.47% | .056 |
+| Go single-byte edit control | 99.004 → 99.265 µs | +0.26% | .268 |
+| Go no-edit control | 3.051 → 3.101 ns | +1.62% | <.001 |
+
+The supported affected-path wins are Go query **−1.74%**, large Go **−1.16%**
+and owned YAML R4 **−1.00%**. The other affected times and full/edit controls
+are inconclusive. The no-edit control bypasses election; its **+1.62%**
+direction is recorded without causal attribution, retaining **0 bytes /
+0 allocations**. All other byte/allocation medians are unchanged: Go query
+**138,739 / 130**, large Go **3,251,728 / 1,717**, Go R4 **1,600 / 22**, owned
+YAML R4 **12,872 / 109** and YAML stream **44,313 / 336**. Earlier bucket gains
+are independent and are not added.
+
+Final source passes **206 invariant sessions**, **618 locked-C fixture
+checks**, **204 exactly unchanged strict rows** (**159 PASS / 45 known FAIL**,
+including **120 actual compact/C-exact acceptances**), full core/phase-zero-A,
+core/root/YAML races and six bounded-stop trials. Peaks stay
+**1,072,860 / 13,060 bytes**. The **1,049,572-byte / 524-document diagnostic-owned
+YAML stream** remains C-exact with full coverage, no error/fallback and
+**156,988 KiB Go+C process RSS**. This is a single safety probe, not a controlled
+RSS comparison or a graduation memory certificate.
+
+Promoted-source core/phase-zero-A checks and four additional canonical Go/C
+comparisons pass, including both timed files. L0 remains **756 root files /
+12 API tag sets**; R6 **454 language-name uses / 101 environment reads**;
+package coverage and all **64 workflow selectors** pass. A supplemental 386
+library build passes; full 32-bit root tests are not claimed. All timing and
+qualification hashes, rows and completion markers verify. A disk-full event
+was resolved by removing old rebuildable test executables; sources, raw
+samples and all complete qualification receipts remain intact.
+
+This is partial progress on E-A2/E-A7. Ordinary YAML ownership, throughput
+gaps and graduation remain open; no route or allowlist changes. Evidence is
+local `gotreesitter-evidence/20261015-borrowed-election-headers`. No merge to
+main is performed.
+
 ### Ordinary YAML stop census: the first decline is near byte 350
 
 A test-only inspection on `fb4c8acc4` holds the existing runner lease until
