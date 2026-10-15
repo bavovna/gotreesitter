@@ -575,6 +575,82 @@ gaps and graduation remain open; no route or allowlist changes. Evidence is
 local `gotreesitter-evidence/20261015-borrowed-election-headers`. No merge to
 main is performed.
 
+### Qualified callback binding guard: correctness at a measured cost
+
+Buckley commit `0cb7017e6` closes an existing snapshot-acceptance hole. A
+capability callback could replace `Language.ExternalScanner` after its old
+contract was read, allowing validation, publication or restore to succeed
+against the replacement. Capture the entry interface and reject a changed
+descriptor after all capability callbacks. The callback-free helper lives
+under `internal/`; every existing contract, identity, generation, checkpoint
+and independent request-snapshot check remains.
+
+Twelve cases cover stateless, checkpoint-identity and non-comparable value
+scanner replacement across destination validation, complete validation,
+publication and restore. All twelve reproduce baseline acceptance and pass
+with the fix; failed validation preserves the destination lexer/header.
+Scalar descriptors can be shared under the existing type/value identity
+rules, and equal reboxed values may conservatively reject. The helper makes
+an additional rejection check and supplies no immutable-capability guarantee.
+
+All **414 work/reuse rows** and timed route/public-node counters remain exact.
+Twenty alternating shuffled pairs on `b7225ca0a`, with the same runner,
+750 ms, process/seed/role, `GOMAXPROCS=1`, CPU 6 and serialized 6 GiB Docker,
+measure this correctness trade:
+
+| Workload | Before → after | Direction | p |
+| --- | ---: | ---: | ---: |
+| Compact Go query_compile | 9.636 → 9.627 ms | -0.10% | .369 |
+| Compact Go grammargen_lr | 101.953 → 101.813 ms | -0.14% | .512 |
+| Go R4 compact | 815.939 → 813.306 µs | -0.32% | .192 |
+| Owned YAML R4 | 348.183 → 351.394 µs | +0.92% | .009 |
+| Owned YAML 8,012-byte stream | 1.369 → 1.377 ms | +0.60% | .063 |
+| Go full DFA control | 4.000 → 3.994 ms | -0.15% | .289 |
+| Go single-byte edit control | 99.502 → 99.403 µs | -0.10% | .779 |
+| Go no-edit control | 3.143 → 3.202 ns | +1.86% | <.001 |
+
+Owned YAML R4 pays **0.92%** for the new check; the stream and affected Go
+timings are inconclusive. The no-edit control bypasses this validation; its
+**+1.86%** direction is recorded without causal attribution, retaining
+**0 B/op / 0 allocations**. No throughput gain is claimed for this guard.
+
+Every allocation-count median stays identical. Byte medians are unchanged
+except query **138,738.5→138,739 (+0.00036%)**, still **130 allocations**.
+The additional exact-byte screen stopped on that half-byte median; the
+actual v1 10% performance ratchet passes. Every direction is retained, no
+timing is resampled and no deterministic-ledger exception is requested.
+
+Final combined source passes **206 invariant sessions**, **618 C fixture
+checks**, full core/phase-zero-A, core/root/YAML races and six budget trials.
+All **204 strict rows are exactly unchanged: 159 PASS / 45 known FAIL**,
+including **120 actual compact/C-exact acceptances**. Peaks remain
+**1,072,860 / 13,060 bytes**. The **1,049,572-byte / 524-document diagnostic-owned
+YAML** probe stays C-exact, fully covered, without error/fallback, at
+**152,104 KiB Go+C process RSS**. This is a single safety probe, not a controlled
+RSS comparison or graduation certificate.
+
+Promoted-source tests, four further canonical Go/C comparisons, L0
+(**756 root files / 12 API tag sets**), R6 (**454 language-name uses /
+101 environment reads**), package coverage and all **64 workflow selectors**
+pass. The 386 helper tests and library build pass; full root 32-bit tests are
+not claimed. Buckley's completed source-only review establishes no additional
+finding and gives no merge approval. The scalar finding in its earlier pass
+led to explicit descriptor semantics and added value/scalar cases. A blocked
+outside-workspace pass and an empty exit receipt during disk exhaustion are
+not treated as approval; the final readable-source review has terminal exit
+zero and a completed report.
+
+Two fixture compilation attempts and one build-cache cleanup startup failure
+are excluded. Their corrected inputs pass; engine/timing source hashes remain
+verified. After timing completed, old rebuildable project cache entries were
+trimmed to restore disk space; source and raw samples remain retained.
+
+The preceding election win retains its independent comparison and is not
+combined numerically with this cost. Ordinary YAML ownership, throughput gaps
+and graduation remain open, with routing and allowlists unchanged. No merge
+to main is performed. Evidence is local
+`gotreesitter-evidence/20261015-callback-binding-guard`.
+
 ### Ordinary YAML stop census: the first decline is near byte 350
 
 A test-only inspection on `fb4c8acc4` holds the existing runner lease until
