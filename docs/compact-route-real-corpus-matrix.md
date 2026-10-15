@@ -44,6 +44,43 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Single-prefix ordinary YAML: acceptance proved on witnesses, cost gate failed
+
+The [single-prefix screen](compact-single-prefix-yaml-screen-20261015.md) on
+`c498e889e` transfers the original shared lookahead into exact owned snapshots
+before the first unowned fork. All seven focused C comparisons require compact
+acceptance, including ordinary R4 and one/four/sixteen-document streams. Of 414
+ledger rows, 413 remain exact; only ordinary YAML admission changes. A separate
+fallback counter probe records 107→107 tokens and 288→484 public constructions
+for both full and first-edit parsing; diagnostic-owned counters stay exact.
+The first twenty-pair screen rejects activation: ordinary R4 is **+22.61%** and
+the 8 KiB stream **+48.47%** slower than the current attempt and fallback. A
+separate twenty-pair scratch-reuse screen cuts bytes **65.61% / 63.91%**, but
+still regresses time **16.02% / 41.08%** and raises allocation counts. Both are
+rejected. Review then exposes a historical scanner-binding gap in the private
+prototype; a before/after regression, seven positive C cases and the 72-step
+YAML invariant pass with the fix. Earlier timings do not transfer to that fixed
+source. No runtime or counter exception is promoted, and no earlier owner
+approval is extended. Ordinary YAML graduation remains blocked by cost.
+
+### Diagnostic scheduler test maintenance
+
+Core commit `7b016214d6322540ffd52009ae5eb214ce8434ea` in
+[PR #1485](https://github.com/odvcencio/gotreesitter/pull/1485) refreshes five
+stale diagnostic scheduler expectations against unchanged production `c498e889e`.
+It retains exact work, graph/state/round/scanner assertions, three repetitions
+and the accepted deep digest. The cap helper now uses the public diagnostic's
+existing grammar certificate; its before-accept dispatch cap is 2,673, one
+before acceptance at 2,674. Every capped case still asserts no published result.
+
+Both timing roles shared these identical test-only repairs. All 414 measured
+runtime ledger rows remain unchanged; no engine counters or ratchets are reset.
+Broadened diagnostic/context tests, the diagnostic race suite and four canonical
+Go locked-C comparisons pass in Docker. Source and promotion audits pass in
+`20261015-generic-scheduler-receipts`. Only two existing test files are committed;
+production source remains unchanged and no throughput win is claimed. All
+merges remain held until the owner lifts the 0.56.0 release hold.
+
 ### Ordinary YAML route gate: measured throughput gap
 
 On baseline `70b27618117e60eecd6e1aaa26552aa81b37f22a`, twenty shuffled seeds
@@ -826,18 +863,25 @@ Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain
 the initial wrong election filter and the passing direct/chained probes remain
 separate. Ordinary YAML and compact graduation stay gated.
 
-### Layout and dispatch follow-ups: three rejected screens
+### Layout and dispatch follow-ups: five rejected screens
 
-Three independent screens on `c498e889e` preserve all 414 deterministic rows
+Five independent screens on `c498e889e` preserve all 414 deterministic rows
 and pass focused correctness checks. Packing lineage flags shrinks each dense
 record 32→28 bytes but establishes no compact throughput win; its owned YAML
 stream direction is +0.67% (p=.040). Exact immutable wrapper reuse leaves public
 allocation counts unchanged and slows the two affected YAML benchmarks
 0.84% / 0.81%. Compiled pure-reduction cohorts slow canonical query and large
-Go about 1.67% each (p<.001). All are rejected. The
+Go about 1.67% each (p<.001). Direct built-in row inspection removes that
+regression but establishes no gain (query −0.16%, p=.583; large Go −0.05%,
+p=.620). Moving the existing conflict-policy rejection guards before token
+projection also establishes no gain (query −0.22%, p=.461; large Go −0.99%,
+p=.076). All are rejected. The
 [focused receipt](compact-layout-dispatch-screens-20261015.md) records the paired
 measurements, controls, discarded partial run and qualification limits. No
-runtime or graduation change follows; all merges to main remain held.
+runtime or graduation change follows; all merges to main remain held. Separate
+read-only censuses find exact duplicate parents in only 0.58% of large-Go
+subtrees and none in the two YAML witnesses; first-entry hits account for only
+about 11% of boundary lookups. No broad cache follows from those observations.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 
