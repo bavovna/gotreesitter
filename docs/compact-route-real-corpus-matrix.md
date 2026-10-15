@@ -826,6 +826,93 @@ Evidence is local `gotreesitter-evidence/20261015-yaml-shift-origin-replay/chain
 the initial wrong election filter and the passing direct/chained probes remain
 separate. Ordinary YAML and compact graduation stay gated.
 
+### Exact classification recurrence: rejected cache
+
+Baseline is `c498e889ec2d86382a3a0baad58020d7df7145b3`. A read-only census
+preserves all four canonical Go digests and deterministic work. Repeated
+(owner, authentication generation, head, lookahead) keys always reproduce the
+same complete capability:
+
+| Go fixture | Generic classifications | Exact repeats | Simulated 16-slot hits |
+| --- | ---: | ---: | ---: |
+| rewrite | 2,131 | 697 | 696 |
+| query_compile | 10,047 | 3,289 | 3,283 |
+| language | 11,688 | 4,569 | 4,542 |
+| grammargen_lr | 114,856 | 41,905 | 41,566 |
+
+The prototype caches only tables declaring immutable action rows, validates the
+existing owner/phase/transaction capability on every hit, and clears all Core
+and row references at scheduler-run entry/exit. Mutable tables use ordinary
+classification. Contextual deferral, selection and action authentication remain.
+Logical lookup counters retain the corridor's convention. Tests cover phase,
+reset, rollback/ordinal reuse, ended transactions, foreign owners, symbols and
+invalid heads. A pointer-dereference compilation failure is corrected before
+the frozen gate and excluded from timing.
+
+Core and phase-zero-A, default/opt-in C4, focused Go/YAML/CMake/HTML/Python
+invariant/C checks and **414 exact ledger rows** pass. The completed source-only
+Buckley review establishes no defect in the stated private lane, with explicit
+limits on the immutability and invalidation assumptions. It gives no merge
+approval or unseen-path qualification.
+
+Twenty paired shuffled runs reject the implementation: public query Go is
+**+1.08%** (p=.010), large Go **+1.47%** (p=.020), and Go R4 **+0.74%** (p=.289).
+Owned YAML R4 **+0.13%** (p=.947) and stream **−0.46%** (p=.301) are inconclusive.
+Every compact byte/allocation median remains exact. Bypassed full/edit/no-edit
+controls move **+0.78%** (p=.046), **−0.40%** (p=.355) and **+1.18%** (p<.001);
+full bytes rise **1,159→1,160**, and no-edit remains allocation-free. No cache,
+marker interface or scheduler field is promoted. No full-fleet/race/RSS/budget
+certificate transfers. Pins, failed compilation and all raw samples remain in
+local `gotreesitter-evidence/20261015-classification-cache`; the recurrence
+census is `gotreesitter-evidence/20261015-classification-recurrence`.
+
+### Current Go attribution and provenance storage target
+
+A four-second current-source large-Go public-entrypoint CPU profile attributes
+**79.07%** cumulatively to the scheduler, **36.82%** to generic dispatch,
+**19.72%** to election and **9.66%** to condensation. Borrowed postorder
+materialization is **10.87%** cumulatively; replay shift lookup alone is **1.01%**
+flat. The standalone replay helper is inactive on this path: replay is already
+folded into materialization. The point index already caches the current/next
+line. These findings reject plans that assume another replay traversal or an
+uncached coordinate search. Profiling is attribution, not randomized speed
+evidence. Binary, CPU samples and source hashes remain in local
+`gotreesitter-evidence/20261015-go-publication-profile`.
+
+A separate clean-cohort census preserves canonical digests/work and finds
+**17,484** large-Go multi-header passes whose observed rows are ordinary
+shift/reduce cells with at least one reduction, among **51,764** observed
+multi-header passes. Those eligible passes contain **37,881 / 108,187** cells.
+The counts identify a bounded corridor-extension opportunity; they do not prove
+that its full dispatch policy may be skipped. Evidence is local
+`gotreesitter-evidence/20261015-classification-recurrence/cohort-coverage`.
+
+A read-only graph census identifies a larger representation target:
+
+| Go fixture | Graph lineage records | Distinct final records | Distinct observed construction records | Distinct observed with owner removed |
+| --- | ---: | ---: | ---: | ---: |
+| rewrite | 2,996 | 445 | 1,282 | 450 |
+| query_compile | 14,663 | 1,763 | 5,232 | 1,797 |
+| language | 15,074 | 2,043 | 6,041 | 2,431 |
+| grammargen_lr | 148,368 | 21,104 | 63,268 | 21,765 |
+
+Each current lineage record is **32 bytes**. Large Go retains **4,747,776 live
+bytes / 5,655,040 capacity bytes** in that array. **141,100** records carry an
+alternative set; only **7,268** have no fields beyond owner. A sparse zero-only
+scheme therefore has little coverage. Separating the owner from shared immutable
+proof records is a concrete candidate, but no new representation, allocation or
+throughput saving is claimed. The construction observer samples reads, owner
+writes, proof invalidations and final values; it is not an exhaustive mutation
+proof or an intern-table sizing bound. Final-state uniqueness alone understates
+the observed value stream by about three times. Repeated immutable values also
+do not eliminate the need for exact rollback and reference-lifetime handling.
+
+Both censuses preserve pinned canonical digests and scheduler/core work. Fresh
+sessions already keep the transaction stack empty, so ordinary journal elision
+is not a fresh-path optimization. Runtime and routing remain unchanged.
+Evidence is local `gotreesitter-evidence/20261015-lineage-storage-census` and its
+`observed-values` subdirectory. Compact graduation remains gated.
+
 ### Ordinary YAML stop census: the first decline is near byte 350
 
 A test-only inspection on `fb4c8acc4` holds the existing runner lease until
