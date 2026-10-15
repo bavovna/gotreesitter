@@ -458,6 +458,67 @@ exit zero without OOM or timeout. Buckley commit
 Earlier percentages are independent and are not added. Evidence is local
 `gotreesitter-evidence/20261015-single-link-replacement`.
 
+### Paired checkpoint authentication: rejected after callback review
+
+A shared-destination validation prototype on `bb5022df4` measured owned-YAML
+R4 **354.527→341.824 µs (−3.58%)** and the 8,012-byte stream
+**1.373438→1.336439 ms (−2.69%)**, both p<.001 over twenty paired shuffled seeds.
+Every allocation median and all **414 work/reuse rows** stayed exact. Compact
+Go timings were inconclusive; full/edit/no-edit controls rose
+**3.02% / 0.97% / 1.73%**, recorded without causal attribution to code they
+bypass. All raw samples, production hashes and scope limits remain retained.
+
+The prototype also passed 206 invariant sessions, 618 C fixture checks,
+204 unchanged strict rows, races, six budgets and a 1 MiB YAML/C probe. Those
+checks did not cover a callback binding change. A Buckley read-only source
+review found that `ExternalScannerIsStateless()` can replace
+`Language.ExternalScanner` while the first snapshot's contract is read.
+Sharing that destination result could then accept the second snapshot against
+the old binding. A new Docker regression reproduces the exact acceptance.
+
+**The shortcut is rejected and is not promoted.** The request validator is
+restored byte-for-byte to `bb5022df4`, preserving both live destination checks.
+The new callback regression is retained with corruption and reset guards in
+the explicit CI selector. The separately measured copy-only screen below also
+fails to establish a throughput win. The apparent speed result cannot qualify
+the unsafe batch or graduate YAML.
+
+The dedicated Buckley review command timed out during broad host verification
+without a verdict; its remaining session processes were stopped and its
+incomplete artifact is excluded from qualification. The separate tool-limited
+source pass produced the actionable finding above, without executing tests or
+issuing merge approval. Evidence is local
+`gotreesitter-evidence/20261015-shared-checkpoint-validation`, including the
+frozen unsafe patch, review, failing witness and explicit disposition.
+
+### Copy-only checkpoint validation: no supported throughput gain
+
+A separate prototype retains both live destination checks and avoids only a
+second validation of an identical private checkpoint copy, after checking its
+ID, storage, length and receipt metadata. It passes focused core/phase-zero-A,
+Go/YAML C checks and edit invariants; all **414 work/reuse rows**, timed node
+and route counters, bytes and allocation medians stay exact. The callback
+regression passes on both the unchanged baseline and this candidate.
+
+Twenty alternating shuffled pairs on `bb5022df4` establish no affected-path
+gain: owned YAML R4 **352.147→351.005 µs (−0.32%, p=.061)**; the 8,012-byte
+stream **1.376199→1.366275 ms (−0.72%, p=.096)**; compact Go query/large/R4
+**−0.34% / −0.52% / +0.61%**, all inconclusive. The full-DFA and no-edit
+controls rise **3.40% / 2.74%** (both p<.001); the edit control is inconclusive
+at **−0.36%**. The controls bypass this snapshot operation, so these directions
+are recorded without causal attribution. No-edit stays **0 bytes / 0 allocations**.
+
+**The runtime prototype and its helper are discarded.** Production returns
+byte-for-byte to the qualified baseline. The adversarial callback, seventeen
+second-snapshot corruption cases and between-call binding/reset guards remain
+as tests with explicit CI coverage in Buckley commit `83463617e`. Native
+Docker tests, L0 and all 64 workflow selectors pass. There is no transferred full-fleet, race,
+RSS or graduation qualification for this screen. All twenty samples per role,
+source hashes, complete container exit zero and no-OOM/no-timeout receipts are
+verified. Evidence is local
+`gotreesitter-evidence/20261015-checkpoint-copy-alias-validation`; the retained
+test/CI patch is in `20261015-checkpoint-validation-guards`.
+
 ### Ordinary YAML stop census: the first decline is near byte 350
 
 A test-only inspection on `fb4c8acc4` holds the existing runner lease until
