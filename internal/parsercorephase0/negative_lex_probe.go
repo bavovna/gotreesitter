@@ -6,8 +6,8 @@ package parsercorephase0
 // scanner payload, tree, or input reference is retained.
 // A slot collision only discards a reusable result.
 type NegativeLexProbeMemo struct {
-	slots [8]negativeLexProbe
-	valid uint8
+	slots [16]negativeLexProbe
+	valid uint16
 }
 type negativeLexProbe struct {
 	start, span, produced uint32
@@ -16,7 +16,7 @@ type negativeLexProbe struct {
 
 func (m *NegativeLexProbeMemo) Clear() { m.valid = 0 }
 func (m *NegativeLexProbeMemo) Lookup(state StateID, start uint32) (span, produced uint32, ok bool) {
-	i := state & 7
+	i := state & 15
 	e := &m.slots[i]
 	if m.valid&(1<<i) == 0 || e.state != state || e.start != start {
 		return 0, 0, false
@@ -24,7 +24,7 @@ func (m *NegativeLexProbeMemo) Lookup(state StateID, start uint32) (span, produc
 	return e.span, e.produced, true
 }
 func (m *NegativeLexProbeMemo) Record(state StateID, start, span, produced uint32) {
-	i := state & 7
+	i := state & 15
 	m.slots[i] = negativeLexProbe{start: start, span: span, produced: produced, state: state}
 	m.valid |= 1 << i
 }

@@ -19,7 +19,7 @@ func TestNegativeLexProbeMemoDomain(t *testing.T) {
 		if _, _, ok := m.Lookup(state^65536, 123); ok {
 			t.Fatal("upper state bits aliased", state)
 		}
-		other := state ^ 8
+		other := state ^ 16
 		if _, _, ok := m.Lookup(other, 123); ok {
 			t.Fatal("slot collision matched")
 		}
@@ -55,5 +55,68 @@ func TestCaptureLexProbeReadSpanExactAndPanic(t *testing.T) {
 	}()
 	if span != 500 {
 		t.Fatal("panic lost dependency", span)
+	}
+}
+
+// Doubling the direct-index capacity refines each old bucket. Every hit the
+// old eight-slot policy retains must remain a hit, even with full-width states,
+// different start bytes, skipped recordings and resets.
+func TestNegativeLexProbeMemoRetainsEightSlotHits(t *testing.T) {
+	type referenceEntry struct {
+		state                 StateID
+		start, span, produced uint32
+		valid                 bool
+	}
+	var old [8]referenceEntry
+	var memo NegativeLexProbeMemo
+	var random uint32 = 0x39f1a57b
+	oldHits, newHits := 0, 0
+	for step := 0; step < 100000; step++ {
+		random ^= random << 13
+		random ^= random >> 17
+		random ^= random << 5
+		if step%251 == 0 {
+			old = [8]referenceEntry{}
+			memo.Clear()
+		}
+		state := StateID(random & 255)
+		if step%5 == 0 {
+			state |= 0xffff0000
+		}
+		if step%7 == 0 {
+			state = StateID(step & 31)
+		}
+		start := uint32((step / 29) % 4)
+		entry := old[uint32(state)%8]
+		wasHit := entry.valid && entry.state == state && entry.start == start
+		span, produced, hit := memo.Lookup(state, start)
+		expectedSpan := uint32(state) ^ start
+		expectedProduced := uint32(state) & 7
+		if wasHit {
+			oldHits++
+			if !hit {
+				t.Fatal("larger cache lost old hit", step, state, start)
+			}
+		}
+		if hit {
+			newHits++
+			if span != expectedSpan || produced != expectedProduced {
+				t.Fatal("metadata mismatch")
+			}
+		}
+		// Non-cached outcomes do not evict either policy; a missing result may
+		// become cacheable later, but stored metadata depends only on its key.
+		if random&3 == 0 && !wasHit && !hit {
+			continue
+		}
+		if !wasHit {
+			old[uint32(state)%8] = referenceEntry{state, start, expectedSpan, expectedProduced, true}
+		}
+		if !hit {
+			memo.Record(state, start, expectedSpan, expectedProduced)
+		}
+	}
+	if oldHits == 0 || newHits < oldHits {
+		t.Fatal(oldHits, newHits)
 	}
 }
