@@ -63,6 +63,18 @@ YAML invariant pass with the fix. Earlier timings do not transfer to that fixed
 source. No runtime or counter exception is promoted, and no earlier owner
 approval is extended. Ordinary YAML graduation remains blocked by cost.
 
+### Packed graph links: storage projection rejected by throughput
+
+The [graph-link screen](compact-link-storage-screens-20261016.md) starts at
+`14f255bac`, after the qualified tagged alternative-set change. A 24-byte link
+with full-width rare scalar pairs projects 20.71% less logical link storage on
+large Go. Scoped correctness, C checks, edit invariants and deterministic
+checks pass. Twenty alternating pairs nevertheless raise time 6.59–8.05% on
+all four Go files and 2.20% / 4.12% / 4.69% on ordinary-fallback / owned-R4 /
+owned-stream YAML (all p<.001). Allocation counts stay exact; fallback bytes
+fall 4.58%. The prototype is rejected and remains outside the checkout. It
+supplies no fleet certification, route activation or graduation evidence.
+
 ### Diagnostic scheduler test maintenance
 
 Core commit `7b016214d6322540ffd52009ae5eb214ce8434ea` in
