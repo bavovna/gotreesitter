@@ -119,6 +119,18 @@ Allocations stay exact. The default no-edit control's +1.90% direction and
 single-probe RSS limits are retained. This is a qualified throughput win;
 ordinary YAML activation and compact graduation remain gated.
 
+### Owned-only retry flags: throughput screen rejected
+
+The [owned-only mask screen](compact-owned-retry-screen-20261016.md) keeps live
+DFA flags unchanged and places immutable packed flags only in owned snapshots.
+All 414 ledger rows, scoped C/edit checks, races/386 and memory gates pass;
+source-only review finds no concrete defect within its stated scope. Twenty
+YAML pairs nevertheless increase ordinary / owned R4 / stream time **2.66% /
+2.37% / 1.30%** (p<.001/.001/<.001). Owned bytes fall **11.19–12.78%** and
+objects **13.76–17.56%**, including the 400→424-byte record cost. The candidate
+is rejected. No Go timing, full-fleet, strict-census or RSS certification is
+claimed; no runtime source, route or graduation change is promoted.
+
 ### Packed retry flags: memory savings rejected for ordinary throughput
 
 The [packed retry-mask screen](compact-packed-retry-screen-20261016.md) starts
