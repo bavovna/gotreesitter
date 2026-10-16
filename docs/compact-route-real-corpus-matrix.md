@@ -45,6 +45,18 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Warm-path census: discard inactive and saturated targets
+
+The [post-warmup census](compact-warm-path-census-20261016.md) on `f7ec6721`
+finds zero eligible ASCII SKIP loops, zero successful stateless external probes
+and zero checkpoint-digest requests on the four Go and three YAML witnesses.
+Larger or associative probe memos remove no trace misses; the existing 16-slot
+memo already captures the repetition. Trees, Core.Work and raw21 stay exact.
+Separate warm CPU profiles put reduction output construction at 15.58–16.96%
+on owned YAML and large Go. These are target-selection receipts, without a
+runtime or throughput claim. Ordinary YAML ownership and graduation remain
+gated; all main merges stay held for 0.56.0.
+
 ### Bounded ASCII runs: qualified Go improvement, YAML unchanged by timing
 
 Buckley runtime commit `f7ec67210486be4398d962fa0cf7e73b02da1c41` adds a bounded
