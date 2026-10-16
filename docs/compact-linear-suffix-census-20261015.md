@@ -475,3 +475,143 @@ Validation cannot be removed on an ownership assumption: the current
 no mutation-exclusion guard. Reducing repeated snapshot checks therefore needs
 an explicit invalidation/ownership proof. No check or counter is weakened.
 The runtime remains private; graduation and all main merges remain held.
+
+
+## Compiled-row reuse and one-read GOTO handoff
+
+The continuation removes the duplicate reduction-row lookup under the existing
+C4 S2 decode-back/S3 stream-validation contract used by
+`ClassifyBoundaryWithRow`. The compiled caller supplies its dispatched row;
+other callers still resolve their row and recheck callback authority. Both
+entrypoints use the same parent builder, production-plan/goto rechecks,
+canonical/cap preflight and raw-store seams. The no-repeat-lookup and
+fields/aliases/goto invalidation tests pass. The initial test-field compile
+error is archived and supplies no qualification.
+
+Query lookups fall **39,188→37,687**, leaving 25 above native. A diagnostic-only
+site trace isolates them: actions 10,047, classification 7,257 and other reads
+12,377 remain exact, while GOTO reads rise **7,981→8,006**. These are repeated
+reads after a speculative reduction hands off before publication.
+
+The final bridge captures one pure immutable-root-table GOTO result during a
+reduction and arms it only for the immediately resumed GSS path. Its key binds
+the language, predecessor state and symbol; hit or mismatch consumes it.
+Native GSS cannot populate it, an unprimed handoff disables it, and every exit
+clears its scope. A broader first replay variant passed the query/tree checks;
+the final one-consumption form prevents it becoming a general fallback cache.
+Zero-target, foreign-key, empty/nested/ended scope, one-consumption and stale
+repopulation checks pass. An incorrect 16-byte size assumption in the first
+test is archived; `StateID` is 32 bits, and the actual slot is **24 bytes**.
+The state domain is not narrowed.
+
+The root wrapper's actual slot size is added once to `Core.FootprintBytes`,
+even inactive; overflow saturates. The accounting test and full core package
+pass. The adversarial 1 MiB Go witness now observes **1,074,123 bytes**, exactly
+24 above the preceding source and below the unchanged **1,153,433-byte** bound.
+Final lifecycle/cap/live-tree, fused edit and memory checks pass. Four Go cases
+match locked C without fallback; Go and YAML each pass 48 edit-session steps
+with zero no-edit allocations.
+
+| Fixture | Raw table lookups: native → handoff | Full diagnostic work vector |
+| --- | ---: | --- |
+| `rewrite` | 7,582 → 7,582 | exact |
+| `query_compile` | 37,662 → 37,662 | exact |
+| `language` | 37,652 → 37,652 | exact |
+| `grammargen_lr` | 400,160 → 400,160 | exact |
+
+Complete native core/scheduler vectors, pinned trees, dependency arrays/frontiers,
+ordering and token/dispatch/election totals also remain exact. The bounded
+compiled-row review finds no concrete defect in its supplied contract/diff.
+The replay review's missing call-flow/counter context is supplied in a completed
+follow-up: generic apply occurs only after `Arm`; private failure flushes and
+returns first. The supplied lookup implementation and unchanged counter hook
+support the replay's physical-read accounting. Reviews inspect supplied source,
+not full parser/performance qualification. No exception or relaxed gate is used.
+
+The final sources and separate intermediate attempts are pinned in
+`20261016-linear-suffix-compiled-row`, `20261016-linear-suffix-goto-handoff`,
+`20261016-linear-suffix-goto-once` and
+`20261016-linear-suffix-goto-accounted`; the site trace is separately pinned in
+`20261016-linear-suffix-compiled-row-lookup-trace`.
+
+Twenty alternating native-vs-accounted pairs complete at the established
+750 ms/one-CPU/6 GiB settings. All sample, source, seed and work audits pass.
+Timing variance is higher than earlier screens (up to ±12%):
+
+| Fixture | Median parse time: native → handoff | Direction | Benchstat p |
+| --- | ---: | ---: | ---: |
+| `rewrite` | 2.049 → 2.300 ms | +12.30% | .001 |
+| `query_compile` | 9.963 → 11.192 ms | +12.33% | .017 |
+| `language` | 10.352 → 11.504 ms | +11.13% | .076 |
+| `grammargen_lr` | 107.090 → 116.545 ms | +8.83% | .009 |
+
+The language difference is inconclusive; the other three regress significantly.
+Allocation counts remain **21/129/243/1,716→21/129/243/1,726**. Large-Go median
+bytes rise **3,251,747→3,283,992 (+0.99%)**; the other byte directions remain in
+the raw audit. This closes the measured four-fixture lookup blocker but rejects
+throughput promotion. It does not establish all-language R3 qualification.
+
+## Borrowed validation preserves checks, not a demonstrated speed win
+
+The next source traverses frozen origins by pointer and compares the seven
+non-set lineage scalars directly, removing whole-origin/argument copies and
+zeroed temporary sets. It still checks every origin, record, link, checkpoint,
+owner/lifetime and logical membership. It adds no validation cache or mutation
+exclusion assumption. The copied old predicate is the oracle; reflected scalar
+mutations cover future header fields, and count/flag/spill/active-inline/unused-
+tail combinations agree. The oracle, existing mutation/rollback/import tests,
+full core, all four complete work/observation vectors and the same C/edit/memory
+gates pass. The bounded source comparison finds no missing field or pointer
+lifetime defect in its supplied scope.
+
+Twenty new alternating pairs against the unchanged native engine complete;
+timing variance reaches ±15%:
+
+| Fixture | Median parse time: native → borrowed | Direction | Benchstat p |
+| --- | ---: | ---: | ---: |
+| `rewrite` | 1.964 → 2.097 ms | +6.77% | .006 |
+| `query_compile` | 9.066 → 11.052 ms | +21.90% | .001 |
+| `language` | 9.832 → 11.114 ms | +13.03% | .026 |
+| `grammargen_lr` | 108.158 → 112.166 ms | +3.71% | .040 |
+
+All four timing directions regress in this screen. The first three allocation
+counts remain native; large Go remains +10 (+0.58%) and +0.99% median bytes.
+The other byte differences are statistically unchanged. These are independent
+native comparisons, not evidence that the copy change improves its parent.
+Source/work/seed/sample audits pass in
+`20261016-linear-suffix-borrowed-validation`. The runtime stays private and
+unpromoted; on-disk source guards, full-fleet/race/RSS and graduation gates
+remain open. All main merges stay held.
+
+## Native lineage occupancy rules out a sparse-set layout
+
+A separate tagged native-only census uses production engine `c498e889e` at
+checkout `7b016214d`, with no private kernel source. Four Go fixture processes
+retain pinned trees/work. A tagged read-only post-session observer then checks
+the owned YAML R4 sample: one compact route, zero fallback, complete/error-free
+root and the same deep tree as fresh production. These are diagnostic runs,
+not performance comparisons.
+
+The actual node-lineage record is **32 bytes** and its alternative set is
+**12 bytes**. Sets are dense:
+
+| Fixture | Graph nodes | Logical nonempty sets | Set occupancy | Nonzero error-cost or reference records |
+| --- | ---: | ---: | ---: | ---: |
+| `rewrite` | 2,996 | 2,647 | 88.35% | 0 |
+| `query_compile` | 14,663 | 13,917 | 94.91% | 0 |
+| `language` | 15,074 | 13,600 | 90.22% | 0 |
+| `grammargen_lr` | 148,368 | 141,100 | 95.10% | 0 |
+| `owned_yaml` | 356 | 308 | 86.52% | 0 |
+
+A 24-byte header plus a 12-byte sparse set slot would raise logical storage
+on every witness: large Go **4,747,776→5,254,032 bytes (+10.66%)**, owned YAML
+**11,392→12,240 (+7.44%)**. That layout is rejected before implementation.
+The alternative measured target is the two scalar fields that are zero here:
+error cost and certificate-reference index. A hypothetical 24-byte hot record
+with eight-byte cold pairs projects **3,560,832** logical bytes for large Go
+and **8,544** for owned YAML (25% below current). It requires a field/flag layout,
+mutation/rollback rules and worst-case memory/growth proof; it is not implemented
+or a measured memory, RSS or speed saving. Final occupancy alone does not bound
+transient usage. The census source/route/tree audits are in
+`20261016-lineage-occupancy-census` and `20261016-lineage-occupancy-yaml`.
+No language graduates and no merge hold is lifted.

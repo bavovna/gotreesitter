@@ -960,6 +960,21 @@ CPU. Compiled-row reuse and validation need qualified proofs; no counter
 exception or runtime promotion follows. Full-fleet, race, RSS, on-disk source
 guards and graduation qualification remain open.
 
+The [compiled-row/handoff continuation](compact-linear-suffix-census-20261015.md#compiled-row-reuse-and-one-read-goto-handoff)
+closes that measured lookup gap: all four complete diagnostic work vectors are
+exact (raw lookups **7,582 / 37,662 / 37,652 / 400,160**). One-read pure GOTO
+replay removes speculative fallback rereads, and its actual **24 bytes** are
+charged even inactive. The focused C/edit/memory gates pass; the memory witness
+rises exactly 24 bytes within its unchanged bound. Two further 20-pair screens
+still reject promotion: accounted replay has three significant regressions and
+one inconclusive case; borrowed validation retains every check but also shows
+regressing times. Variance reaches ±12–15%, so no component speed gain is inferred.
+A native Go/owned-YAML occupancy census finds **86.52–95.10%** nonempty sets,
+rejecting a sparse-set layout before implementation. Error-cost/reference fields
+are zero on these clean witnesses; their separation is an unimplemented layout
+candidate, not a saving. Current production source and ordinary YAML ownership,
+allowlists and graduation status remain unchanged; all main merges stay held.
+
 ### Lineage proof sharing: smaller storage, rejected throughput
 
 On `c498e889e`, an exact immutable interner reduces retained large-Go lineage
