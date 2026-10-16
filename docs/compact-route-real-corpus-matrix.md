@@ -45,6 +45,15 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Direct native action planes: no Go speed improvement
+
+The [native-row screen](compact-native-row-screen-20261016.md) preserves all
+414 ledger rows, all 21 raw Go fields, scoped C/edit checks and overridden
+adapter behavior. Twenty pairs against `86879374e` find no significant compact
+Go time improvement: rewrite/query/language/large +0.10% / −0.01% / +0.49% /
++0.35%. Default full rises 2.66% (p<.001). The private source is rejected;
+no YAML timing, full-fleet, strict, RSS or runtime promotion is claimed.
+
 ### Immutable YAML retry flags: allocation savings rejected on time
 
 The [four sharing screens](compact-shared-retry-screens-20261016.md) preserve
