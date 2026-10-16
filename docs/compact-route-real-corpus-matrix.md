@@ -2,7 +2,7 @@
 
 Current evidence date: 2026-10-16 (UTC).
 Latest core link-comparison baseline: `fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054`.
-The latest stateless-probe comparison uses core parent `0808dfd5fbfb1367bf4d8b80ff0b5ceb897fda3c`.
+The latest stateless-probe capacity comparison uses core parent `e4243c77ad9ede0aea152331111106e3cc417c28`.
 The read-history comparison uses incremental-lane parent `a977238f9eb1548ea671dedecb6750f58906bc43`.
 The earlier leaf-allocation comparison uses incremental-lane baseline `a32d87b6d23b090fef2559380b44bfb2c86a800e`.
 Earlier comparisons below name their own baselines. Canonical Go files
@@ -75,6 +75,20 @@ all four Go files and 2.20% / 4.12% / 4.69% on ordinary-fallback / owned-R4 /
 owned-stream YAML (all p<.001). Allocation counts stay exact; fallback bytes
 fall 4.58%. The prototype is rejected and remains outside the checkout. It
 supplies no fleet certification, route activation or graduation evidence.
+
+### Qualified stateless probe capacity increase
+
+Core commit `86879374e` grows the qualified negative probe memo from eight to
+sixteen slots. The [capacity receipt](compact-relex-capacity-receipt-20261016.md)
+records **1.91% less Go language time / 0.80% less large-Go time** in twenty
+shuffled pairs against `e4243c77a`. Other Go and all YAML timings are inconclusive;
+YAML's stateful scanner bypasses the memo. Allocation counts remain exact,
+large-Go bytes move +31 B/op (+0.00095%), and typed memo storage grows 132→260
+bytes with full footprint charging. All 414 ledger rows stay exact; raw lookup
+work falls or stays unchanged. The 206-session invariant gate plus owned YAML,
+618 C checks, unchanged strict census, races and memory gates pass. No ordinary
+YAML activation, graduation or main merge is implied. Independent deltas below
+are not added.
 
 ### Qualified reuse of failed stateless lexer probes
 
