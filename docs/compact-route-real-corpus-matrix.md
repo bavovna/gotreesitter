@@ -119,6 +119,16 @@ Allocations stay exact. The default no-edit control's +1.90% direction and
 single-probe RSS limits are retained. This is a qualified throughput win;
 ordinary YAML activation and compact graduation remain gated.
 
+### Pointer fingerprint frame split: no measurable gain
+
+The [pointer-frame screen](compact-scanner-frame-screen-20261016.md) reduces
+the amd64 wrapper's stack allocation **4,304→152 bytes** with the generic body
+unchanged. Scoped C/edit, race/386, memory and all 414 counter checks pass.
+Twenty YAML pairs give **+0.18% / −0.02% / +0.01%** ordinary / owned R4 /
+stream directions, all inconclusive (p=.092/.478/.904); bytes and objects stay
+exact. The compiler result supplies no runtime win. The prototype is not
+promoted; no Go timing, full-fleet, strict-census or RSS certificate is claimed.
+
 ### Numeric scanner fingerprint encoding: no measurable gain
 
 The [fingerprint encoding screen](compact-scanner-encoding-screen-20261016.md)
