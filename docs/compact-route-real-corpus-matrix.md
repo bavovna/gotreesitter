@@ -119,6 +119,20 @@ Allocations stay exact. The default no-edit control's +1.90% direction and
 single-probe RSS limits are retained. This is a qualified throughput win;
 ordinary YAML activation and compact graduation remain gated.
 
+### Compiled Go action rows: throughput screen rejected
+
+A production-options observer finds that all 115,952 prepared rows across four
+Go fixtures match existing compiled rows. A private internal decoder/table
+adapter preserves fresh classification, all 414 ledger rows, canonical
+digests/Core.Work, raw counters and scoped C/edit/race/386/memory checks.
+Nevertheless, twenty shuffled pairs make compact Go **1.40–1.87% slower**
+(all p<.001); the prototype is rejected. No YAML timing or full-fleet promotion
+gate is claimed. A separate warm YAML census finds **zero snapshot clones**
+and one exact retry mask repeated in 15 / 59 owned captures, directing the next
+experiment toward immutable sharing of ordinary boolean storage. Those counts
+are diagnostic. The [receipt](compact-dispatch-row-screen-20261016.md) records
+controls, review limits, source pins and the unchanged merge hold.
+
 ### Pointer fingerprint frame split: no measurable gain
 
 The [pointer-frame screen](compact-scanner-frame-screen-20261016.md) reduces
