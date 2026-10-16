@@ -2,6 +2,7 @@
 
 Current evidence date: 2026-10-16 (UTC).
 Latest core link-comparison baseline: `fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054`.
+The latest stateless-probe comparison uses core parent `0808dfd5fbfb1367bf4d8b80ff0b5ceb897fda3c`.
 The read-history comparison uses incremental-lane parent `a977238f9eb1548ea671dedecb6750f58906bc43`.
 The earlier leaf-allocation comparison uses incremental-lane baseline `a32d87b6d23b090fef2559380b44bfb2c86a800e`.
 Earlier comparisons below name their own baselines. Canonical Go files
@@ -74,6 +75,22 @@ all four Go files and 2.20% / 4.12% / 4.69% on ordinary-fallback / owned-R4 /
 owned-stream YAML (all p<.001). Allocation counts stay exact; fallback bytes
 fall 4.58%. The prototype is rejected and remains outside the checkout. It
 supplies no fleet certification, route activation or graduation evidence.
+
+### Qualified reuse of failed stateless lexer probes
+
+Core commit `e4243c77a` reuses failed external-token probes only within the same
+frozen stateless election, retaining checkpoint checks and exact read metadata.
+The [qualified receipt](compact-relex-memo-receipt-20261016.md) records
+**0.52–2.40% less time** on all four canonical Go files in twenty final-source
+pairs. Allocation medians and parse-work counters stay exact; all 414 ledger
+rows remain unchanged. Ordinary YAML's −0.90% direction bypasses this memo and
+receives no causal attribution. Owned YAML directions are inconclusive, including
+stream **+0.15%**. No YAML speed gain from cached probes is claimed.
+All 206 invariant sessions plus owned YAML, 618 C fixture checks, the unchanged
+204-row strict census, races and memory checks pass. Full state width and S5
+restore invalidation reject the earlier private prototypes. Root/API and CI
+selector checks pass. Ordinary YAML activation and graduation remain gated;
+all main merges remain held.
 
 ### Qualified ordinary-link validation fast path
 
