@@ -2975,6 +2975,7 @@ type diagnosticParserCoreGenericScheduler struct {
 	// of one per-state relex probe, so the probe allocates no slices.
 	relexPriorScratch dfaRelexSnapshotScratch
 	relexAfterScratch dfaRelexSnapshotScratch
+	negativeRelexMemo *core.NegativeLexProbeMemo
 	// relexZeroWidthPreScanScratch holds tokenSource.externalPreScanPayload's
 	// own bytes for the duration of relexZeroWidthExternalTokenForState's
 	// probe, which borrows that field to inject the scheduler's own
@@ -4673,6 +4674,9 @@ func clearDiagnosticParserCoreGenericSchedulerVersionState(scheduler *diagnostic
 		clear(scheduler.versionLexerRequests[:cap(scheduler.versionLexerRequests)])
 	}
 	scheduler.versionLexerBefore = dfaRelexSnapshot{}
+	if scheduler.negativeRelexMemo != nil {
+		scheduler.negativeRelexMemo.Clear()
+	}
 	scheduler.versionLexerBeforeValid = false
 	scheduler.versionLexerBeforeIdentity = [32]byte{}
 	scheduler.versionLexerBeforeIdentityValid = false
@@ -4743,6 +4747,7 @@ func resetDiagnosticParserCoreGenericScheduler(scheduler *diagnosticParserCoreGe
 		relexPriorScratch:            relexPriorScratch,
 		relexAfterScratch:            relexAfterScratch,
 		versionLexerRequests:         versionLexerRequests,
+		negativeRelexMemo:            scheduler.negativeRelexMemo,
 		versionLexerMetadata:         scheduler.versionLexerMetadata,
 	}
 	return nil
@@ -5505,6 +5510,22 @@ func (s *diagnosticParserCoreGenericScheduler) relexExternalTokenForState(state 
 	if int(state) >= len(lang.LexModes) {
 		return shared, false
 	}
+	// A negative external candidate is independent of the shared after-state.
+	// Reuse only stateless requests under this exact frozen fresh election;
+	// capability and checkpoint authentication above/below remain mandatory.
+	memoEligible := contract.stateless && s.options.freshSchedulerSession && s.compact != nil &&
+		!s.versionLexerOwnershipActive && !d.quiescenceProbing && shared == s.token &&
+		s.versionLexerBeforeElection == s.electionIndex &&
+		s.versionLexerBeforeCheckpoint == s.checkpointBeforeID
+	if memoEligible && s.negativeRelexMemo != nil {
+		if span, produced, ok := s.negativeRelexMemo.Lookup(core.StateID(state), shared.StartByte); ok &&
+			s.compact.CheckpointMatches(s.checkpointBeforeID, s.versionLexerBefore.externalPayload) {
+			d.tokenInvariantMaxReadSpan = max(d.tokenInvariantMaxReadSpan, span)
+			d.externalTokensProduced = produced
+			d.externalPreScanPayload = d.externalPreScanPayload[:0]
+			return shared, false
+		}
+	}
 	// Keep the source exactly as the shared election left it. The snapshot
 	// restore below may call Deserialize, so capture the current state first.
 	prior := d.snapshotRelexStateWithScratch(&s.relexPriorScratch)
@@ -5530,9 +5551,21 @@ func (s *diagnosticParserCoreGenericScheduler) relexExternalTokenForState(state 
 	s.versionLexerBefore.restore(d)
 	d.SetParserState(state)
 	d.SetGLRStates(nil)
-	candidate := d.Next()
+	var candidate Token
+	var probeSpan uint32
+	if memoEligible {
+		candidate, probeSpan = core.CaptureLexProbeReadSpan(&d.tokenInvariantMaxReadSpan, d.Next)
+	} else {
+		candidate = d.Next()
+	}
 	if candidate.Symbol == 0 || candidate.NoLookahead || candidate.Missing ||
 		!candidate.ExternalScannerToken || candidate.StartByte != shared.StartByte {
+		if memoEligible {
+			if s.negativeRelexMemo == nil {
+				s.negativeRelexMemo = new(core.NegativeLexProbeMemo)
+			}
+			s.negativeRelexMemo.Record(core.StateID(state), shared.StartByte, probeSpan, d.externalTokensProduced)
+		}
 		return shared, false
 	}
 	// Compare the scanner payload after the state-specific scan. Equal token
@@ -6128,6 +6161,9 @@ func (s *diagnosticParserCoreGenericScheduler) captureSharedElectionSnapshotFrom
 }
 
 func (s *diagnosticParserCoreGenericScheduler) finishSharedElectionSnapshotCapture() error {
+	if s.negativeRelexMemo != nil {
+		s.negativeRelexMemo.Clear()
+	}
 	s.versionLexerBeforeValid = true
 	s.versionLexerBeforeIdentity = [32]byte{}
 	s.versionLexerBeforeIdentityValid = false

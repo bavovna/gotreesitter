@@ -4,6 +4,7 @@ package gotreesitter
 
 import (
 	"testing"
+	"unsafe"
 
 	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
@@ -520,4 +521,98 @@ func runStateDependentRelexSchedulerForTest(lang *Language, source []byte, disab
 		return DiagnosticParserCoreGenericScheduler{}, runErr
 	}
 	return *scheduler.receipt, runErr
+}
+
+func TestNegativeRelexMemoReadReplayAndReset(t *testing.T) {
+	f := loadDiagnosticParserCoreCanonicalFixture(t, "rewrite")
+	r, err := newParserCoreFreshFullRunner(parserCoreWarmGoScanner, parserCoreFreshFullCanonicalOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, src, err := r.executeSchedulerOpen(f.Source, r.compact, true)
+	if src != nil {
+		defer src.Close()
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.negativeRelexMemo == nil {
+		t.Fatal("fresh canonical parse never installed a negative memo")
+	}
+	s.negativeRelexMemo.Clear()
+	s.tokenSource.tokenInvariantMaxReadSpan = 0
+	_, ok := s.relexExternalTokenForState(0, s.token)
+	if ok {
+		t.Fatal("unexpected external EOF candidate")
+	}
+	span, produced, hit := s.negativeRelexMemo.Lookup(0, s.token.StartByte)
+	if !hit {
+		t.Fatal("negative request did not enter memo")
+	}
+	before := s.tokenSource.snapshotRelexState()
+	priorState := s.tokenSource.state
+	priorGLR := append([]StateID(nil), s.tokenSource.glrStates...)
+	s.tokenSource.tokenInvariantMaxReadSpan = 0
+	s.tokenSource.externalTokensProduced = ^uint32(0)
+	s.tokenSource.externalPreScanPayload = append(s.tokenSource.externalPreScanPayload[:0], 1)
+	tok, ok := s.relexExternalTokenForState(0, s.token)
+	if ok || tok != s.token || s.tokenSource.tokenInvariantMaxReadSpan != span || s.tokenSource.externalTokensProduced != produced || len(s.tokenSource.externalPreScanPayload) != 0 {
+		t.Fatal("cached negative lost result or read/scan metadata")
+	}
+	after := s.tokenSource.snapshotRelexState()
+	if !before.equal(&after) || s.tokenSource.state != priorState || len(priorGLR) != len(s.tokenSource.glrStates) {
+		t.Fatal("cached negative changed current cursor/scanner")
+	}
+	for i, v := range priorGLR {
+		if s.tokenSource.glrStates[i] != v {
+			t.Fatal("GLR state drift")
+		}
+	}
+	with := diagnosticParserCoreSchedulerFootprintBytes(s)
+	memo := s.negativeRelexMemo
+	s.negativeRelexMemo = nil
+	without := diagnosticParserCoreSchedulerFootprintBytes(s)
+	s.negativeRelexMemo = memo
+	if with-without != uint64(unsafe.Sizeof(core.NegativeLexProbeMemo{})) {
+		t.Fatal("memo not charged exactly", with, without)
+	}
+	if err := s.finishSharedElectionSnapshotCapture(); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, ok := memo.Lookup(0, s.token.StartByte); ok {
+		t.Fatal("new frozen snapshot retained old request")
+	}
+	memo.Record(0, 0, 1, 2)
+	if err := resetDiagnosticParserCoreGenericScheduler(s); err != nil {
+		t.Fatal(err)
+	}
+	if s.negativeRelexMemo != memo {
+		t.Fatal("bounded idle storage not retained")
+	}
+	if _, _, ok := memo.Lookup(0, 0); ok {
+		t.Fatal("new parse retained old request")
+	}
+}
+
+func TestNegativeRelexMemoS5RollbackDiscardsSpeculativeEntries(t *testing.T) {
+	memo := new(core.NegativeLexProbeMemo)
+	memo.Record(65537, 0, 11, 12)
+	s := &diagnosticParserCoreGenericScheduler{negativeRelexMemo: memo}
+	first := captureDiagnosticParserCoreS5Scheduler(s)
+	// A speculative election can clear and replace entries at the same state/start.
+	memo.Clear()
+	memo.Record(65537, 0, 99, 100)
+	second := captureDiagnosticParserCoreS5Scheduler(s)
+	first.restore(s)
+	if _, _, ok := s.negativeRelexMemo.Lookup(65537, 0); ok {
+		t.Fatal("S5 restore retained speculative negative lexer result")
+	}
+	if s.negativeRelexMemo != memo {
+		t.Fatal("S5 restore discarded bounded reusable storage")
+	}
+	memo.Record(65537, 0, 101, 102)
+	second.restore(s)
+	if _, _, ok := s.negativeRelexMemo.Lookup(65537, 0); ok {
+		t.Fatal("nested S5 restore retained speculative negative lexer result")
+	}
 }
