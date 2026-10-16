@@ -978,8 +978,36 @@ pins, focused C/edit/memory checks, a 386 regression and backend race pass.
 Twenty pairs reject throughput: Go is **1.15–2.56% slower**; owned YAML directions
 are **+2.42% / +5.09%**, both inconclusive. Ordinary YAML fallback bytes fall
 **4.48%**, with no confirmed time gain. No cold-plane runtime is promoted.
-Current production source and ordinary YAML ownership, allowlists and graduation
-status remain unchanged; all main merges stay held.
+The rejected cold-plane source is not promoted; the separate qualified tagged
+layout follows below. Ordinary YAML ownership, allowlists and graduation status
+remain unchanged, and all main merges stay held.
+
+### Qualified tagged alternative sets: smaller storage and small Go gains
+
+[Core PR #1485](https://github.com/odvcencio/gotreesitter/pull/1485), Buckley commit
+`b45a0192520f873edf0eb2fdcca169dbc153a748`, shares the exact inline-member and
+spill-offset word under the existing flag. Sets shrink **12→8 bytes**, graph
+lineage **32→28**, dispatch headers **88→80**, canonical groups **48→40**, and
+reduction handoffs **56→48**, preserving widths, flags,
+cap, membership and rollback. A checked offset prevents wrap before append.
+The single accessor stays within the compiler budget; an observed two-allocation
+regression is eliminated before promotion and verified by a failing control.
+
+The [qualified receipt](compact-linear-suffix-census-20261015.md#qualified-tagged-alternative-set-storage)
+records **414 exact rows / 206 invariant sessions / 618 C checks / 204 exactly
+unchanged strict rows**, native source/race and CI-selector guards, tighter layout assertions, and focused
+opt-in fusion checks. Twenty final pairs support **0.78% / 0.65% / 1.24%** less
+compact Go time on rewrite/language/large Go; query is inconclusive. All final
+YAML timing directions are inconclusive, including **+0.42%** on the owned
+8 KiB witness. Ordinary YAML bytes fall **2.24%** with unchanged allocation
+counts. The earlier wrapped-source YAML timing does not transfer to this source.
+
+Accounted large-Go core storage falls **26,056,865→25,349,985 bytes (−2.71%)**;
+total scheduler storage falls **2.56%**. The 1 MiB owned YAML stream remains
+C-exact without fallback at **144,484 KiB** Go+C process RSS, a single safety
+probe. Ordinary YAML ownership and the larger throughput gaps remain; no route,
+allowlist or graduation change follows. The qualified change stays unmerged
+under the owner's 0.56.0 main-merge hold.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 

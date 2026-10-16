@@ -696,3 +696,141 @@ comparison and on-disk guards for overlay-added source remain open; they are
 not borrowed from earlier experiments. The separate native tagged-word set
 prototype targets another storage direction and supplies no throughput claim
 here. All main merges remain held pending the owner's explicit release.
+
+
+## Qualified tagged alternative-set storage
+
+Buckley commit `b45a0192520f873edf0eb2fdcca169dbc153a748` promotes the qualified
+implementation into the held [core PR #1485](https://github.com/odvcencio/gotreesitter/pull/1485).
+Baseline is native `7b016214d` (engine `c498e889e`). The prior cold plane remains
+rejected. This change has no private suffix kernel, interner or sparse store.
+It shares the exact inline member and exact one-based spill offset in one word,
+selected by the existing spilled flag. Member/offset widths, count/flags, the
+32-member cap and pruning rules remain unchanged. Sizes fall **12→8 bytes** for
+AlternativeSet, **32→28** for graph lineage and **56→48** for reduction output.
+The dispatch header also shrinks **88→80** and canonical groups **48→40**;
+this does not meet E-A2's at-most-32-byte dispatch-header target.
+Every journal snapshot restores that active word, including a singleton spilled
+inside a nested commit and restored by the outer rollback.
+
+The bounded Buckley representation review finds a pre-existing unchecked spill
+offset conversion. The final source checks representability before append;
+on exhaustion it preserves every recorded member and marks overflow, preventing
+an incomplete set from proving containment. A narrow repair review reports no
+concrete defect. Tests cover the final representable uint32 offset, rejection
+beyond it, full-width members and nested rollback. The reports supply no broader
+parser approval.
+
+The first tagged source passes focused/full-fleet correctness but has a compiler
+regression. Twenty pairs leave compact Go timing inconclusive; ordinary YAML
+attempt/fallback time falls 1.57% (p=.006), but allocations rise **37→39**.
+Those results belong to that source. Allocation profiling, not fixed-order timing,
+attributes the new allocations to member reads. Compiler diagnostics show the
+public forwarding accessor at cost **83**, above budget **80**; native is **79**.
+Caching the word locally still costs 85 and is not timed or promoted.
+
+The final implementation removes the forwarding wrapper and calls the single
+public implementation directly. Its body is byte-for-byte identical to the
+previous private body. The public inline cost is **70**. An allocation regression
+fails for empty, inline and spilled consumers on the wrapped source and passes
+on the final source, including race coverage. The initial fixed-count profile
+returns ordinary YAML to **37 allocations / 16,760 bytes**; this profile is
+attribution evidence, not a timing comparison. Final randomized measurements
+below independently confirm those counts.
+
+### Final source qualification
+
+Before timing, the corrected source passes **all 414 rows exactly**: 412 ordinary
+and two diagnostic-owned YAML rows. No counter exception or ratchet reset occurs.
+Native baseline captures are reused only where source and helper identity remain
+unchanged. Four Go pins retain complete Core.Work and deep trees; all 21 fields
+in DiagnosticWorkCountValues agree. Raw lookups remain **7,582 / 37,662 / 37,652 /
+400,160**. Representative ledger counters remain:
+
+| Counter | Before → after |
+| --- | --- |
+| Go R4 full tokens / nodes / max versions | 589 / 1,251 / 3 → identical |
+| Go first edit tokens / nodes / reused bytes / splices | 374 / 1,553 / 1,784 / 266 → identical |
+| Owned YAML full / first-edit nodes | 484 / 484 → identical |
+| Ordinary YAML ownership decline | unchanged |
+
+The final default source passes **206 R4 invariant sessions**, a separate owned
+YAML R4 session and **618 C fixture checks**, with no skips. The strict 204-file
+census is exactly unchanged: **159 PASS / 45 known FAIL**, including all **120
+actual compact/C-exact acceptances**. This preserves the known fallback failures;
+it is not a 204-language C certificate. All no-edit invariant observations stay
+zero. The standard Go/YAML 48-step sessions and focused C/lifecycle/memory gates
+also pass.
+
+After copying exactly the eight frozen files into the core checkout, native
+full-core and one-pass races, phase-zero-A, root C4/version-lexer checks and all
+206 static table shapes pass. Focused opt-in fusion Go/YAML C checks and its edit
+receipt pass; no new full opt-in fleet is claimed. The 386 helper tests and library
+build pass, not the full root 386 suite. L0 remains **756 root files / 12 API tag
+sets**, R6 **454 language-name uses / 101 environment reads**. All **64** CI
+selectors resolve against **7,686** defined functions. Source hashes match the
+measured engine and actual on-disk guards pass. CI subsequently exposes four
+stale 88-byte header assertions and an associated canonical-group assertion.
+Buckley test-only follow-up `14f255bac37e64670b90b3120534b505ffeb6a1e` tightens
+them to **80 / 40** rather than loosening a bound.
+The exact tagged CI step and all four layout checks under race pass locally;
+the earlier race-shard failure is the same layout mismatch, not a reported data race. Action-output width remains 40.
+The eight measured engine/regression files remain byte-identical throughout.
+
+### Final twenty-pair comparison
+
+Each language uses its own 20 alternating pairs through the repository runner:
+GOMAXPROCS=1, count=1, 750 ms, benchmem, CPU 6 and serialized 6 GiB Docker. Go seeds
+are 19001–19020 and YAML seeds 19101–19120. All samples, role order, source hashes,
+benchmark work metrics and allocation counts pass the audit.
+
+| Workload | Median native → final | Time direction | p |
+| --- | ---: | ---: | ---: |
+| Go `rewrite` | 1.848 → 1.834 ms | −0.78% | .030 |
+| Go `query_compile` | 8.865 → 8.800 ms | −0.72%, inconclusive | .445 |
+| Go `language` | 9.205 → 9.146 ms | −0.65% | .004 |
+| Go `grammargen_lr` | 95.271 → 94.091 ms | −1.24% | .003 |
+| YAML R4 attempt/fallback | 200.204 → 196.966 µs | −1.62%, inconclusive | .142 |
+| YAML owned R4 | 358.491 → 354.748 µs | −1.04%, inconclusive | .445 |
+| YAML owned 8 KiB | 1.392 → 1.398 ms | +0.42%, inconclusive | .862 |
+
+All allocation counts equal native: Go **21 / 129 / 243 / 1,716**, YAML
+**37 / 109 / 336**. Ordinary YAML bytes fall **17,144→16,760 (−2.24%)**.
+Owned R4 stays **12,872 bytes**; stream medians round **44,312.5→44,313**
+(+0.00113%). Compact Go byte medians stay equal except large Go
+**3,251,747→3,251,727.5** (less than 0.001%). No extra allocation is promoted.
+The independent default full/edit/no-edit controls move **−3.26% / +0.11% /
+−1.13%** (p<.001/.883/.015), with **6 / 5 / 0** allocations; full bytes round
+1,159.5→1,159 and the others stay 394 / 0. These controls bypass this compact
+representation and receive no causal attribution. Neither independent screen
+isolates a component speed effect against its private parent.
+
+Final accounted footprints use one fresh process per role/fixture, pinned trees
+and work, the actual qualified engine and explicitly restored native files:
+
+| Go fixture | Core retained bytes: native → final | Direction |
+| --- | ---: | ---: |
+| `rewrite` | 621,785 → 606,437 | −2.47% |
+| `query_compile` | 2,288,425 → 2,227,921 | −2.64% |
+| `language` | 4,526,021 → 4,401,857 | −2.74% |
+| `grammargen_lr` | 26,056,865 → 25,349,985 | −2.71% |
+
+Large-Go total accounted scheduler storage falls **27,644,891→26,937,587 bytes
+(−2.56%)**. Per-process Max RSS observations are archived without a statistical
+savings claim. A separate **1,049,572-byte / 524-document** owned YAML probe is
+complete, error-free, compact-only and C-exact; its Go+C process peaks at
+**144,484 KiB**, below the unchanged 400-bytes/source-byte bound. This is a single
+safety probe, not a paired RSS comparison.
+
+Evidence is local `gotreesitter-evidence/20261016-alternative-set-tagged-word`:
+final source and pairs in `direct-members`, `final-fleet`, `native-guards`,
+`final-footprint`, `optin-checks`, and `large-yaml`. Initial unit size/nested-owner
+expectations, runner quoting/container-tool errors and the rejected generated
+commit message remain preserved; final assertions/gates are not skipped. The
+message retry passes the same safety check without changing staged code.
+
+This qualifies a small compact Go throughput and storage improvement. **It does
+not establish a YAML speed improvement or graduate a language.** Ordinary YAML
+ownership/cost and the larger Go throughput gap remain. Route/default/allowlists
+and all owner ratchets stay unchanged. No C speed ratio is measured here.
+All main merges remain held until the owner explicitly releases the 0.56.0 hold.
