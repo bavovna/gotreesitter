@@ -119,6 +119,20 @@ Allocations stay exact. The default no-edit control's +1.90% direction and
 single-probe RSS limits are retained. This is a qualified throughput win;
 ordinary YAML activation and compact graduation remain gated.
 
+### Packed retry flags: memory savings rejected for ordinary throughput
+
+The [packed retry-mask screen](compact-packed-retry-screen-20261016.md) starts
+at `86879374e`. Twenty YAML pairs cut owned R4/stream bytes **17.90% / 17.91%**
+and objects **16.51% / 18.45%**, but ordinary attempt/fallback takes **1.33% more
+time** (p=.001). Owned R4 is inconclusive; stream time falls 0.69% (p=.033).
+All 414 ledger rows, 176 scoped parser tests, races/386, focused YAML C checks,
+Go/YAML edit sessions and budget gates pass on the initial source. The general
+runtime change is rejected. Source review also finds a private oversized-backing
+clearing gap; a before/fixed leaf regression and normal/race/386 checks pass.
+That repair is untimed and has no parser certification. No Go timing, full-fleet
+or large-RSS gate is claimed for either version. No runtime source or route is
+promoted; the ordinary YAML cost blocker remains.
+
 ### Snapshot and retry-mask coallocation: discarded
 
 The [owned snapshot screen](compact-snapshot-allocation-screen-20261016.md)
