@@ -2720,8 +2720,8 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 	}
 	// Store optional reference sets separately; every graph node pays this
 	// record width, even when no certificates are recorded.
-	if got := unsafe.Sizeof(nodeLineageRecord{}); got != 32 {
-		t.Fatalf("nodeLineageRecord size = %d, want 32", got)
+	if got := unsafe.Sizeof(nodeLineageRecord{}); got != 28 {
+		t.Fatalf("nodeLineageRecord size = %d, want 28", got)
 	}
 	if got := unsafe.Sizeof(linkRecord{}); got != 32 {
 		t.Fatalf("linkRecord size = %d, want 32", got)
@@ -2733,8 +2733,8 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 	}
 	// G18 adds one value-owned reference set beside the historical set. The
 	// reduction provenance handoff adds one value-owned LinkChainRef.
-	if got := unsafe.Sizeof(ReductionOutput{}); got != 56 {
-		t.Fatalf("ReductionOutput size = %d, want 56", got)
+	if got := unsafe.Sizeof(ReductionOutput{}); got != 48 {
+		t.Fatalf("ReductionOutput size = %d, want 48", got)
 	}
 	if got := unsafe.Sizeof(LinkChainRef{}); got != 8 {
 		t.Fatalf("LinkChainRef size = %d, want 8", got)
