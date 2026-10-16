@@ -45,6 +45,19 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Visible counts: retain the independent test, reject the runtime shortcut
+
+The [cached-child screen](compact-visible-count-screen-20261016.md) on
+`d98e0470` preserves all 414 rows, canonical trees/Core.Work and raw21, but
+twenty pairs find no significant compact Go or YAML time gain. The runtime
+shortcut is rejected. Separate Buckley commit `8e4fe353` adds a 24-graph
+independent materialization oracle, passing visible-count tests on the
+unchanged runtime under native, race and 386 builds. A diagnostic observes
+7,290 failed Go probes with nonzero reads, none extending the prior span on
+these witnesses. It motivates a read-bound proof before a probe shortcut;
+it does not supply that proof or a new runtime. Ownership and graduation
+remain gated, with all main merges held for 0.56.0.
+
 ### Condensation split: smaller frame, rejected on throughput
 
 The [twenty-pair screen](compact-condense-split-screen-20261016.md) on
