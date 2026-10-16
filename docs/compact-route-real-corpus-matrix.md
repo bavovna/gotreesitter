@@ -45,6 +45,23 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Bounded ASCII runs: qualified Go improvement, YAML unchanged by timing
+
+Buckley runtime commit `f7ec67210486be4398d962fa0cf7e73b02da1c41` adds a bounded
+same-state ASCII scan and shared encoding constants, retaining scalar fallback
+for SKIP, Unicode, newlines, other states and the reserved no-match value. The
+[qualified receipt](compact-ascii-self-loop-receipt-20261016.md) compares with
+`8701f7f9`: rewrite **−0.75%**, language **−1.90%**, default Go full **−0.68%**
+(p=.021/<.001/.001). Query/large, editing and all three YAML changes are
+inconclusive. Every byte/object median and all 414 valid ledger rows stay exact.
+The proper owned export confirms full/edit **484→484**; earlier extra exports
+used a test-only initializer and duplicated ordinary routing, so those exports
+are excluded. The owned work unit already passed before timing. All 206
+sessions plus owned YAML, 618 C fixtures, strict 159/45 with all 120 compact
+C-exact, races, 386, RSS and post-copy/API/CI gates pass. Read-only Buckley review
+catches and closes the private sentinel edge. Ordinary YAML routing and
+all graduation gates stay unchanged. All main merges remain held for 0.56.0.
+
 ### Direct native action planes: no Go speed improvement
 
 The [native-row screen](compact-native-row-screen-20261016.md) preserves all
