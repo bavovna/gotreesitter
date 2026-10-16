@@ -45,6 +45,18 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Condensation split: smaller frame, rejected on throughput
+
+The [twenty-pair screen](compact-condense-split-screen-20261016.md) on
+`f7ec6721` reduces the common condensation frame 1,032→272 bytes but improves
+no compact Go or YAML path significantly. Rewrite/query regress **0.54% /
+0.71%** (p=.021/.014); all 414 rows, canonical trees/Core.Work and raw21 stay
+exact. The private runtime is rejected; no full-fleet or RSS qualification is
+claimed. Separate test-only Buckley commit `d98e0470` repairs existing 386
+layout assertions, retaining exact sizes and budget checks, with full native
+and 386 core suites passing. Production runtime and graduation gates stay
+unchanged. All main merges remain held for 0.56.0.
+
 ### Warm-path census: discard inactive and saturated targets
 
 The [post-warmup census](compact-warm-path-census-20261016.md) on `f7ec6721`
