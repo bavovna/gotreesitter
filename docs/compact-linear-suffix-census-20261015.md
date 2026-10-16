@@ -609,9 +609,90 @@ on every witness: large Go **4,747,776→5,254,032 bytes (+10.66%)**, owned YAML
 The alternative measured target is the two scalar fields that are zero here:
 error cost and certificate-reference index. A hypothetical 24-byte hot record
 with eight-byte cold pairs projects **3,560,832** logical bytes for large Go
-and **8,544** for owned YAML (25% below current). It requires a field/flag layout,
-mutation/rollback rules and worst-case memory/growth proof; it is not implemented
-or a measured memory, RSS or speed saving. Final occupancy alone does not bound
-transient usage. The census source/route/tree audits are in
+and **8,544** for owned YAML (25% below current). At this census stage it is only a projection, excluding
+mutation/rollback, capacity and transient costs. The native implementation screen
+below subsequently rejects its throughput; the projection is not a measured
+memory, RSS or speed saving. Final occupancy alone does not bound transient usage. The census source/route/tree audits are in
 `20261016-lineage-occupancy-census` and `20261016-lineage-occupancy-yaml`.
 No language graduates and no merge hold is lifted.
+
+
+## Native cold error/reference plane: qualified screen, throughput rejected
+
+Evidence: local `gotreesitter-evidence/20261016-lineage-cold-plane`, based on
+native checkout `7b016214d6322540ffd52009ae5eb214ce8434ea` (production engine
+`c498e889e`). This source contains no private linear-suffix kernel. It keeps
+alternative sets dense and changes the node-lineage hot record from 32 to 24
+bytes by moving exact error costs and immutable certificate-reference indices
+into an optional NodeID-indexed eight-byte pair. This is a 25% record-width
+reduction, not a measured total-memory or RSS reduction.
+
+Missing cold indices read as zero. The store checks gross allocation before
+changing storage, including replacement-buffer overlap; a scheduler checker
+uses the existing memory-budget stop. Its journal preserves nested checkpoint
+commit/restore, and the footprint includes buffers retained by older marks.
+Reset clears stale slots and the budget checker. Recovery markers copy both
+hot and cold history; EOF recovery shadows own separate cold buffers, included
+in copy planning and equality/disjointness checks. No cost/reference identity,
+rank, membership, language routing, allowlist or budget limit is narrowed.
+
+Qualification passes before timing:
+
+- Full compact-core tests, including a 1,200-operation nested reference model,
+  allocation rejection before mutation, zero-store allocation checks, gap reuse,
+  reset and stale/non-LIFO checkpoint rejection.
+- Four pinned Go deep trees and complete Core.Work records; all 21 fields in
+  DiagnosticWorkCountValues equal native. Raw lookup counts remain
+  **7,582 / 37,662 / 37,652 / 400,160**. The diagnostic canonical admissions,
+  lifecycle/cap/live-tree checks and fused-edit receipt also pass.
+- Four canonical Go candidate parses match locked C without fallback. Focused
+  YAML ownership, document-stream and EOF cases match locked C, including the
+  owned 8 KiB witness. The original owned sample's work/coverage guard passes.
+- Separate Go/YAML standard-candidate invariant sessions each complete 48 edit
+  steps with zero no-edit allocations. These do not certify owned YAML
+  incremental activation. The Go memory witness peaks at **1,124,784 bytes**,
+  below the unchanged **1,153,433-byte** bound.
+
+The first bounded Buckley helper review is incomplete and supplies no approval.
+Its completed retry finds an unchecked NodeID-to-int conversion on 32-bit Go.
+The timed source rejects unrepresentable IDs before reservation or mutation;
+all store tests, including that regression, pass under `GOARCH=386`. The bounded
+integration review suggests checker retention in release helpers. Actual
+production calls go through `ResetReleasingRetention`, which calls `Reset`
+first; Reset already clears that checker. The reported production retention
+path is absent. The review report and this source-based assessment are saved.
+These reviews do not approve the whole runtime.
+
+The representation change also requires full semantic rollback assertions.
+A subsequent test-only overlay compares hot records and cold pairs in the
+existing sibling/discontinuity/reference tests, preserving their former field
+coverage. The full core suite and focused backend race gate pass. Engine source
+hashes are identical to the timed source.
+
+Twenty alternating pairs per language use the repository randomized runner,
+GOMAXPROCS=1, count=1, 750 ms, benchmem, CPU 6 and serialized 6 GiB Docker. Go
+seeds are 18601–18620; YAML seeds are 18701–18720:
+
+| Witness | Median native → cold plane | Time direction | Benchstat p |
+| --- | ---: | ---: | ---: |
+| Go `rewrite` | 1.841 → 1.864 ms | +1.22% | .020 |
+| Go `query_compile` | 8.837 → 8.938 ms | +1.15% | .001 |
+| Go `language` | 9.187 → 9.311 ms | +1.35% | .001 |
+| Go `grammargen_lr` | 94.672 → 97.096 ms | +2.56% | <.001 |
+| YAML R4 attempt/fallback | 206.413 → 201.189 µs | −2.53%, inconclusive | .108 |
+| YAML owned R4 | 361.497 → 370.251 µs | +2.42%, inconclusive | .277 |
+| YAML owned 8 KiB stream | 1.408 → 1.479 ms | +5.09%, inconclusive | .183 |
+
+All allocation counts remain exact: Go **21 / 129 / 243 / 1,716** and the
+three YAML routes **37 / 109 / 336**. Go allocated-byte medians differ by at
+most 0.002%; owned YAML bytes remain **12,872 / 44,313**. The ordinary YAML
+attempt/fallback allocates **17,144→16,376 bytes (−4.48%)**, with no confirmed
+time gain. Benchmark route/work metrics, all sample counts, alternating seed
+order and source hashes pass the audit. YAML timing variance reaches ±8%.
+
+**Reject this source as a throughput improvement.** No runtime is promoted.
+Full 206-language qualification, parser-level race coverage, large-file RSS
+comparison and on-disk guards for overlay-added source remain open; they are
+not borrowed from earlier experiments. The separate native tagged-word set
+prototype targets another storage direction and supplies no throughput claim
+here. All main merges remain held pending the owner's explicit release.

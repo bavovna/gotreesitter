@@ -971,9 +971,15 @@ one inconclusive case; borrowed validation retains every check but also shows
 regressing times. Variance reaches ±12–15%, so no component speed gain is inferred.
 A native Go/owned-YAML occupancy census finds **86.52–95.10%** nonempty sets,
 rejecting a sparse-set layout before implementation. Error-cost/reference fields
-are zero on these clean witnesses; their separation is an unimplemented layout
-candidate, not a saving. Current production source and ordinary YAML ownership,
-allowlists and graduation status remain unchanged; all main merges stay held.
+are zero on these clean witnesses. The subsequent [native cold-plane screen](compact-linear-suffix-census-20261015.md#native-cold-errorreference-plane-qualified-screen-throughput-rejected)
+implements exact 24-byte hot records with checked cold allocation, nested undo,
+recovery copies and memory accounting. Four Go diagnostic work vectors and tree
+pins, focused C/edit/memory checks, a 386 regression and backend race pass.
+Twenty pairs reject throughput: Go is **1.15–2.56% slower**; owned YAML directions
+are **+2.42% / +5.09%**, both inconclusive. Ordinary YAML fallback bytes fall
+**4.48%**, with no confirmed time gain. No cold-plane runtime is promoted.
+Current production source and ordinary YAML ownership, allowlists and graduation
+status remain unchanged; all main merges stay held.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 
