@@ -45,6 +45,19 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Immutable YAML retry flags: allocation savings rejected on time
+
+The [four sharing screens](compact-shared-retry-screens-20261016.md) preserve
+all 414 ledger rows and scoped C/edit checks against `86879374e`. Owned R4 /
+8 KiB allocations fall 109→94 / 336→277 and bytes fall 14.92% / 17.04%, but
+ordinary YAML slows 1.23–1.93% in twenty pairs per source. The final source
+preserves all original hot-field offsets and raw DFA source, yet still costs
++1.93% (p<.001). A same-source control is inconclusive on all three paths.
+All four candidates are rejected; no runtime source, counter exception or
+routing change is promoted. Incomplete final reviews are not approval.
+Go timing, fleet, strict-census and large-RSS qualification are not claimed.
+All main merges remain held for 0.56.0.
+
 ### Single-prefix ordinary YAML: acceptance proved on witnesses, cost gate failed
 
 The [single-prefix screen](compact-single-prefix-yaml-screen-20261015.md) on
