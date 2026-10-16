@@ -119,6 +119,18 @@ Allocations stay exact. The default no-edit control's +1.90% direction and
 single-probe RSS limits are retained. This is a qualified throughput win;
 ordinary YAML activation and compact graduation remain gated.
 
+### Numeric scanner fingerprint encoding: no measurable gain
+
+The [fingerprint encoding screen](compact-scanner-encoding-screen-20261016.md)
+preserves the old identity bytes and passes scoped C/edit, race/386, memory and
+414-row counter checks. Twenty YAML pairs give **−0.30% / −0.30% / −0.23%**
+ordinary / owned R4 / stream directions, all inconclusive (p=.525/.862/.086).
+Allocation counts stay exact; stream bytes round +1. No runtime source is
+promoted. A separate warm-loop census observes **1 / 675 / 2,522** pointer
+fingerprints and zero numeric-encoding calls, redirecting work to the actual
+pointer path. The census is diagnostic; no Go timing, full-fleet, strict-census
+or RSS certificate is claimed.
+
 ### Owned-only retry flags: throughput screen rejected
 
 The [owned-only mask screen](compact-owned-retry-screen-20261016.md) keeps live
