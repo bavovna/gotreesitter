@@ -736,7 +736,7 @@ func (l linkRecord) isRecoveryDiscontinuity() bool {
 	return l.flags&linkFlagRecoveryDiscontinuity != 0
 }
 
-func (l linkRecord) validateShape() error {
+func (l linkRecord) validateUncommonShape() error {
 	if l.flags&^linkKnownFlags != 0 {
 		return errors.New("parser-core phase zero: link has unknown flags")
 	}
