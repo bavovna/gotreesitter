@@ -291,3 +291,187 @@ Runtime dispatch, terminal production, certificate/recovery handling and
 memory integration remain open. There is no whole-parser C, incremental,
 fleet, race, RSS or shuffled-timing qualification, no route/default change,
 and no graduation claim. All merges remain held.
+
+
+## First real C4 runtime integration: correctness passes, throughput rejected
+
+The next private overlay replaces actual C4 shift/reduction publications with
+vector operations. It builds terminals through the existing authenticated
+terminal helper, preserves the existing parent builder and lexer, reads virtual
+state during elections, and flushes real graph heads before generic dispatch
+or acceptance. Work is no longer a shadow replay. Default routing is unchanged.
+Full receipts, eager materialization, certification peaks, version lexing and
+recovery contexts stay outside this experiment's entry domain.
+
+The initial deep-tree/work comparison passes, but a stronger observation finds
+that a path-count query also asks for a sole payload. The empty seed has one
+path and no payload, so this wrongly invalidates reuse tracking. Separating
+those queries fixes the failing observation and a focused seed regression.
+Final four-fixture checks compare complete native core/scheduler work, pinned
+deep trees, reuse arrays, lexer frontiers, branch/creation ordering, token and
+dispatch totals, and election counts.
+
+| Go fixture | Virtual operations | Graph nodes: native → vector | Entries / flushes |
+| --- | ---: | ---: | ---: |
+| `rewrite` | 547 | 2,996 → 2,786 | 246 |
+| `query_compile` | 2,444 | 14,663 → 13,675 | 1,023 |
+| `language` | 1,993 | 15,074 → 14,256 | 865 |
+| `grammargen_lr` | 26,231 | 148,368 → 138,105 | 11,449 |
+
+The full backend suite and core package pass in Docker. Repeated Go parsing,
+cap/reset and live-tree ownership checks pass. The fused reduce/shift edit
+receipt passes with its enabling flag. Four canonical Go files match locked C
+through the candidate public route with no fallback. Go and YAML each pass
+48 edit-session steps and allocate zero on no-edit reparses. Three Go memory
+checks pass; the adversarial 1 MiB witness stops with a 1,074,099-byte observed
+peak, below its existing 1,153,433-byte bound. No bound is raised.
+
+The first harness command uses the wrong module directory and fails at setup;
+its corrected run completes. A Go subtest selector also runs `rego` incidentally;
+a separate anchored Go-only process passes. Both attempts are preserved. The
+completed bounded Buckley review establishes no concrete defect in the supplied
+runtime glue; it does not execute tests, re-review the backend, or approve the
+excluded contexts.
+
+Twenty alternating shuffled pairs compare this overlay with `7b016214d`, whose
+production engine remains `c498e889e`. Each fixture has 20 samples per variant,
+with `GOMAXPROCS=1`, one process per seed, `-count=1`, 750 ms, `-benchmem`, CPU 6,
+6 GiB Docker and both shared locks. All recorded work metrics remain exact.
+
+| Fixture | Median parse time: native → vector | Time change | Median B/op: native → vector | Allocations: native → vector |
+| --- | ---: | ---: | ---: | ---: |
+| `rewrite` | 1.835 → 2.139 ms | +16.58% | 1,776 → 20,809 | 21 → 66 |
+| `query_compile` | 8.785 → 9.903 ms | +12.74% | 138,723.5 → 159,659 | 129 → 186 |
+| `language` | 9.138 → 10.089 ms | +10.41% | 284,629 → 312,654 | 243 → 308 |
+| `grammargen_lr` | 94.259 → 105.350 ms | +11.77% | 3,251,743 → 3,395,595 | 1,716 → 1,793 |
+
+All timing and allocation differences have p<.001. Fewer graph nodes do not
+establish a speed or whole-parse memory win: this version is rejected. The
+source pins, raw samples, benchstat output, complete metric audit, failed
+attempts and final correctness logs are in `20261015-linear-suffix-runtime`.
+This is a focused Go screen under [#1065](https://github.com/odvcencio/gotreesitter/issues/1065), not fleet, race, RSS or graduation
+qualification. No experimental runtime source is promoted.
+
+A separate exit-frequency run preserves the complete observations and identifies
+why the entry count is high:
+
+| Fixture | Entries | Empty entries | Fork exits | External-token exits | Supported-action handoffs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `rewrite` | 246 | 150 | 213 | 24 | 9 |
+| `query_compile` | 1,023 | 623 | 824 | 124 | 75 |
+| `language` | 865 | 515 | 701 | 108 | 56 |
+| `grammargen_lr` | 11,449 | 6,774 | 9,398 | 1,320 | 731 |
+
+Empty entries are a subset of the exit counts. No traced exit ends on a
+no-lookahead token; immediate fork probes dominate. The trace is diagnostic
+only, with separate source pins
+in `20261015-linear-suffix-runtime-exits`; its instrumented code supplies no
+timing evidence. All main merges remain held.
+
+
+## Lazy runtime acquisition and cleanup allocation
+
+Acquiring the backend only on the first supported operation cuts entries and
+flushes **246→99, 1,023→406, 865→378 and 11,449→4,780** in fixture order. The
+same 31,215 total vector operations and physical graph counts remain. Complete
+observations, repeated/reset parsing, fused edit, memory, four locked-C Go
+cases and the separate 48-step Go/YAML sessions pass. The bounded diff review
+finds no concrete defect in named-return cleanup or pending-suffix handling.
+
+Twenty new alternating pairs at the same settings still reject this variant:
+
+| Fixture | Median parse time: native → lazy | Time change | Median B/op: native → lazy | Allocations: native → lazy |
+| --- | ---: | ---: | ---: | ---: |
+| `rewrite` | 1.837 → 2.127 ms | +15.79% | 1,776 → 27,361 | 21 → 426 |
+| `query_compile` | 8.831 → 9.829 ms | +11.30% | 138,722 → 187,054 | 129 → 1,695 |
+| `language` | 9.188 → 9.934 ms | +8.11% | 284,629 → 335,950 | 243 → 1,575 |
+| `grammargen_lr` | 94.768 → 103.975 ms | +9.72% | 3,251,743 → 3,700,555 | 1,716 → 18,463 |
+
+All differences have p<.001. Source pins, raw samples, work/seed audits and final
+checks are in `20261015-linear-suffix-runtime-lazy-entry`. These are separate
+comparisons with the unchanged engine, not paired evidence of improvement over
+the first private variant.
+
+Compiler diagnostics then identify the allocation mechanism: registering the
+cleanup defer inside the VM loop makes both its closure and named `err` escape
+to the heap. Registering it before the loop keeps the closure from escaping,
+while backend acquisition remains lazy. Separate diagnostics preserve both
+source mappings and complete compiler output in
+`20261015-linear-suffix-runtime-retained-static-flush/escape-excerpts.json`.
+
+An independent lifetime correction retains the scheduler's backend handle,
+clears its Core/owner/prepared authority, preserves the monotone revision, and
+retains at most **64 KiB of slice capacity plus the accounted object**. Retained
+slices are cleared through capacity; oversized families are dropped. Reset
+rejects an open suffix under a valid owner and allows disposal after the owner
+ends. Active-reset rejection, bounded capacity, clearing, rebinding, ended-owner
+disposal and repeated scheduler-handle tests pass. The completed bounded source
+review finds no concrete defect in that supplied reset diff. These source/test
+receipts are separate in `20261015-linear-suffix-runtime-retained`; that variant
+inherits the loop-local defer and supplies no timing result.
+
+
+## Retained backend with static cleanup: allocation corrected, CPU rejected
+
+The combined candidate keeps lazy acquisition, the bounded handle, and one
+cleanup registration before the loop. All four complete Go observations and
+physical graph counts remain exact. Final bounded reset/scheduler-handle,
+repeated/reset parsing, fused edit, memory, four locked-C Go cases and separate
+48-step Go/YAML checks pass. The observed adversarial memory peak stays
+1,074,099 bytes under the existing bound. Source/seed/sample audits pass.
+
+The bounded cleanup diff review finds no concrete defect, but lacks inactive
+helper context. A source audit confirms the unchanged `flushLinearCorridor`
+returns immediately when inactive, without dereferencing a backend or owner;
+error cleanup only clears the active flag. The first integration review
+included that helper. This resolves the narrow context question and supplies
+no broader parser approval.
+
+Twenty further alternating pairs use the same settings and unchanged native
+engine. They produce the following independent comparison:
+
+| Fixture | Median parse time: native → retained/static | Time change | Median B/op: native → retained/static | Allocations: native → retained/static |
+| --- | ---: | ---: | ---: | ---: |
+| `rewrite` | 1.830 → 2.087 ms | +14.08% | 1,776 → 1,776 | 21 → 21 |
+| `query_compile` | 8.833 → 9.773 ms | +10.64% | 138,722.5 → 138,723 | 129 → 129 |
+| `language` | 9.162 → 9.978 ms | +8.91% | 284,629 → 284,630 | 243 → 243 |
+| `grammargen_lr` | 94.140 → 104.194 ms | +10.68% | 3,251,747 → 3,283,987 | 1,716 → 1,726 |
+
+All timing differences have p<.001. `rewrite` bytes and the first three allocation
+counts are identical in every sample. Query bytes are statistically unchanged
+(p=.261); the language witness adds one median byte (p<.001). The large file
+adds 32,240 median bytes (+0.99%) and ten allocations (+0.58%, both p<.001).
+Those directions remain recorded. The CPU regression rejects promotion.
+
+Evidence is in `20261015-linear-suffix-runtime-retained-static-flush`, continuing
+through 2026-10-16 UTC. The incomplete setup directory for the reset experiment
+contains no run or qualification. No private runtime code is promoted; the
+existing qualified production buckets and owner-approved YAML exceptions are
+unchanged. Full fleet, race, RSS, on-disk source-walking guards,
+certificate/recovery/eager coverage and graduation qualification remain open.
+All merges to main stay held until the owner lifts the 0.56.0 hold.
+
+
+## Instrumented blocker and CPU attribution
+
+A separate `gts_workcount` query-fixture probe fails the existing corridor
+lookup-identity test: **TableLookupsProxy 37,662→39,188 (+1,526, +4.05%)**.
+The earlier matching core/scheduler vectors and benchmark metrics do not cover
+this counter. This is an additional R3 blocker, not a waiver or a passing
+ledger. The private reduction API resolves its action row again after C4 has
+already dispatched the compiled row; reusing the authenticated compiled row
+needs a qualified interface before another promotion attempt.
+
+A separate five-second large-Go CPU profile records 6.51 sampled seconds,
+including setup/preflight. Imported-origin validation accounts for **5.53%
+cumulative / 3.07% flat CPU**, and all suffix validity checks account for
+**7.37% cumulative**. These nested totals must not be added. The profile is
+attribution only; its fixed-order timing and heap values are not comparison
+evidence. Source pins, the failed counter probe, profiles, summary tables and
+separate exit codes are in `20261015-linear-suffix-runtime-profile`.
+
+Validation cannot be removed on an ownership assumption: the current
+`Core.beginSchedulerOwned` validates the token and poisons errors, but supplies
+no mutation-exclusion guard. Reducing repeated snapshot checks therefore needs
+an explicit invalidation/ownership proof. No check or counter is weakened.
+The runtime remains private; graduation and all main merges remain held.

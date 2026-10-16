@@ -1,6 +1,6 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-15 (UTC).
+Current evidence date: 2026-10-16 (UTC).
 Latest core link-comparison baseline: `fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054`.
 The read-history comparison uses incremental-lane parent `a977238f9eb1548ea671dedecb6750f58906bc43`.
 The earlier leaf-allocation comparison uses incremental-lane baseline `a32d87b6d23b090fef2559380b44bfb2c86a800e`.
@@ -938,6 +938,27 @@ and logical-membership retry regressions pass after correction, alongside full
 core/phase-zero-A tests. Runtime dispatch, terminal production,
 certificate/recovery handling and memory integration remain open; no route,
 throughput or graduation change follows. All merges stay held.
+
+The [first real C4 runtime screen](compact-linear-suffix-census-20261015.md#first-real-c4-runtime-integration-correctness-passes-throughput-rejected)
+then builds terminals and parents through actual parser dispatch. All four Go
+pinned trees, core/scheduler work, reuse arrays/frontiers and ordering match.
+Four locked-C Go cases, Go/YAML 48-step sessions with zero no-edit allocations,
+and focused Go lifecycle/memory gates pass. Twenty pairs reject this version:
+time rises **10.41–16.58%**, bytes **4.42–1,071.68%**, and allocations
+**4.49–214.29%**, despite 5.4–7.0% fewer graph nodes. A separate exit trace finds
+roughly 60% empty entries, mainly fork probes. Lazy acquisition cuts entries
+11,449→4,780 on the large Go file but a loop-local cleanup defer escapes to the
+heap. Compiler diagnostics support moving it before the loop. With that fix
+and a bounded 64 KiB retained handle, three allocation counts match native;
+the large file adds ten (+0.58%) and 0.99% bytes. A third 20-pair screen still
+rejects CPU time (**+8.91–14.08%**). All complete observations and focused
+C/edit/memory gates pass. The runtime source remains private/default-off;
+a separate `gts_workcount` query test fails raw lookup identity
+**37,662→39,188 (+4.05%)**, despite the earlier equal core/scheduler vectors.
+CPU attribution puts imported-origin validation at 5.53% cumulative sampled
+CPU. Compiled-row reuse and validation need qualified proofs; no counter
+exception or runtime promotion follows. Full-fleet, race, RSS, on-disk source
+guards and graduation qualification remain open.
 
 ### Lineage proof sharing: smaller storage, rejected throughput
 
