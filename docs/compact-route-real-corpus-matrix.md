@@ -75,6 +75,19 @@ owned-stream YAML (all p<.001). Allocation counts stay exact; fallback bytes
 fall 4.58%. The prototype is rejected and remains outside the checkout. It
 supplies no fleet certification, route activation or graduation evidence.
 
+### Qualified ordinary-link validation fast path
+
+Core commit `0808dfd5f` accepts the existing ordinary-link shape through an
+inlinable guard and delegates every other shape to the unchanged validator.
+The [completed receipt](compact-link-validation-receipt-20261016.md) records
+0.91–1.57% less time on all four canonical Go files and 1.10% / 0.71% less on
+owned YAML R4 / 8 KiB stream. Ordinary YAML fallback is inconclusive. All 414
+counter rows, 206 invariant sessions and 618 C fixture checks pass; the 204-row
+strict census stays exact, including all 120 C-exact compact acceptances.
+Allocations stay exact. The default no-edit control's +1.90% direction and
+single-probe RSS limits are retained. This is a qualified throughput win;
+ordinary YAML activation and compact graduation remain gated.
+
 ### Diagnostic scheduler test maintenance
 
 Core commit `7b016214d6322540ffd52009ae5eb214ce8434ea` in
