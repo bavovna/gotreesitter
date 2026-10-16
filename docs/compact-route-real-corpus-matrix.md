@@ -88,6 +88,17 @@ Allocations stay exact. The default no-edit control's +1.90% direction and
 single-probe RSS limits are retained. This is a qualified throughput win;
 ordinary YAML activation and compact graduation remain gated.
 
+### Snapshot and retry-mask coallocation: discarded
+
+The [owned snapshot screen](compact-snapshot-allocation-screen-20261016.md)
+starts at `0808dfd5f`. A typed record/mask allocation preserves ownership,
+validation, all 414 ledger rows and canonical Go tree/work pins. Twenty YAML
+pairs reduce owned R4/stream objects 109→94 / 336→277 but raise bytes
+12,872→13,352 / 44,313→46,201. Timing stays inconclusive: ordinary fallback
+−0.62% (p=.052), owned R4 +0.17% (p=.820), stream −0.23% (p=.369).
+The source stays outside the checkout and receives no Go timing, full-fleet
+promotion or graduation qualification.
+
 ### Diagnostic scheduler test maintenance
 
 Core commit `7b016214d6322540ffd52009ae5eb214ce8434ea` in
