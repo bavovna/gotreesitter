@@ -36,6 +36,22 @@ The [receipt](compact-paired-terminal-cursors-receipt-20261017.md) retains every
 timing direction and gate limit. Ordinary YAML routing and graduation remain
 open.
 
+### Boundary-probe result transport and first-slot inlining: rejected
+
+Two independent twenty-pair screens reject caller-owned probe results and an
+inline first-slot variant. The first establishes no supported compact gain
+and slows Go R4 **1.16%, p=.038**, with wide timing intervals. The second
+confirms actual hot-path inlining (**cost 58**) and non-escaping scratch, yet
+slows four Go workloads **0.89–1.42%** and both owned YAML workloads
+**0.62–0.77%**. Compiler inlining does not establish a throughput win.
+
+Both preserve all **414 counter rows**, allocation counts, exact full-key
+checks, generation and journal behavior, with focused C/invariant/race/386
+gates passing. The [receipt](compact-boundary-probe-screens-20261017.md)
+retains all **880 timed rows**, source patches, compiler evidence, every
+control direction and noise limits. No runtime promotion or full-fleet/RSS
+qualification is claimed.
+
 ### Cached visible-count walk: rejected
 
 Twenty pairs find no supported compact Go or YAML speedup from separating the
