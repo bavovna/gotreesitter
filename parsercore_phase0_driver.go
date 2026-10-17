@@ -6328,13 +6328,10 @@ func (s *diagnosticParserCoreGenericScheduler) bindVersionLexerRequest(
 	if s == nil || request == nil || !request.valid || request.electionIndex != s.electionIndex {
 		return errors.New("parser-core phase zero: cannot bind an invalid version lexer request")
 	}
-	if _, _, ok := s.compact.CheckpointReceipt(request.beforeID); !ok {
-		return errDiagnosticParserCoreUnknownCheckpointIdentity
-	}
-	if _, _, ok := s.compact.CheckpointReceipt(request.afterID); !ok {
-		return errDiagnosticParserCoreUnknownCheckpointIdentity
-	}
-	if err := s.compact.SetPhaseExternalTokenScannerCheckpoints(request.beforeID, request.afterID); err != nil {
+	if err := s.compact.BindScannerElection(request.beforeID, request.afterID); err != nil {
+		if errors.Is(err, core.ErrUnknownScannerCheckpoint) {
+			return errDiagnosticParserCoreUnknownCheckpointIdentity
+		}
 		return err
 	}
 	s.token = request.token

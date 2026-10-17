@@ -2565,19 +2565,7 @@ func (c *Core) SetPhaseExternalTokenScannerCheckpoints(start, end CheckpointID) 
 			return errors.New("parser-core phase zero: unknown external token start checkpoint identity")
 		}
 	}
-	if c.checkpoint == end && c.externalTokenScannerExact &&
-		c.externalTokenScannerStart == start && c.externalTokenScannerEnd == end {
-		return nil
-	}
-	if c.classificationPhase == math.MaxUint64 {
-		return errors.New("parser-core phase zero: classification phase overflow")
-	}
-	c.classificationPhase++
-	c.checkpoint = end
-	c.externalTokenScannerStart = start
-	c.externalTokenScannerEnd = end
-	c.externalTokenScannerExact = true
-	return nil
+	return c.setPhaseExternalTokenScannerCheckpoints(start, end)
 }
 
 func (c *Core) boundaryKey(state StateID, byteOffset uint32) boundaryKey {
