@@ -80,3 +80,24 @@ The next architectural target is deciding terminal ownership before constructing
 a leaf. Converting an already constructed compact leaf into a public leaf adds
 work; deferring only the final conversion does not remove it. Any next candidate
 must account for parse-only, full consumption and edits before claiming a win.
+
+## Reproduce the construction comparison
+
+Use two isolated checkouts of the baseline commit in Docker. Install
+`work-census.go.txt` as `deferred_publication_work_census_test.go` in both.
+Apply `runtime.patch` with `git apply --unidiff-zero` only in the candidate.
+From each checkout, run:
+
+```sh
+GOWORK=off GOMAXPROCS=1 GOFLAGS='-p=1 -buildvcs=false' \
+  go test . -tags gts_parsercorephase0,gts_workcount \
+  -run '^TestDeferredPublicationWorkCensus$' -count=1 -v -timeout=5m
+```
+
+Compare the `PUBLICATION_WORK_CENSUS` JSON rows against the archived
+[baseline](benchmarks/20261017-deferred-publication/base-publication-work.log.txt)
+and [candidate](benchmarks/20261017-deferred-publication/head-publication-work.log.txt)
+logs. The archived `check-*.sh` scripts describe the original frozen-overlay lab;
+the clean-checkout comparison above needs no lab overlay. The two `.go.txt`
+owned-YAML shims retain the separate diagnostic producer used for its ledger
+control; they are not runtime changes.

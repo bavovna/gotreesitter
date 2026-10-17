@@ -27,5 +27,14 @@
   "diagnostic_shims": {
     "owned-benchmark.go.txt": "cff6270a44889d4cc4a950871a17d67e9c15132999955fae158f44d80664c43e",
     "owned-ledger.go.txt": "631f745d63b2e9201967150dfe1157bf27e777710c0ca20fc6a019a9bba3cd79"
+  },
+  "validation_logs": {
+    "leaf-root-integration.log.txt": "ea5b387a838dc7b538f889a33bbb5528bd2219a5947b78c66466260ed7310a0a",
+    "leaf-go-invariant.log.txt": "e9c39b984048188778c651ba1952d1e333757dabb435838edf6b2f0fa89327b3",
+    "leaf-yaml-invariant.log.txt": "aa51e87d6dadf997e851fbc979bffca84e71e0608d67cd4a7bc2b07faee417b5",
+    "leaf-go-c.log.txt": "60850a7956cd721dbba7cd091d821073a8657585080304c1dcb2e2e435f1c981",
+    "leaf-yaml-c.log.txt": "2b9ba038505eb1d6d7c564d62d4b3932799703cd32fb7ca406526141a5ca34f3",
+    "base-publication-work.log.txt": "c6a88baf0a30df2df7683aa3403e781faeee8b34590f65cc749628f6744fc38f",
+    "head-publication-work.log.txt": "270701a7357839783cad18911a1cb53b4fc066c78cc72f384a73029bd353208e"
   }
 }
