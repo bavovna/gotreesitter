@@ -2481,6 +2481,8 @@ func (s *diagnosticParserCoreCanonicalScratch) canonicalizeWithMutation(
 		}
 		s.keys = s.keys[:len(headers)]
 	}
+	var smallHeads core.CanonicalHeadMask
+	headsDistinct := len(normalized) <= diagnosticParserCoreLinearCanonicalLimit
 	for index := range normalized {
 		header := &normalized[index]
 		state, byteOffset, err := compact.Boundary(header.head)
@@ -2521,6 +2523,19 @@ func (s *diagnosticParserCoreCanonicalScratch) canonicalizeWithMutation(
 			checkpoint: header.checkpoint, versionState: versionState,
 		}
 		s.keys[index] = key
+		if headsDistinct {
+			headsDistinct = smallHeads.Add(header.head)
+		}
+	}
+	// Distinct mask bits prove distinct heads and complete canonical keys.
+	// A collision retains exact grouping; it cannot certify an equal head.
+	// The existing scan has already authenticated boundaries and lexer owners.
+	if headsDistinct {
+		for index := range normalized {
+			normalized[index].freshness = 0
+		}
+		s.nextBuffer = uint8(target ^ 1)
+		return normalized, 0, nil
 	}
 	var out []diagnosticParserCoreHeader
 	var err error
