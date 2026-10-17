@@ -36,6 +36,17 @@ The [receipt](compact-paired-terminal-cursors-receipt-20261017.md) retains every
 timing direction and gate limit. Ordinary YAML routing and graduation remain
 open.
 
+### Cached visible-count walk: rejected
+
+Twenty pairs find no supported compact Go or YAML speedup from separating the
+cold visible-node walk and reading cached child totals directly. All **414
+counter rows** and allocation counts stay exact; focused core/C/invariant,
+race and 386 checks pass. Supported default-full/no-edit control shifts
+**−0.52% / −4.17%** remain unattributed. The
+[screen](compact-visible-count-screen-20261017.md) retains all 440 timing rows
+and the private source. No runtime promotion or full-fleet/RSS qualification
+is claimed.
+
 ### Terminal-only provenance filter: rejected
 
 Twenty pairs reject a cache-free own-pair filter: Go R4 slows **0.75%**,
