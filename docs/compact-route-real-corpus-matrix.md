@@ -16,6 +16,22 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Action-row storage: two measured rejections
+
+Independent twenty-pair comparisons from `a03d0842994a85aa26cf494c8c67404e1e64e999`
+reject packed and full inline singleton action rows. Packed storage slows all
+five compact Go fixtures **3.12–3.84%** and the three YAML paths **2.62–4.18%**
+(all p<.001). Keeping the full action inline still slows compact Go
+**0.65–1.73%** and the owned YAML stream **0.75%**; its other YAML changes are
+inconclusive. The packed cold-table reduction does not yield a warm-parse win.
+
+Both candidates pass focused correctness, locked-C, edit invariants, race and
+386 checks with all **414 ledger rows exact** and allocation counts unchanged.
+They receive no full-fleet or RSS qualification and no runtime promotion. The
+[receipt](compact-action-storage-screen-20261017.md) retains all 880 timed rows,
+source patches, counter hashes, validation scope and default-control shifts.
+Routing, allowlists and graduation stay unchanged.
+
 ### Scheduler checkpoint binding and reduction aggregation
 
 Runtime `027a10d5a75eb59b45a7a0c3477e9254a7c8553e` binds scanner checkpoint IDs
