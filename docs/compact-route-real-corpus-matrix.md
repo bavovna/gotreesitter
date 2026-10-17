@@ -1,6 +1,10 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-16 (UTC).
+Release update, 2026-10-17 UTC: v0.56.0 was published on October 14. The
+release condition behind the merge hold is fulfilled; current reviews and CI
+still govern landing. Historical hold statements below retain their original
+qualification context.
 Latest core link-comparison baseline: `fb4c8acc4de8cbd14da37c3dff13fa6b2bc4b054`.
 The latest stateless-probe capacity comparison uses core parent `e4243c77ad9ede0aea152331111106e3cc417c28`.
 The read-history comparison uses incremental-lane parent `a977238f9eb1548ea671dedecb6750f58906bc43`.
