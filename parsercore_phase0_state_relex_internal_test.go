@@ -616,3 +616,89 @@ func TestNegativeRelexMemoS5RollbackDiscardsSpeculativeEntries(t *testing.T) {
 		t.Fatal("nested S5 restore retained speculative negative lexer result")
 	}
 }
+
+// Empty external tables make the external-correction result independent of
+// input. It must neither perform a speculative DFA read nor alter the cursor.
+func TestNegativeRelexMemoEmptyModesSkipUnneededReads(t *testing.T) {
+	f := loadDiagnosticParserCoreCanonicalFixture(t, "rewrite")
+	r, err := newParserCoreFreshFullRunner(parserCoreWarmGoScanner, parserCoreFreshFullCanonicalOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, src, err := r.executeSchedulerOpen(f.Source, r.compact, true)
+	if src != nil {
+		defer src.Close()
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := s.tokenSource.language.ExternalLexStates[s.tokenSource.language.LexModes[0].ExternalLexState]
+	for _, valid := range row {
+		if valid {
+			t.Fatal("fixture error-state external row must be empty")
+		}
+	}
+	if s.negativeRelexMemo != nil {
+		s.negativeRelexMemo.Clear()
+	}
+	d := s.tokenSource
+	before := d.snapshotRelexState()
+	state := d.state
+	states := append([]StateID(nil), d.glrStates...)
+	d.tokenInvariantMaxReadSpan = 0
+	d.externalTokensProduced = 7
+	d.externalPreScanPayload = append(d.externalPreScanPayload[:0], 1)
+	got, ok := s.relexExternalTokenForState(0, s.token)
+	if ok || got != s.token || d.tokenInvariantMaxReadSpan != 0 || d.externalTokensProduced != 0 || len(d.externalPreScanPayload) != 0 {
+		t.Fatalf("empty modes performed a probe: ok=%t span=%d produced=%d", ok, d.tokenInvariantMaxReadSpan, d.externalTokensProduced)
+	}
+	after := d.snapshotRelexState()
+	if !before.equal(&after) || d.state != state || len(d.glrStates) != len(states) {
+		t.Fatal("empty modes changed shared source")
+	}
+	for i, v := range states {
+		if d.glrStates[i] != v {
+			t.Fatal("GLR state drift")
+		}
+	}
+	span, produced, hit := s.negativeRelexMemo.Lookup(0, s.token.StartByte)
+	if !hit || span != 0 || produced != 0 {
+		t.Fatal("constant negative did not enter ordinary memo")
+	}
+	// A proof must not install an entry under an unauthenticated checkpoint.
+	s.negativeRelexMemo.Clear()
+	s.checkpointBeforeID = core.CheckpointID(^uint32(0))
+	_, _ = s.relexExternalTokenForState(0, s.token)
+	if _, _, hit = s.negativeRelexMemo.Lookup(0, s.token.StartByte); hit {
+		t.Fatal("bad checkpoint installed an entry")
+	}
+}
+
+func TestNegativeRelexMemoRejectsFullWidthOutOfRangeState(t *testing.T) {
+	f := loadDiagnosticParserCoreCanonicalFixture(t, "rewrite")
+	r, err := newParserCoreFreshFullRunner(parserCoreWarmGoScanner, parserCoreFreshFullCanonicalOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, src, err := r.executeSchedulerOpen(f.Source, r.compact, true)
+	if src != nil {
+		defer src.Close()
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := s.tokenSource
+	before := d.snapshotRelexState()
+	d.tokenInvariantMaxReadSpan = 13
+	d.externalTokensProduced = 7
+	for _, state := range []StateID{65536, 1 << 31, ^StateID(0)} {
+		got, ok := s.relexExternalTokenForState(state, s.token)
+		if ok || got != s.token || d.tokenInvariantMaxReadSpan != 13 || d.externalTokensProduced != 7 {
+			t.Fatalf("out-of-range state %d performed a probe", state)
+		}
+		after := d.snapshotRelexState()
+		if !before.equal(&after) {
+			t.Fatal("invalid state changed the source")
+		}
+	}
+}

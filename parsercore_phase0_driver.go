@@ -5507,7 +5507,7 @@ func (s *diagnosticParserCoreGenericScheduler) relexExternalTokenForState(state 
 			return shared, false
 		}
 	}
-	if int(state) >= len(lang.LexModes) {
+	if uint64(state) >= uint64(len(lang.LexModes)) {
 		return shared, false
 	}
 	// A negative external candidate is independent of the shared after-state.
@@ -5517,11 +5517,28 @@ func (s *diagnosticParserCoreGenericScheduler) relexExternalTokenForState(state 
 		!s.versionLexerOwnershipActive && !d.quiescenceProbing && shared == s.token &&
 		s.versionLexerBeforeElection == s.electionIndex &&
 		s.versionLexerBeforeCheckpoint == s.checkpointBeforeID
-	if memoEligible && s.negativeRelexMemo != nil {
-		if span, produced, ok := s.negativeRelexMemo.Lookup(core.StateID(state), shared.StartByte); ok &&
+	if memoEligible {
+		if s.negativeRelexMemo != nil {
+			if span, produced, ok := s.negativeRelexMemo.Lookup(core.StateID(state), shared.StartByte); ok &&
+				s.compact.CheckpointMatches(s.checkpointBeforeID, s.versionLexerBefore.externalPayload) {
+				d.tokenInvariantMaxReadSpan = max(d.tokenInvariantMaxReadSpan, span)
+				d.externalTokensProduced = produced
+				d.externalPreScanPayload = d.externalPreScanPayload[:0]
+				return shared, false
+			}
+		}
+		// With both external rows empty, no input can produce an external
+		// candidate: single-state scanning and its ERROR_STATE retry reject all
+		// external symbols. Internal candidates are discarded by this helper, so
+		// their speculative reads are not dependencies of its constant result.
+		if core.ExternalModesRejectAll(lang.ExternalLexStates,
+			lang.LexModes[state].ExternalLexState, lang.LexModes[cErrorState].ExternalLexState) &&
 			s.compact.CheckpointMatches(s.checkpointBeforeID, s.versionLexerBefore.externalPayload) {
-			d.tokenInvariantMaxReadSpan = max(d.tokenInvariantMaxReadSpan, span)
-			d.externalTokensProduced = produced
+			if s.negativeRelexMemo == nil {
+				s.negativeRelexMemo = new(core.NegativeLexProbeMemo)
+			}
+			s.negativeRelexMemo.Record(core.StateID(state), shared.StartByte, 0, 0)
+			d.externalTokensProduced = 0
 			d.externalPreScanPayload = d.externalPreScanPayload[:0]
 			return shared, false
 		}
