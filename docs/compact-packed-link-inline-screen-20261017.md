@@ -86,4 +86,5 @@ serialized 6 GiB Docker and both benchmark locks. Go seeds are
 Go covers the five compact workloads and the full/edit/no-edit default trio;
 YAML covers ordinary attempt plus fallback and two diagnostic-owned fixtures.
 The next private candidate uses a 24-byte single-format header; it has no
-throughput, memory or graduation claim at this receipt.
+throughput, memory or graduation claim at this receipt. The subsequent
+[24-byte screen](compact-link24-screen-20261017.md) also rejects promotion.
