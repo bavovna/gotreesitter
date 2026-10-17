@@ -47,6 +47,18 @@ race and 386 checks pass. Supported default-full/no-edit control shifts
 and the private source. No runtime promotion or full-fleet/RSS qualification
 is claimed.
 
+### Condensation entry split: smaller frame rejected on throughput
+
+A byte-identical extraction of 325 fold/history lines reduces the amd64 entry
+stack reservation **1,032 → 272 bytes**, yet twenty pairs slow four compact
+Go workloads **0.79–1.64%** and owned YAML R4 **1.04%**. Large Go, the owned
+stream and ordinary YAML differences remain inconclusive. All **414 counter
+rows**, allocation counts and byte medians stay exact; focused correctness,
+C, invariant, race and 386 gates pass. The
+[screen](compact-condense-entry-screen-20261017.md) retains all 440 samples,
+compiler/source evidence and control movements. This runtime is rejected;
+no full-fleet or RSS qualification is claimed.
+
 ### Terminal-only provenance filter: rejected
 
 Twenty pairs reject a cache-free own-pair filter: Go R4 slows **0.75%**,
