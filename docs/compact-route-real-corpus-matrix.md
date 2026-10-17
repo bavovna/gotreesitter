@@ -49,6 +49,26 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Compact lineage storage: qualified retained-capacity reduction
+
+The direct 16-byte node-provenance record keeps recovery costs and reference
+indexes in a lazy sidecar. Retained lineage capacity falls **42.86%** on all
+four canonical Go files; large Go falls **4,948,160 → 2,827,520 bytes**.
+Twenty pairs establish small rewrite/owned-YAML-stream gains of **0.48% /
+0.51%** (p=.040/.003), with unchanged allocation counts. Other Go and ordinary
+YAML timing changes remain inconclusive. Ordinary YAML bytes fall
+**16,760 → 15,608**, with 37 allocations.
+
+All **414 ledger rows**, **206 invariant sessions**, **618 C fixture checks**,
+and **204 strict real-file rows** retain their results. Race, 386, memory and
+standalone 1 MiB RSS gates pass. A new callback regression guard prevents a
+recovery-cost snapshot from crossing reduction-plan callbacks; baseline passes,
+the first temporary sidecar fails, and the fixed source passes. The
+[focused receipt](compact-lineage-storage-receipt-20261017.md) records rejected
+sharing/plain-sidecar screens, every timing direction, the +4.21% default no-edit
+control, exact counter pins, RSS scope, and existing strict-census failures.
+No broad Go throughput, ownership, allowlist, or graduation claim follows.
+
 ### YAML scanner lookahead: qualified shipped-route throughput win
 
 Against main `eb1312afdd82d98490e157e51391febd275f0432`, the YAML scanner
