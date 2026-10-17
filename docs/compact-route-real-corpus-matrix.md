@@ -16,6 +16,26 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Paired terminal cursors: qualified owned-stream win
+
+Runtime `5e52cf2a2644f3d38785513eebc39f8cf8a506b2` reuses a fully validated
+terminal's proof within the current comparison pair and directly consumes a
+matching right leaf while charging its logical visit. It adds no retained
+storage and preserves distinct-terminal checks, error order and budgets.
+Twenty pairs support **1.20% less time, p=.007**, on the owned YAML 8 KiB
+stream. Compact Go, owned R4 and ordinary YAML timing differences remain
+inconclusive. Default Go full parsing slows **1.02%, p<.001**, retained without
+compact-work attribution.
+
+All **414 counter rows**, four canonical vectors, **206 × 72-step invariants**,
+**618 locked-C fixture checks**, strict **120 / 39 / 45** route census, races,
+memory contracts and exact-source guards pass. All 126 standalone RSS probes
+pass 400 B/source B; twenty matched pairs per Go/ordinary/owned case pass the
+10% median ratchet. The initial Go RSS **341.85 → 395.31** remains recorded.
+The [receipt](compact-paired-terminal-cursors-receipt-20261017.md) retains every
+timing direction and gate limit. Ordinary YAML routing and graduation remain
+open.
+
 ### Terminal-only provenance filter: rejected
 
 Twenty pairs reject a cache-free own-pair filter: Go R4 slows **0.75%**,
@@ -28,8 +48,8 @@ fleet/RSS qualification.
 The [receipt](compact-provenance-lookup-screen-20261017.md#terminal-only-absence-screen)
 retains all 440 samples and control directions. Baseline profiling locates
 most provenance search in reduction-terminal comparisons, motivating a
-separate pair-local shared-terminal validation experiment. No measured win
-is claimed for that private source.
+separate pair-local shared-terminal validation experiment, qualified above.
+The rejected filter is absent from that runtime.
 
 ### Provenance lookup hints: rejected, including inline control
 
