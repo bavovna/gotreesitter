@@ -83,3 +83,7 @@ and byte accounting. That integration still needs all parser correctness,
 counter, timing and RSS gates. The earlier
 [terminal-selection screens](compact-terminal-selection-screens-20261017.md)
 remain rejected and separate from this proof.
+
+A later [storage-integration screen](compact-packed-link-storage-screen-20261017.md)
+preserves correctness and counters but slows compact Go and owned YAML. That
+integration is rejected; the active parser still uses 32-byte logical records.
