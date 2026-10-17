@@ -16,6 +16,34 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Canonical head mask: qualified Go throughput bucket
+
+Runtime `75507f35ec6caece2125157b192e7c54060573e3` folds an eight-byte head-ID
+mask into the existing normalized-frontier scan. Distinct bits prove singleton
+canonical groups; collisions retain exact grouping. Boundary remapping,
+version-lexer authentication, metadata and rollback stay intact.
+
+Twenty shuffled pairs measure **0.89–1.74% less parse time across all five
+compact Go fixtures**, with allocation counts unchanged. All **forty** YAML
+pairs are retained; their three pooled timing differences are inconclusive.
+The first marginal stream result does not replicate and is not claimed as a
+YAML win. The default no-edit control's −1.45% movement bypasses this operation
+and remains unattributed, with zero allocations.
+
+All **414 counter rows**, four complete canonical work vectors/deep digests,
+**206 × 72-step invariants**, **618 C fixture checks**, races, one-MiB C checks,
+and memory/source/API gates pass. The strict census keeps **120 compact
+C-exact / 39 passing legacy / 45 existing legacy mismatches**, all 204 rows
+exact. All standalone parser RSS probes stay below 400 bytes/source byte;
+no statistical RSS win is claimed. Source/API counts remain **756 / 12 / 454 /
+101**; all 65 CI selectors resolve against 7,728 discovered functions.
+
+The [receipt](compact-canonical-head-mask-receipt-20261017.md) records every
+direction, both YAML repetitions, the mixed generic-key precursor, and the
+untimed array precursor. Their qualifications are not conflated. Ordinary
+YAML routing, allowlists and the global default remain unchanged.
+
+
 **Do not graduate yet.** The E-A exit gate requires median compact/legacy time
 at most 1.0 and worst at most 1.15 across all 206 grammars, including declined
 files. This census does not satisfy that gate or replace the per-language
