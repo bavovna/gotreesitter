@@ -45,6 +45,29 @@ contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
 
+### Empty external modes: qualified Go win, YAML timing unchanged
+
+Buckley runtime commit `959121c6311d45f743a24aad0ae55b021cb56a04` proves an
+external-correction result constant when both explicit external rows reject
+all symbols, retaining existing stateless/frozen-election/ownership/checkpoint
+conditions. Internal DFA candidates are discarded by this helper, so this is
+a static proof rather than an observed-span shortcut. A separate unsigned
+bounds repair closes a reproduced 386 high-state panic. The [qualified
+receipt](compact-empty-external-modes-receipt-20261016.md), against `8e4fe353`,
+records twenty-pair compact Go time reductions **2.23% / 1.88% / 2.19% / 2.69%**
+on rewrite/query/language/large. All are significant; all three YAML changes
+are inconclusive. Default edit/no-edit controls regress **0.86% / 0.68%**
+(p<.001/.002); these directions remain reported. Objects stay exact and
+no-edit stays zero. All 414 rows and canonical trees/Core.Work remain exact;
+only raw table lookups fall, **7,553→7,537 / 37,640→37,621 / 37,479→37,436 /
+397,227→395,591**. No counter exception is needed. All 206 sessions plus owned
+YAML, 618 C fixtures, strict 159/45 with all 120 compact C-exact, races, 386,
+RSS and post-copy/API/CI gates pass. The existing deeper-S3 Scala test failure
+is reproduced on unchanged baseline and retained. An earlier inlined source
+regresses ordinary YAML 2.23% and is rejected; its timing is not transferred.
+Ordinary YAML ownership and E-A graduation stay gated. All main merges and
+auto-merge remain held for 0.56.0.
+
 ### Visible counts: retain the independent test, reject the runtime shortcut
 
 The [cached-child screen](compact-visible-count-screen-20261016.md) on
