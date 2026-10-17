@@ -64,8 +64,41 @@ shims; restore their archived `.go.txt` suffixes to `.go` when reconstructing
 the original evidence directories. Complete overlays and compiler logs remain
 in those directories.
 
-A separate private alternative uses the terminal-only provenance producer
-invariant to skip a nonterminal's own sparse lookup while preserving recursive
-descendant provenance and ordinary-terminal checkpoint pairs. It adds no
-lookup table or record storage. This receipt makes no performance or
-qualification claim for that alternative.
+## Terminal-only absence screen
+
+A third independent source from the same baseline is also rejected. It keeps
+an inline empty-sidecar wrapper and avoids a nonterminal's own pair search,
+using the terminal-only publication invariant. Descendant provenance and
+ordinary-terminal checkpoint pairs remain intact. It adds no cache or record
+storage, but does not improve throughput.
+
+| Compact path | Time change | p |
+| --- | ---: | ---: |
+| Go R4 | +0.75% | .005 |
+| Go rewrite | +0.62% | .108 |
+| Go query compiler | +0.65% | .157 |
+| Go language | +0.41% | .211 |
+| Go large grammar generator | +0.23% | .758 |
+| YAML owned R4 | +0.48% | .086 |
+| YAML ordinary attempt plus fallback | +0.89% | .001 |
+| YAML owned 8 KiB stream | +1.12% | .001 |
+
+All 414 counter rows and allocation counts stay exact. The same focused
+normal/phase0a/race/386, root, edit-session, locked-C and EOF/contextual gates
+pass, and the wrapper inlines at cost 79. No full-fleet or RSS qualification
+is applied to this rejected source. Its 20 Go pairs use seeds 30201–30220;
+20 YAML pairs use 30301–30320, with the same protocol above. It adds 440 timed
+rows, for 1,320 across this receipt's three independent sources.
+
+Default Go full/edit/no-edit move +0.82% (p=.009), +0.31% (p=.189),
+−0.17% (p=.229); these controls are unattributed. No-edit stays at zero
+allocations. Source, raw samples and all limits are in the
+[parent screen](benchmarks/20261017-provenance-lookup-screen/parent/).
+
+The unchanged-baseline CPU profile assigns 350 of 410 sampled milliseconds
+inside provenance search to reduction-terminal history comparison. Those
+350 ms are 2.87% of total sampled CPU. This attribution motivates testing
+whether a shared terminal's checkpoint proof can serve both immediately
+paired cursors. Such a change must keep both traversals, their shared budget,
+left-before-right rejection order and fresh validation on every new pair.
+This receipt makes no performance claim for that separate candidate.

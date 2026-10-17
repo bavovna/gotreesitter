@@ -16,6 +16,21 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Terminal-only provenance filter: rejected
+
+Twenty pairs reject a cache-free own-pair filter: Go R4 slows **0.75%**,
+ordinary YAML **0.89%**, and the owned YAML stream **1.12%**. Other compact
+timing changes are inconclusive. All **414 counter rows** and allocation
+counts stay exact; focused C, edit-invariant, race and 386 checks pass. The
+source adds no retained storage but receives no runtime promotion or full
+fleet/RSS qualification.
+
+The [receipt](compact-provenance-lookup-screen-20261017.md#terminal-only-absence-screen)
+retains all 440 samples and control directions. Baseline profiling locates
+most provenance search in reduction-terminal comparisons, motivating a
+separate pair-local shared-terminal validation experiment. No measured win
+is claimed for that private source.
+
 ### Provenance lookup hints: rejected, including inline control
 
 Two independent twenty-pair comparisons reject a fixed 256-byte position-hint
