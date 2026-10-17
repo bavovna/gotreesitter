@@ -1,0 +1,7 @@
+{
+  "fused_owner_writes": 934,
+  "direct_shifts": 934,
+  "fraction": 1.0,
+  "mode": "count",
+  "purpose": "execution mix only; not comparison timing evidence"
+}

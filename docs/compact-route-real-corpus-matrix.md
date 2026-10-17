@@ -16,6 +16,26 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Combined shift and lineage publication: qualified Go win
+
+Runtime `6d5b0b07e44a8f4fd1ab66d3246a485fde303909` combines eligible direct
+shifts with checked owner and scalar/alternative lineage publication. It
+retains owner conflicts, journals, rollback, condensed-head publication and
+the guards for callbacks, drop references and creation-sequence overflow.
+Twenty shuffled pairs support **1.27% less Go R4 time, p=.003**, and
+**0.46% / 0.45%** less time on query/language fixtures. Other compact Go and
+all YAML differences remain inconclusive. The **+0.58%, p=.011** default-Go
+edit slowdown is retained without attribution.
+
+All **414 counter rows**, five consumed vectors, four canonical vectors,
+**206 × 72-step invariants**, **618 C fixture checks**, the unchanged strict
+**120 / 39 / 45** census, races, memory contracts and actual-source guards
+pass. All 126 standalone RSS probes pass 400 B/source B and the matched
+medians pass the 10% ratchet. The initial Go RSS **342.07 → 355.67** remains
+recorded. The [receipt](compact-shift-lineage-fusion-receipt-20261017.md)
+retains the complete measurements and limits. Ordinary YAML still falls
+back; this bucket does not graduate a language.
+
 ### Paired terminal cursors: qualified owned-stream win
 
 Runtime `5e52cf2a2644f3d38785513eebc39f8cf8a506b2` reuses a fully validated
