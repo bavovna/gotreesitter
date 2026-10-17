@@ -16,6 +16,20 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Ownership no-op guard: rejected; fresh attribution retained
+
+Twenty pairs reject an authenticated live-owner guard: compact Go R4 slows
+**1.22%**, and rewrite/query/language slow **0.34–0.80%**. Large Go and all
+three YAML comparisons are inconclusive. Allocation counts and all **414
+counter rows** stay exact, and focused correctness, C, invariant, race and
+386 checks pass. No runtime source or graduation change is promoted.
+
+Fresh unchanged-baseline profiles put reduction construction near **20%
+cumulative** in both Go and the owned YAML stream. YAML's external-provenance
+binary search is **3.37% flat**, motivating a bounded live-record lookup hint.
+The [receipt](compact-owner-publication-screen-20261017.md) retains all 440
+timing rows, default-control shifts, attribution scope and source patch.
+
 ### Action-row storage: two measured rejections
 
 Independent twenty-pair comparisons from `a03d0842994a85aa26cf494c8c67404e1e64e999`
