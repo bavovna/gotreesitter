@@ -16,6 +16,36 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Scheduler checkpoint binding and reduction aggregation
+
+Runtime `027a10d5a75eb59b45a7a0c3477e9254a7c8553e` binds scanner checkpoint IDs
+without discarded receipt copies and moves general reduction-history work into
+an internal helper. Authentication, callback-sensitive reads, output order and
+rollback retain their behavior. The public election representation stays intact.
+
+Twenty direct combined pairs support **−0.46% Go language / −0.80% Go R4** and
+**−1.13% owned YAML R4 / −1.22% owned 8 KiB / −0.59% ordinary attempt plus
+fallback**. Other compact Go differences remain inconclusive. Allocation counts
+stay exact; default controls, including no-edit **+0.61%** at zero allocations,
+are recorded without compact-work attribution. Component gains also repeat in
+fresh YAML seeds; their separate percentages are not added to this result.
+
+All **414 counter rows**, four canonical vectors/deep digests, **206 × 72-step
+invariants**, **618 C checks**, races and memory contracts pass. The strict
+census retains **120 compact C-exact / 39 passing legacy / 45 existing legacy
+mismatches**. Actual source/API counts stay **756 / 12 / 454 / 101**, and all
+65 selectors resolve against 7,732 discovered functions.
+
+An initial unchanged-Go baseline RSS probe fails at **401.11 bytes/source
+byte**. It remains in the evidence. All twenty matched Go pairs and all
+initial candidate probes pass the unchanged 400 ceiling; candidate matched
+maximum is **376.06**. Its matched median moves **+2.28%**, within the unchanged
+10% ratchet; no RSS saving is claimed. The
+[receipt](compact-scheduler-overhead-receipt-20261017.md) retains that failure,
+the diagnostic/repeated measurements, the rejected 264→200-byte election
+representation, every timing direction, and complete qualification scope.
+Ordinary YAML ownership, routing, allowlists and graduation remain unchanged.
+
 ### Canonical head mask: qualified Go throughput bucket
 
 Runtime `75507f35ec6caece2125157b192e7c54060573e3` folds an eight-byte head-ID
