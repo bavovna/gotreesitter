@@ -16,6 +16,23 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Provenance lookup hints: rejected, including inline control
+
+Two independent twenty-pair comparisons reject a fixed 256-byte position-hint
+table. Initial hints improve the owned YAML stream **0.68%**, but Go R4 and
+large parsing slow **0.76% / 0.89%**. A controlled split restores getter
+inlining (**cost 79**, versus **128** before and **71** in the baseline), yet
+still slows three canonical Go fixtures **0.62–0.84%** and ordinary YAML
+**1.26%**. Its owned-YAML changes are inconclusive. Inlining alone does not
+resolve the measured regressions.
+
+Both sources preserve all **414 counter rows** and allocation counts, with
+focused C/invariant/race/386 gates passing. No runtime is promoted and no
+full-fleet or RSS qualification is claimed. The
+[receipt](compact-provenance-lookup-screen-20261017.md) retains all 880 timing
+rows, every control direction, source patches and compiler evidence. A
+separate terminal-only lookup alternative is outside these measured sources.
+
 ### Ownership no-op guard: rejected; fresh attribution retained
 
 Twenty pairs reject an authenticated live-owner guard: compact Go R4 slows
