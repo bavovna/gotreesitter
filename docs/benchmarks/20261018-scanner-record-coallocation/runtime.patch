@@ -197,10 +197,7 @@ diff --git a/parsercore_phase0_per_version_lexer_snapshot_internal_test.go b/par
 index dffa4760d..f5044484b 100644
 --- a/parsercore_phase0_per_version_lexer_snapshot_internal_test.go
 +++ b/parsercore_phase0_per_version_lexer_snapshot_internal_test.go
-@@ -1308,3 +1308,62 @@ func TestVersionLexerStandaloneRejectsBindingSwapDuringCapabilityCallback(t *tes
- 		}
- 	}
- }
+@@ -1310,0 +1311,59 @@ func TestVersionLexerStandaloneRejectsBindingSwapDuringCapabilityCallback(t *tes
 +
 +func TestDiagnosticParserCoreVersionLexerCoallocatedStorageBudgetAndGeneration(t *testing.T) {
 +	for _, tc := range []struct {
@@ -264,10 +261,7 @@ diff --git a/parsercore_phase0_per_version_lexer_state.go b/parsercore_phase0_pe
 index 66c8fd8d4..f51364cab 100644
 --- a/parsercore_phase0_per_version_lexer_state.go
 +++ b/parsercore_phase0_per_version_lexer_state.go
-@@ -231,11 +231,15 @@ func (s *diagnosticParserCoreVersionLexerSnapshot) clone() *diagnosticParserCore
- 	if s == nil {
- 		return nil
- 	}
+@@ -234,2 +234,6 @@ func (s *diagnosticParserCoreVersionLexerSnapshot) clone() *diagnosticParserCore
 -	out := *s
 -	out.dfa = cloneDiagnosticParserCoreDFARelexSnapshot(s.dfa)
 +	out, payload, start, end, tried := core.NewScannerSnapshotRecord[diagnosticParserCoreVersionLexerSnapshot](
@@ -276,42 +270,20 @@ index 66c8fd8d4..f51364cab 100644
 +	*out = *s
 +	out.dfa.externalPayload, out.dfa.externalTokenStart, out.dfa.externalTokenEnd = payload, start, end
 +	out.dfa.extZeroTried = tried
- 	out.beforeCheckpointBytes = cloneBytesForDiagnosticParserCoreVersion(s.beforeCheckpointBytes)
- 	out.afterCheckpointBytes = cloneBytesForDiagnosticParserCoreVersion(s.afterCheckpointBytes)
+@@ -238 +242 @@ func (s *diagnosticParserCoreVersionLexerSnapshot) clone() *diagnosticParserCore
 -	return &out
 +	return out
- }
- 
- // copyDiagnosticParserCoreVersionCheckpoint obtains a complete private copy
-@@ -304,7 +308,11 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
- 	if _, _, ok := compact.CheckpointReceiptOwned(owner, afterCheckpoint); !ok {
- 		return nil, errDiagnosticParserCoreUnknownCheckpointIdentity
- 	}
+@@ -307 +311,5 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 -	dfa = cloneDiagnosticParserCoreDFARelexSnapshot(dfa)
 +	out, payload, start, end, tried := core.NewScannerSnapshotRecord[diagnosticParserCoreVersionLexerSnapshot](
 +		dfa.externalPayload, dfa.externalTokenStart, dfa.externalTokenEnd, dfa.extZeroTried,
 +	)
 +	dfa.externalPayload, dfa.externalTokenStart, dfa.externalTokenEnd = payload, start, end
 +	dfa.extZeroTried = tried
- 	afterBytes, afterInfo, err := copyDiagnosticParserCoreVersionCheckpointWithPrivateCopy(compact, owner, afterCheckpoint, dfa.externalPayload)
- 	if err != nil {
- 		return nil, err
-@@ -321,7 +329,7 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
- 	if checkpointIdentityRequired && !checkpointIdentityValid {
- 		return nil, errors.New("parser-core phase zero: version lexer snapshot requires a complete checkpoint identity")
- 	}
+@@ -324 +332 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 -	return &diagnosticParserCoreVersionLexerSnapshot{
 +	*out = diagnosticParserCoreVersionLexerSnapshot{
- 		compact:        compact,
- 		coreGeneration: generation,
- 		language:       language,
-@@ -336,7 +344,8 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
- 		afterCheckpointBytes:  afterBytes,
- 		beforeCheckpointInfo:  beforeInfo,
- 		afterCheckpointInfo:   afterInfo,
+@@ -339 +347,2 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 -	}, nil
 +	}
 +	return out, nil
- }
- 
- func (s *diagnosticParserCoreVersionLexerSnapshot) validateGeneration() error {

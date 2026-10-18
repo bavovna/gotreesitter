@@ -1,7 +1,8 @@
 # Reproduce scanner record coallocation
 
 Baseline: `6d5b0b07e44a8f4fd1ab66d3246a485fde303909`.
-Candidate: `b17ca367a85d419514554e88f4477a339fd3ecba`. Use separate checkouts at these exact commits, mounted at
+Candidate: `b17ca367a85d419514554e88f4477a339fd3ecba`. The zero-context
+`runtime.patch` requires `git apply --unidiff-zero` when replayed. Use separate checkouts at these exact commits, mounted at
 `/baseline` and `/workspace`. Copy this evidence directory to a writable
 external directory and mount it at `/evidence`. Do not mount this checked-in
 receipt writable for a replay.
