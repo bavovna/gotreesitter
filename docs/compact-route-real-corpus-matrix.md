@@ -16,6 +16,38 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Scanner record coallocation: qualified YAML allocation win
+
+Runtime `b17ca367a85d419514554e88f4477a339fd3ecba` freezes eligible snapshot
+records, byte fields and trial masks in one typed allocation. Owned YAML
+allocations fall **109 → 79 (−27.52%)** on R4 and **336 → 218 (−35.12%)**
+on 8 KiB. Bytes rise **1.24% / 1.44%**; twenty shuffled pairs establish no
+supported throughput difference. Disjoint field capacities retain complete
+memory accounting, and all identity/reset/checkpoint checks remain intact.
+
+All **414 counter rows**, five consumed and four canonical vectors,
+**206 × 72-step invariants**, **618 C checks**, unchanged **120 / 39 / 45**
+strict census, races, memory contracts and actual-source guards pass. All
+126 RSS probes pass the ceiling and median ratchet. Go RSS median ratio
+**1.03008**, initial **337.07 → 370.15**, and maximum **389.01 B/source B**
+remain recorded. The [receipt](compact-scanner-record-coallocation-receipt-20261018.md)
+retains all directions and replay evidence. Ordinary YAML still falls back;
+routing, allowlists and graduation are unchanged.
+
+### Go generic-call frontier: ownership proof remains the blocker
+
+Three two-generic-call witnesses reach **9 > 8** live links sharing one graph
+predecessor. Their terminal values match, but exact leaf identities form four
+groups. The existing selector already activates for relevant comparisons;
+it still correctly rejects unproven DFA histories. This isolates an ownership
+proof target without changing the cap or weakening selection.
+
+All six public witnesses remain C-exact on their current routes. Observed
+and unobserved frontier records match. The
+[attribution screen](compact-go-generic-call-frontier-screen-20261018.md)
+retains source pins, complete traces and limits; it makes no runtime or
+throughput claim.
+
 ### Combined shift and lineage publication: qualified Go win
 
 Runtime `6d5b0b07e44a8f4fd1ab66d3246a485fde303909` combines eligible direct
@@ -71,7 +103,7 @@ still decline on all three stream witnesses. These counter/admission failures
 block promotion, so no randomized timing or new runtime is claimed. The
 [screen](compact-shared-lookahead-origin-screen-20261018.md) retains source
 patches, the actual-origin trace, passing and failing controls, and replay
-commands. Active runtime remains `6d5b0b07e44a8f4fd1ab66d3246a485fde303909`.
+commands. That screen used runtime `6d5b0b07e44a8f4fd1ab66d3246a485fde303909`.
 
 ### Scanner byte-field packing: no measured gain, not promoted
 
