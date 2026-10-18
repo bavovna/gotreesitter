@@ -48,3 +48,14 @@ Its extra diagnostic helpers/overlay are not supplied here as a qualification
 workflow. No counter ratchet, broad invariant gate, full Core suite, race/386,
 RSS gate, randomized timing, routing change or graduation is claimed for this
 prototype. Existing production checks and receipts remain separate.
+
+
+The later `legacy-selection/` probe uses **baseline runtime only** plus two
+instrumented legacy files. In another fresh external evidence copy, run
+`python3 /evidence/legacy-selection/prepare-replay.py`, then
+`bash /evidence/legacy-selection/run.sh` inside the same pinned Docker setup.
+Do not run the experimental variant preparation in that copy. The independent
+legacy/C check passes; its trace logs dynamic precedence −3 versus 1. Two host
+preparation errors, both before a Docker launch, are retained. This result
+comparison occurs later than Core's local fold; it does not by itself prove
+a shared-scope precedence discrepancy.

@@ -95,6 +95,18 @@ complete precedence/version-ranking cause. The next investigation must compare
 that full decision with production, including its temporary-parent and
 shape-aware selection; this screen does not authorize a raw-tree shortcut.
 
+A subsequent, separate run instruments the **unchanged legacy result selector**
+with the experimental origin protocol disabled. It resolves a result comparison
+at aggregate dynamic precedence **−3 versus 1** and returns the C-exact conversion.
+The [legacy trace](benchmarks/20261018-dfa-terminal-identity/legacy-selection/oracle.log.txt)
+retains that decision, exact source pins and its passing oracle check.
+
+The legacy result comparison and Core's earlier local fold are different
+scopes. Their values do not yet prove a miscount. The next decisive check is
+to compute the aggregate precedence of each compact payload at the same fold
+and compare the surviving derivations with production. No such fix, cache or
+new qualification is claimed here.
+
 ## Qualification limits
 
 The three earlier variants pass focused Core/root checks and all six public

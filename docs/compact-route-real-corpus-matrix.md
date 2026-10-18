@@ -39,6 +39,11 @@ precedence/version-ranking question. No counter/timing/fleet/RSS qualification
 was launched after rejection. Runtime stays `b17ca367`; routing and graduation
 remain unchanged.
 
+A separate legacy-only trace resolves the witness at aggregate precedence
+**−3 versus 1**, while the compact local fold reports **1 versus 1**. The
+comparison scopes differ, so this identifies a concrete precedence-attribution
+check rather than proving a propagation bug. Its oracle reference passes.
+
 ### Scanner record coallocation: qualified YAML allocation win
 
 Runtime `b17ca367a85d419514554e88f4477a339fd3ecba` freezes eligible snapshot
