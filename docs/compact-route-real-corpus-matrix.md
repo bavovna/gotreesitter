@@ -16,6 +16,29 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### DFA origin proof: private cap removal; selection variant rejected
+
+An owner/source/reset-bound proof for identical DFA terminal IDs removes the
+**9 > 8** failure from all three combined-call Go witnesses, keeping the cap
+at eight. They still decline at tied acceptance; all six public witnesses
+remain C-exact on existing routes. Earlier selection alone does not finish
+the five generic witnesses.
+
+Extending receipts to copies of one actual elected read finishes every
+runner witness, but **five of six public C checks fail**: compact chooses
+`call_expression(index_expression)` where C and legacy choose
+`type_conversion_expression(generic_type)`. That variant is rejected.
+The existing unproven-history checks and 19 origin/context negatives pass,
+but lexical ownership does not authorize the independent tree-selection rule.
+
+A narrowed oracle trace finds equal effective precedence 1 and the same
+relative call/conversion symbol order in both grammars. Simple renumbering
+cannot fix the choice. The [screen](compact-dfa-terminal-origin-screen-20261018.md)
+retains all variants, failed C evidence, exact source pins and the remaining
+precedence/version-ranking question. No counter/timing/fleet/RSS qualification
+was launched after rejection. Runtime stays `b17ca367`; routing and graduation
+remain unchanged.
+
 ### Scanner record coallocation: qualified YAML allocation win
 
 Runtime `b17ca367a85d419514554e88f4477a339fd3ecba` freezes eligible snapshot
