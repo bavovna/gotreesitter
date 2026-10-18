@@ -36,6 +36,25 @@ recorded. The [receipt](compact-shift-lineage-fusion-receipt-20261017.md)
 retains the complete measurements and limits. Ordinary YAML still falls
 back; this bucket does not graduate a language.
 
+### Actual shared lookahead ownership: private correctness pathway
+
+Two private variants complete ordinary YAML compact parsing on R4 and the
+8/32 KiB streams with the diagnostic probe and artifact exception disabled.
+Each passes **19 fixtures / 57 fresh-edit-fresh locked-C comparisons** and
+allocation-free no-edit reparses. Publication before the first reduction also
+passes a **72-step YAML invariant session**. This does not establish compact
+incremental reuse or graduation.
+
+R4 reductions fall **209 → 183**, canonicalizations **326 → 293**, and
+per-request re-lex restores **18 → 0**, but elections rise **102 → 107** and
+snapshot publications **60 → 224**; nodes remain **484**. Shared-cursor rejoin
+restores remain. Late fork publication and a lighter canonical-origin guard
+still decline on all three stream witnesses. These counter/admission failures
+block promotion, so no randomized timing or new runtime is claimed. The
+[screen](compact-shared-lookahead-origin-screen-20261018.md) retains source
+patches, the actual-origin trace, passing and failing controls, and replay
+commands. Active runtime remains `6d5b0b07e44a8f4fd1ab66d3246a485fde303909`.
+
 ### Scanner fingerprint entry split: mixed result, not promoted
 
 Isolating complete value binding encoding reduces the nil/pointer entry's
