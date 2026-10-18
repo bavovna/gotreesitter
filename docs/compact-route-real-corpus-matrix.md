@@ -36,6 +36,24 @@ recorded. The [receipt](compact-shift-lineage-fusion-receipt-20261017.md)
 retains the complete measurements and limits. Ordinary YAML still falls
 back; this bucket does not graduate a language.
 
+### Direct shared-request publication: private allocation win
+
+Direct publication removes the producer's temporary before-cursor wrapper.
+R4 publications fall **224 → 169** and allocations **1,253 → 1,198**; allocated
+bytes fall **3.52%**. The 8 KiB stream removes **220** publications/allocations
+and **3.50%** of bytes. Both variants pass **19 C fixtures / 57 unique parse
+comparisons** and a **72-step YAML invariant session**. Complete Core,
+scheduler and runtime values otherwise match on R4 and 8/32 KiB; both YAML
+ledger rows match.
+
+Twenty shuffled pairs establish **no supported throughput difference**, with
+intervals up to 27%. All 120 rows and the legacy control remain in the
+[screen](compact-shared-request-publication-screen-20261018.md). This compares
+two unpromoted producers. R4 still exceeds the qualified diagnostic route's
+102 tokens / 60 publications at **107 / 169**; no runtime, counter exception
+or graduation is claimed. The same-start drop proof remains strict, and C4
+removal, empty-action re-lex and selective-marker activation remain rejected.
+
 ### Actual shared lookahead ownership: private correctness pathway
 
 Two private variants complete ordinary YAML compact parsing on R4 and the

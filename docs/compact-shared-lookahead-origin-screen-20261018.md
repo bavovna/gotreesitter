@@ -6,6 +6,10 @@ probe and artifact exception disabled. It preserves locked-C trees on the
 focused suite. **This is a correctness pathway, not a promoted runtime or a
 throughput win.** Election and publication counters still block promotion.
 
+The [direct-publication follow-up](compact-shared-request-publication-screen-20261018.md)
+reduces the temporary publication cost and records its allocation measurements.
+Its throughput remains inconclusive, and the ownership prototype stays unpromoted.
+
 The [baseline reference](benchmarks/20261018-shared-lookahead-origin/baseline-reference.json)
 pins qualified runtime `6d5b0b07e44a8f4fd1ab66d3246a485fde303909` and all
 3,510 Go source hashes. No production Go file, route or allowlist changes.
