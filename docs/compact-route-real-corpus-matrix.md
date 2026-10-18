@@ -73,6 +73,20 @@ block promotion, so no randomized timing or new runtime is claimed. The
 patches, the actual-origin trace, passing and failing controls, and replay
 commands. Active runtime remains `6d5b0b07e44a8f4fd1ab66d3246a485fde303909`.
 
+### Scanner byte-field packing: no measured gain, not promoted
+
+Twenty shuffled pairs preserve all **414 counter rows** and five consumed
+vectors but establish **no supported throughput or YAML allocation gain**.
+Owned YAML stays at **109 / 336 allocations** on R4 / 8 KiB; ordinary YAML
+attempt plus fallback stays at **37**. All 440 samples, every timing direction,
+focused C/invariant/race/386 checks and full Core results remain in the
+[screen](compact-scanner-byte-packing-screen-20261018.md).
+
+An untimed field census explains the miss: these freezes have one populated
+14–34-byte field and a separate **113-boolean trial mask**. Byte-only packing
+cannot combine those copies. Full-fleet/RSS and actual-source qualification
+were not run after rejection. Runtime, routes and graduation remain unchanged.
+
 ### Scanner fingerprint entry split: mixed result, not promoted
 
 Isolating complete value binding encoding reduces the nil/pointer entry's
