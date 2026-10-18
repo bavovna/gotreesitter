@@ -16,6 +16,30 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Go version turns: 27 private repairs; 12 existing compact failures remain
+
+A new 300-case locked-C screen finds **39 failures in the unchanged runtime**:
+27 through fallback and 12 through compact. A private C-style pairwise version
+permutation plus authenticated publication union fixes those 27 fallback
+failures and adds none in this screen. It still fails the same 12 qualified-type
+cases, so it is **not promoted**. All 300 prototype cases use compact; the
+unchanged runtime routes 90 and falls back on 210. These are correctness and
+admission observations, not throughput or work-ratchet qualification.
+
+The six original generic-call witnesses now pass through compact with no
+fallback in the private ordering probe, with the eight-link cap unchanged.
+Seven selected existing Go certification, incremental, reuse and recovery
+suites pass. The larger screen rejects a one-best-version ordering shortcut:
+252/300 exact cases become **288/300** only with C's pairwise slot permutation.
+
+Direct payload sums rule out the earlier suspected precedence miscount.
+The remaining qualified-type witness is C-exact on forced legacy, which keeps
+the explicit-type-argument call at precedence 2; compact publishes the index
+call. The [screen](compact-go-version-turn-order-screen-20261018.md) retains all
+variants, unchanged-runtime controls, exact replay patches, failed C evidence
+and the next branch-retention question. No new timing, ledger, fleet or RSS
+qualification ran. Production stays `b17ca367`; graduation is unchanged.
+
 ### DFA origin proof: private cap removal; selection variant rejected
 
 An owner/source/reset-bound proof for identical DFA terminal IDs removes the

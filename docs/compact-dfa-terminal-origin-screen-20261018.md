@@ -101,11 +101,13 @@ at aggregate dynamic precedence **−3 versus 1** and returns the C-exact conver
 The [legacy trace](benchmarks/20261018-dfa-terminal-identity/legacy-selection/oracle.log.txt)
 retains that decision, exact source pins and its passing oracle check.
 
-The legacy result comparison and Core's earlier local fold are different
-scopes. Their values do not yet prove a miscount. The next decisive check is
-to compute the aggregate precedence of each compact payload at the same fold
-and compare the surviving derivations with production. No such fix, cache or
-new qualification is claimed here.
+The [subsequent version-turn screen](compact-go-version-turn-order-screen-20261018.md)
+completes that check: direct payload sums agree with both compact link scores
+at 1. Legacy's accepted alternatives are different, and its earlier stack
+merges remove the index-call family. A private C-style version permutation
+repairs 27 newly exposed C failures, while 12 existing compact failures remain.
+No precedence-propagation bug, promoted fix, cache or throughput qualification
+is claimed here.
 
 ## Qualification limits
 
