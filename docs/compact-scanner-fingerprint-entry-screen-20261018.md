@@ -70,8 +70,9 @@ tables and overwrote four Go allocation fields. The corrected parser resets
 on every unit header. Every reported ns/B/allocation median independently
 matches the raw 20 samples; the timing verdict is unchanged. The
 [audit](benchmarks/20261018-scanner-fingerprint-entry/analysis-parser-audit.json)
-records affected fields. The previous reduction-fusion receipt's published
-measurement values are unchanged; its reusable parser receives the same fix.
+records affected fields. The previous reduction-fusion receipt's time, byte
+and allocation values are unchanged. Its parser receives the same fix, and
+four mislabelled custom fields are removed from its measurement JSON.
 
 ## Gate scope and decision
 

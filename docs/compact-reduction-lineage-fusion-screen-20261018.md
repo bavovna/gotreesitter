@@ -77,7 +77,11 @@ medians match. No edit remains **0 B/op / zero allocations**. Byte medians
 match except default Go full **1,162 → 1,161 B/op**, p=.549, and owned YAML
 8 KiB **44,313 → 44,312 B/op**, p=.675; neither supports a saving. The
 [measurement bundle](benchmarks/20261018-reduction-lineage-fusion/measurement.json)
-retains every metric and raw samples.
+retains the supported metric tables and raw samples. The corrected unit-table
+parser removes four custom fields that were incorrectly labelled as route
+counts. Time, byte and allocation values and the decision are unchanged; the
+[parser audit](benchmarks/20261018-reduction-lineage-fusion/analysis-parser-audit.json)
+records those removals.
 
 ## Gate scope and decision
 

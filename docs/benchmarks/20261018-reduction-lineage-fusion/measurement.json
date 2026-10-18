@@ -206,15 +206,6 @@
         "p": "p=1.000 n=20",
         "before_ci": "0%",
         "after_ci": "0%"
-      },
-      "compact-routes/op": {
-        "before": 1348.0,
-        "after": 1348.0,
-        "relative_percent": 0.0,
-        "supported": false,
-        "p": "p=1.000 n=20",
-        "before_ci": "0%",
-        "after_ci": "0%"
       }
     },
     "ParserCoreFreshFullCanonical/query_compile": {
@@ -248,15 +239,6 @@
       "allocs/op": {
         "before": 120.0,
         "after": 120.0,
-        "relative_percent": 0.0,
-        "supported": false,
-        "p": "p=1.000 n=20",
-        "before_ci": "0%",
-        "after_ci": "0%"
-      },
-      "compact-routes/op": {
-        "before": 6685.0,
-        "after": 6685.0,
         "relative_percent": 0.0,
         "supported": false,
         "p": "p=1.000 n=20",
@@ -300,15 +282,6 @@
         "p": "p=1.000 n=20",
         "before_ci": "0%",
         "after_ci": "0%"
-      },
-      "compact-routes/op": {
-        "before": 6512.0,
-        "after": 6512.0,
-        "relative_percent": 0.0,
-        "supported": false,
-        "p": "p=1.000 n=20",
-        "before_ci": "0%",
-        "after_ci": "0%"
       }
     },
     "ParserCoreFreshFullCanonical/grammargen_lr": {
@@ -342,15 +315,6 @@
       "allocs/op": {
         "before": 1705.0,
         "after": 1705.0,
-        "relative_percent": 0.0,
-        "supported": false,
-        "p": "p=1.000 n=20",
-        "before_ci": "0%",
-        "after_ci": "0%"
-      },
-      "compact-routes/op": {
-        "before": 66115.0,
-        "after": 66115.0,
         "relative_percent": 0.0,
         "supported": false,
         "p": "p=1.000 n=20",
