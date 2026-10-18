@@ -231,11 +231,15 @@ func (s *diagnosticParserCoreVersionLexerSnapshot) clone() *diagnosticParserCore
 	if s == nil {
 		return nil
 	}
-	out := *s
-	out.dfa = cloneDiagnosticParserCoreDFARelexSnapshot(s.dfa)
+	out, payload, start, end, tried := core.NewScannerSnapshotRecord[diagnosticParserCoreVersionLexerSnapshot](
+		s.dfa.externalPayload, s.dfa.externalTokenStart, s.dfa.externalTokenEnd, s.dfa.extZeroTried,
+	)
+	*out = *s
+	out.dfa.externalPayload, out.dfa.externalTokenStart, out.dfa.externalTokenEnd = payload, start, end
+	out.dfa.extZeroTried = tried
 	out.beforeCheckpointBytes = cloneBytesForDiagnosticParserCoreVersion(s.beforeCheckpointBytes)
 	out.afterCheckpointBytes = cloneBytesForDiagnosticParserCoreVersion(s.afterCheckpointBytes)
-	return &out
+	return out
 }
 
 // copyDiagnosticParserCoreVersionCheckpoint obtains a complete private copy
@@ -304,7 +308,11 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 	if _, _, ok := compact.CheckpointReceiptOwned(owner, afterCheckpoint); !ok {
 		return nil, errDiagnosticParserCoreUnknownCheckpointIdentity
 	}
-	dfa = cloneDiagnosticParserCoreDFARelexSnapshot(dfa)
+	out, payload, start, end, tried := core.NewScannerSnapshotRecord[diagnosticParserCoreVersionLexerSnapshot](
+		dfa.externalPayload, dfa.externalTokenStart, dfa.externalTokenEnd, dfa.extZeroTried,
+	)
+	dfa.externalPayload, dfa.externalTokenStart, dfa.externalTokenEnd = payload, start, end
+	dfa.extZeroTried = tried
 	afterBytes, afterInfo, err := copyDiagnosticParserCoreVersionCheckpointWithPrivateCopy(compact, owner, afterCheckpoint, dfa.externalPayload)
 	if err != nil {
 		return nil, err
@@ -321,7 +329,7 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 	if checkpointIdentityRequired && !checkpointIdentityValid {
 		return nil, errors.New("parser-core phase zero: version lexer snapshot requires a complete checkpoint identity")
 	}
-	return &diagnosticParserCoreVersionLexerSnapshot{
+	*out = diagnosticParserCoreVersionLexerSnapshot{
 		compact:        compact,
 		coreGeneration: generation,
 		language:       language,
@@ -336,7 +344,8 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 		afterCheckpointBytes:  afterBytes,
 		beforeCheckpointInfo:  beforeInfo,
 		afterCheckpointInfo:   afterInfo,
-	}, nil
+	}
+	return out, nil
 }
 
 func (s *diagnosticParserCoreVersionLexerSnapshot) validateGeneration() error {

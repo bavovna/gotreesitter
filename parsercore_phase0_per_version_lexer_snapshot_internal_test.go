@@ -1308,3 +1308,62 @@ func TestVersionLexerStandaloneRejectsBindingSwapDuringCapabilityCallback(t *tes
 		}
 	}
 }
+
+func TestDiagnosticParserCoreVersionLexerCoallocatedStorageBudgetAndGeneration(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		size int
+	}{{"small", 2}, {"wide", 40}} {
+		t.Run(tc.name, func(t *testing.T) {
+			payloadSize := tc.size
+			compact, before, after := newDiagnosticParserCoreVersionLexerTestCore(t)
+			dfa := diagnosticParserCoreVersionLexerTestDFA()
+			dfa.externalScannerPresent = true
+			dfa.externalPayload = bytes.Repeat([]byte{0x11}, payloadSize)
+			dfa.extZeroTried = make([]bool, 113)
+			dfa.extZeroTried[0], dfa.extZeroTried[112] = true, true
+			wantDFA := cloneDiagnosticParserCoreDFARelexSnapshot(dfa)
+			language := &Language{Name: "snapshot-test", ExternalScanner: byteStateExternalScanner{}}
+			var snapshot *diagnosticParserCoreVersionLexerSnapshot
+			err := compact.ApplySchedulerAtomic(func(owner core.SchedulerTransactionToken) error {
+				var err error
+				snapshot, err = newDiagnosticParserCoreVersionLexerSnapshot(compact, language, owner, dfa, before, after)
+				return err
+			})
+			if err != nil || snapshot == nil {
+				t.Fatalf("construct snapshot: %v", err)
+			}
+			if !reflect.DeepEqual(snapshot.dfa, wantDFA) {
+				t.Fatal("coallocation changed captured DFA values")
+			}
+			reserved := 32
+			if payloadSize > 32 {
+				reserved = 64
+			}
+			if cap(snapshot.dfa.externalPayload)+cap(snapshot.dfa.externalTokenStart)+cap(snapshot.dfa.externalTokenEnd) != reserved || cap(snapshot.dfa.extZeroTried) != 128 {
+				t.Fatal("snapshot did not retain all reserved storage in its field capacities")
+			}
+			wantFootprint := uint64(unsafe.Sizeof(*snapshot)) + uint64(unsafe.Sizeof(*snapshot.metadata)) + uint64(reserved+128+cap(snapshot.beforeCheckpointBytes)+cap(snapshot.afterCheckpointBytes))
+			if got := diagnosticParserCoreVersionLexerSnapshotFootprintBytes(snapshot); got != wantFootprint {
+				t.Fatalf("snapshot footprint %d, want reserved storage %d", got, wantFootprint)
+			}
+			clone := snapshot.clone()
+			if !diagnosticParserCoreVersionLexerSnapshotEqual(snapshot, clone) {
+				t.Fatal("independent clone changed snapshot identity")
+			}
+			dfa.externalPayload[0], dfa.extZeroTried[0] = 0, false
+			clone.dfa.externalTokenEnd[0], clone.dfa.extZeroTried[112] = 0, false
+			if snapshot.dfa.externalPayload[0] != 0x11 || snapshot.dfa.externalTokenEnd[0] != 0x41 || !snapshot.dfa.extZeroTried[0] || !snapshot.dfa.extZeroTried[112] {
+				t.Fatal("coallocated source or clone storage aliases the original snapshot")
+			}
+			if err := compact.Reset(); err != nil {
+				t.Fatal(err)
+			}
+			for _, stale := range []*diagnosticParserCoreVersionLexerSnapshot{snapshot, clone} {
+				if stale.validateGeneration() == nil {
+					t.Fatal("coallocated snapshot survived its core generation")
+				}
+			}
+		})
+	}
+}
