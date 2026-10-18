@@ -36,6 +36,20 @@ recorded. The [receipt](compact-shift-lineage-fusion-receipt-20261017.md)
 retains the complete measurements and limits. Ordinary YAML still falls
 back; this bucket does not graduate a language.
 
+### Combined reduction publication: inconclusive, not promoted
+
+A private general/corridor variant reaches **69.39% of Go** and **66.55% of
+owned-YAML reductions** in activation probes while retaining classification,
+owner-conflict, history and rollback checks. All **414 ledger rows**, five
+consumed vectors, focused C/invariant/race/386 gates and full Core suites pass.
+Twenty shuffled pairs establish **no supported throughput or allocation gain**;
+timing intervals reach 13%. Every timing direction and all 440 samples remain
+in the [screen](compact-reduction-lineage-fusion-screen-20261018.md).
+
+This runtime is not promoted. No additional seeds, full-fleet/RSS qualification,
+actual-source gate, counter exception, route change or graduation is claimed.
+The qualified shift-publication runtime above remains active.
+
 ### Paired terminal cursors: qualified owned-stream win
 
 Runtime `5e52cf2a2644f3d38785513eebc39f8cf8a506b2` reuses a fully validated
