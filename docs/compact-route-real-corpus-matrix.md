@@ -1,6 +1,6 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-17 (UTC).
+Current evidence date: 2026-10-18 (UTC).
 Release update, 2026-10-17 UTC: v0.56.0 was published on October 14. The
 release condition behind the merge hold is fulfilled; current reviews and CI
 still govern landing. Historical hold statements below retain their original
@@ -35,6 +35,21 @@ medians pass the 10% ratchet. The initial Go RSS **342.07 → 355.67** remains
 recorded. The [receipt](compact-shift-lineage-fusion-receipt-20261017.md)
 retains the complete measurements and limits. Ordinary YAML still falls
 back; this bucket does not graduate a language.
+
+### Scanner fingerprint entry split: mixed result, not promoted
+
+Isolating complete value binding encoding reduces the nil/pointer entry's
+stack reservation **4,304 → 152 bytes**, without omitting identity or callback
+checks. Twenty pairs improve owned YAML R4 **1.28%, p=.046**, and ordinary
+YAML attempt plus fallback **1.09%, p=.011**, but compact Go R4 slows
+**0.98%, p=.001**. The default-full **−0.93%, p=.011** control shift remains
+unattributed. This runtime is not promoted.
+
+All **414 counter rows**, five consumed vectors and allocation medians remain
+exact. Focused C, invariant, ownership, race/386 and full Core checks pass;
+full-fleet/RSS and actual-source qualification were not run after rejection.
+The [screen](compact-scanner-fingerprint-entry-screen-20261018.md) retains all
+440 samples, compiler evidence, the corrected metric-parser audit and limits.
 
 ### Combined reduction publication: inconclusive, not promoted
 

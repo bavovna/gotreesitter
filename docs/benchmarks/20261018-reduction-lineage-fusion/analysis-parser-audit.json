@@ -1,0 +1,10 @@
+{
+  "bug": "Unrecognized custom-unit table headers previously retained the previous metric key. Reset on every CI header.",
+  "corrected_fields": [],
+  "all_ns_B_alloc_medians_match_raw_samples": true,
+  "floating_conversion_tolerance": "rel=1e-12 abs=1e-8; CSV sec/op to ns/op conversion",
+  "timing_interpretation_changed": false,
+  "original_analyzer_sha256": "fb2a4242be5a640392ef9aee28edb5ed850136af06a537e1f45e1f3fabdc19d2",
+  "corrected_analyzer_sha256": "fc8aca679c96a8462220e58332c3cf32e2a9409274156df2642ba548fe848e25",
+  "published_measurement_values_changed": false
+}

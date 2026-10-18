@@ -5,8 +5,9 @@ out={}
 for lang in ['go','yaml']:
  rows={};metric=None
  for row in csv.reader((p/f'benchstat-{lang}.csv').open()):
-  if len(row)>4 and row[0]=='' and row[1] in ['sec/op','B/op','allocs/op','B/s','compact-routes/op','compact-fallbacks/op']:
-   metric=row[1];continue
+  if len(row)>4 and row[0]=='' and row[2]=='CI':
+   metric=row[1] if row[1] in ['sec/op','B/op','allocs/op','B/s','compact-routes/op','compact-fallbacks/op'] else None
+   continue
   if not row or not row[0] or row[0]=='geomean' or len(row)<7 or metric is None:continue
   try:before,after=float(row[1]),float(row[3])
   except ValueError:continue
