@@ -16,6 +16,27 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Qualified no-replay demand: canonical Go work without unused history
+
+The [read-history demand receipt](compact-read-history-demand-receipt-20261019.md)
+skips lexer histories only when publication explicitly disables replay.
+Unknown-context and replay-enabled callers retain collection. Twenty shuffled
+pairs support **−6.49% / −6.20%** parse time on canonical Go `rewrite` /
+`query_compile`. Large canonical Go bytes fall **1,155,584 → 107,520
+(−90.70%)**. These benchmarks disable replay; public Go controls and all YAML
+timing changes are inconclusive. No-edit stays at zero bytes and allocations.
+
+All **414 work/reuse rows**, four complete canonical vectors/deep digests,
+**206 × 72-step invariants**, **618 C checks**, unchanged **120 / 39 / 45**
+strict census, races, memory contracts, native/default/tagged/386 tests and
+layout/API/selector checks pass. All **126 RSS probes** pass; median ratios
+are Go **1.02408**, ordinary YAML **1.00023** and owned YAML **0.99864**, with
+maximum candidate **373.06 B/source B**. These are safety measurements.
+
+This bucket changes one runtime file and two existing tests. It includes none
+of the private version-ordering protocol below. No counter exception is needed.
+Routing, allowlists, ordinary YAML fallback and graduation remain unchanged.
+
 ### Go cohort frontier: private C screen repaired; work direction unresolved
 
 The [cohort/frontier and restoration screen](compact-cohort-frontier-ordering-screen-20261019.md)
@@ -36,8 +57,9 @@ Preserving the lost histories raises production work counters, including
 `grammargen_lr` parents **75,769 → 76,345**, reduction pauses **1,963 → 2,117**
 and no-action drops **8,172 → 8,443**. Every direction and all 440 timing rows
 are archived. No R3 exception is approved; no full fleet, 414-row ledger or
-RSS qualification ran for this protocol. Runtime remains `b17ca367` with all
-3,512 Go files unchanged. Ordinary YAML ownership and graduation are unchanged.
+RSS qualification ran for that screen. Its production reference was `b17ca367`
+with all 3,512 Go files unchanged at the time. Ordinary YAML ownership and
+graduation are unchanged.
 
 ### Earlier Go version-turn screen: 27 private repairs; 12 failures
 

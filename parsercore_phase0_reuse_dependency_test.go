@@ -574,3 +574,46 @@ func TestCompactLegacyReadScratchBudget(t *testing.T) {
 		t.Fatal("scan history grew beyond the smaller request's budget")
 	}
 }
+
+func TestCompactLegacyReadHistoryPublicationDemand(t *testing.T) {
+	for _, tc := range []struct {
+		name                     string
+		context, replay, collect bool
+	}{
+		{"unknown context", false, false, true},
+		{"replay publication", true, true, true},
+		{"no replay publication", true, false, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := &dfaTokenSource{language: &Language{}, lexer: NewLexer(nil, []byte("abcd"))}
+			s := &diagnosticParserCoreGenericScheduler{tokenSource: d}
+			// A prior eligible request leaves storage, never authorization.
+			s.beginCompactLegacyReads()
+			if s.reuseDependencies.reads == nil {
+				t.Fatal("control did not collect")
+			}
+			s.reuseDependencies.reads.Record(0, 2)
+			s.reuseDependencies.reads.Seal()
+			d.lexer.reuseReads = nil
+			s.reuseDependencies = s.reuseDependencies.reset()
+			if s.reuseDependencies.idleReads == nil {
+				t.Fatal("control did not retain scratch")
+			}
+			s.options.materializationContextSet = tc.context
+			s.options.materializationForceReplayParseStates = tc.replay
+			s.beginCompactLegacyReads()
+			if tc.collect {
+				if s.reuseDependencies.reads == nil || d.lexer.reuseReads != s.reuseDependencies.reads {
+					t.Fatal("required read history was not attached")
+				}
+				s.reuseDependencies.reads.Record(2, 4)
+				s.reuseDependencies.reads.Seal()
+				if end, ok := s.reuseDependencies.reads.Lookahead(3); !ok || end != 1 {
+					t.Fatalf("new history=%d/%t", end, ok)
+				}
+			} else if s.reuseDependencies.reads != nil || s.reuseDependencies.idleReads != nil || d.lexer.reuseReads != nil || s.reuseDependencies.readsAllocated != 0 {
+				t.Fatal("known no-replay publication collected or retained unused history")
+			}
+		})
+	}
+}
