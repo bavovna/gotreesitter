@@ -16,6 +16,37 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Qualified progress-based capacity: large-Go allocation win
+
+Runtime `54863cf280722c720bda81c2a8480f2398255730` adds a late capacity estimate
+from actual record counts while retaining the early reserve and memory limits.
+The [receipt](compact-progress-arena-projection-receipt-20261019.md) records
+**827,364,832→592,422,760 B/op (−28.40%, p<.001)** on the one-MiB Go witness.
+Timing **1.181→1.138 s, p=.277** is inconclusive. Allocation count medians
+**305→326.5, p=.439** rise 7.05%, within the 10% ratchet; every direction and
+all 480 benchmark rows remain visible. No throughput improvement is claimed.
+
+All **414 complete work/reuse rows**, four canonical trees/work vectors and
+the large-Go complete work stay exact. The **206 × 72-step invariants**,
+explicitly activated owned-YAML 72-step session, **618 C checks**, unchanged
+**120 / 39 / 45** strict census, races, memory contracts, native/386 checks
+and layout/API/selector guards pass. All **126 RSS probes** pass; candidate
+Go peaks at **331.515 B/source byte**, with matched median ratio **0.925638**.
+Ordinary and owned YAML ratios are **0.997552 / 1.000859**. No new work exception,
+routing change or graduation follows.
+
+A separate earlier combined C-correct protocol/projection screen passes 42 Go
+RSS processes (maximum **334.046**, ratio **0.937044**) but retains 65 unapproved
+canonical increases. Its source has no full fleet/three-case RSS/timing
+qualification. The independent production result does not certify that source.
+
+**Owned-invariant evidence correction:** Prior extra jobs that set only
+`GTS_LAYOUT_OWNED_PROBE` did not activate ownership in the invariant process.
+Treat those jobs as ordinary-mode coverage. The current receipt's separate
+wrapper explicitly activates ownership and proves compact=1/fallback=0 before
+running all 72 steps. Explicit owned C/RSS cases retain their scope.
+
+
 ### Go correctness protocol: broad C screen passes; RSS still rejects promotion
 
 The [combined correctness/memory screen](compact-go-correctness-memory-screen-20261019.md)
@@ -36,9 +67,10 @@ ratios are Go **1.07590**, ordinary YAML **1.00221**, owned YAML **0.99459**.
 The hard ceiling overrides the passing median ratchet. All failed probes
 remain included. No timing claim transfers to the final paged candidate.
 
-Both private sources remain unpromoted. The qualified runtime remains the
-read-history guard `5c463e56` below. The next step is to reduce the large-Go
-memory peak; routing, allowlists, YAML ownership and graduation are unchanged.
+Both private sources remain unpromoted. That screen used the read-history
+runtime `5c463e56`; the newer independent projection above reduces the large-Go
+memory peak. Its qualification does not transfer to either private source.
+Ordinary YAML ownership and compact graduation remain open.
 
 ### Qualified no-replay demand: canonical Go work without unused history
 
