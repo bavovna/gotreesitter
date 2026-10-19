@@ -1,6 +1,10 @@
 # Compact route real-corpus matrix
 
 Current evidence date: 2026-10-19 (UTC).
+Parent PR #1486 merged to main as `88dc1d9c3ff15cc2b8b5c53864455fc3a24a9d34`
+after all 78 checks passed. Branch integration `b876c5b5` preserves all 414
+ledger rows and passes focused TypeScript/TSX C checks. Combined engine gates
+remain in progress; historical receipts below retain their own source scope.
 Release update, 2026-10-17 UTC: v0.56.0 was published on October 14. The
 release condition behind the merge hold is fulfilled; current reviews and CI
 still govern landing. Historical hold statements below retain their original
@@ -39,24 +43,32 @@ clean-helper error and its replay remain available. This repair proves internal
 identity preservation; remaining public C mismatches stay open.
 
 
-### Graph-link geometry: substantial storage target, prototype unqualified
+### Graph links: fewer allocated bytes, higher RSS
 
-The [six-case retained-link census](benchmarks/20261019-link-metadata-census/README.md)
-uses runtime b513 without changing production source. The one-MiB Go witness
-contains **1,032,094 links**, of which **72.50%** carry zero score/order/flag
-metadata. A four-entry recent-key simulation needs **64,505** metadata records.
-A 16-byte dense record plus 24-byte metadata records estimates **33,027,008→
-18,061,624 live link bytes (−45.31%)**. Go query/grammargen estimates are
-**−43.82% / −41.93%**; owned-YAML estimates are about **−49.15%**.
+The [29-file split-link candidate](compact-link-hot-cold-allocation-receipt-20261019.md)
+keeps identities in **16-byte** records and full-width immutable metadata in
+a shared sidecar. On runtime b704, all **414 ledger rows**, four canonical
+trees/work vectors, **206 × 72-step** sessions, owned YAML, **618 C checks**,
+unchanged strict census, **306 Go C outcomes / 300 routes**, large witnesses,
+memory/race/386 and API/layout/R6/selector gates pass.
 
-These are retained-graph geometry estimates. They omit capacity, rollback
-history, cache state, temporary buffers and allocator classes; **no allocation,
-RSS or throughput improvement is established**. The unqualified prototype
-preserves full-width graph identities, signed scores, ordering and all flags,
-with rollback/cache invalidation, memory accounting and shadow-copy coverage.
-Its combined correctness/counter gates pass; performance qualification is running.
-No runtime, work pin, owner exception, route or graduation setting changes
-in this receipt.
+All **480 shuffled rows** finish. One-MiB Go allocated bytes fall **6.89%**
+(**539585416→502397808**), ordinary YAML R4 **10.19%** (**14840→13328**), and
+ordinary YAML 8 KiB **12.47%** (**49097→42976**), all p<.001. Every timing
+difference is inconclusive. Ordinary YAML 8 KiB time moves **+7.53% (p=.060)**
+and query Go **+5.32% (p=.820)**. No throughput improvement is established.
+
+The costs remain explicit: ordinary YAML adds **one object/op**, and large-Go
+object medians move **328→344 (+4.88%, p=.124)**. All **126 RSS processes**
+pass, maximum **308.558 B/source byte**, but median RSS rises **6.02% Go /
+1.50% ordinary YAML / 4.47% owned YAML**. No time/object or RSS median fails
+its ratchet. No-edit always allocates nothing. The prototype remains unpromoted
+while current-main qualification is prepared; these measurements precede
+main 88dc1d9c. No route, work pin, exception or graduation changes.
+
+The earlier [retained-link census](benchmarks/20261019-link-metadata-census/README.md)
+remains geometry evidence; its 45.31% live-link estimate is not an RSS claim.
+The complete new replay preserves the compiler setup failures and all samples.
 
 
 ### Version-state publication census: common node baselines stay inline
@@ -73,7 +85,8 @@ full root coverage and no errors.
 The independent twelve-file prototype keeps the full-width node baseline in
 a **32-byte** wrapper and moves only rare region/group fields into an optional
 immutable holder. Moving all recovery data out would add allocations on clean
-Go. Focused qualification is pending. These are constructor counts and layout
+Go. Focused storage, immutability, 386 and race checks pass before main
+integration; current-main qualification is running. These are constructor counts and layout
 targets, **not measured allocation, RSS or throughput wins**. No production
 source, counter pin, route, exception or graduation setting changes.
 
