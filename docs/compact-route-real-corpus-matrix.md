@@ -16,6 +16,19 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Immutable snapshot pages: allocation reduction, byte trade rejected
+
+The [five-file allocation screen](compact-scanner-snapshot-pages-screen-20261019.md)
+keeps six complete public full/edit work rows exact and passes focused ownership,
+memory, C/edit and Go/YAML invariant gates. Fresh pages never overwrite published
+records; the allocator's native/386/race tests pass.
+
+All **440 shuffled-pair rows** finish. Owned 8 KiB allocations fall **218→181**,
+but R4 falls only **79→76** while bytes rise **13032→18392 (+41.13%)**.
+Every timing comparison is inconclusive. The five-file source remains private:
+unused page capacity must be reduced before this can be a runtime improvement.
+It includes neither ordinary ownership activation nor the pending Go repair.
+
 ### Ordinary YAML streamed ownership: smaller output, timing rejected
 
 The [latest private screen](compact-yaml-streamed-prefix-screen-20261019.md)
