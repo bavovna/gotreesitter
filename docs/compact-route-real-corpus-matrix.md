@@ -54,8 +54,25 @@ history, cache state, temporary buffers and allocator classes; **no allocation,
 RSS or throughput improvement is established**. The unqualified prototype
 preserves full-width graph identities, signed scores, ordering and all flags,
 with rollback/cache invalidation, memory accounting and shadow-copy coverage.
-Its focused compiler/tests are queued. No runtime, work pin, owner exception,
-route or graduation setting changes in this receipt.
+Its Core, scoped-race and 386 checks pass; combined qualification is running.
+No runtime, work pin, owner exception, route or graduation setting changes
+in this receipt.
+
+
+### Native 16-byte actions: safe, throughput win unproven
+
+The [two-file direct-layout screen](compact-action16-native-layout-screen-20261019.md)
+preserves complete fields in a native sixteen-byte Action. All **414 ledger
+rows**, four canonical trees/work vectors, **206 × 72-step** sessions, owned
+YAML, **618 C checks**, unchanged strict census, **306 Go C outcomes / 300
+routes**, large witnesses, Core/386/race, memory and API/layout/R6/selector
+gates pass. All **480 shuffled rows** finish; all twelve timing differences
+are inconclusive and every object median stays exact. Go full moves **−2.02%
+(p=.414)**, one-MiB **−3.75% (p=.265)** and query **+0.66% (p=.799)**. No
+throughput win is established. All **126 RSS processes** pass, maximum
+**297.617 B/source byte**. The source remains held; the evidence preserves all
+samples and the prerequisite-monitor timeout before timing began. No runtime,
+route, pin, exception or graduation changes.
 
 
 ### Stable YAML request window: rejected by the allocation ratchet
