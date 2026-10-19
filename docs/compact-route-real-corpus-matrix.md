@@ -16,6 +16,28 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Go correctness repair: memory gates pass; R3 owner review ready
+
+The [counter-exception review](compact-go-correctness-counter-review-20261019.md)
+contains the complete 17-file private proposal and every one of its 77 changed
+canonical fields: **65 increases / 12 decreases**. Fresh published-runtime
+controls reproduce **39/300** expanded C failures; the proposal passes all
+**306 clean cases** and **144 generic edit steps**. All **206 × 72-step**
+ordinary sessions, explicitly activated owned YAML, **618 C checks**, strict
+204-row equality, memory contracts, true publication stop controls and races
+pass. All 12 API tag sets and layout/R6/selector guards pass after moving the
+adapter interface into `internal/`.
+
+All **126 RSS processes** pass, including initial samples; candidate Go maximum
+**324.343 B/source byte**. Median ratios are Go **1.009375**, ordinary YAML
+**1.001307**, owned YAML **0.977019**. This qualifies the combined source's
+memory safety, not throughput. No official timing comparison crosses its
+unapproved work direction. No production pin, routing or graduation change
+occurs; the runtime remains private pending R3 owner approval and later
+performance qualification. Earlier failed memory/API/cache attempts remain
+visible in their original scopes.
+
+
 ### Qualified progress-based capacity: large-Go allocation win
 
 Runtime `54863cf280722c720bda81c2a8480f2398255730` adds a late capacity estimate
