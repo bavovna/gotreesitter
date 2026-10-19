@@ -6,6 +6,12 @@ screen. It still fails 12 cases and is **not promoted**. Production remains
 `b17ca367a85d419514554e88f4477a339fd3ecba`; all 3,512 Go files are unchanged.
 There is no throughput claim or graduation change.
 
+Follow-up: the [cohort frontier and restoration screen](compact-cohort-frontier-ordering-screen-20261019.md)
+now identifies the lost sibling and passes all 306 clean C cases and 144
+edit steps privately. It measures an allocation win within that protocol;
+production work directions still block promotion. Results below retain the
+earlier screen and its 12 failures.
+
 The [summary](benchmarks/20261018-go-version-turn-screen/summary.json),
 [source reference](benchmarks/20261018-go-version-turn-screen/source-reference.json)
 and [replay instructions](benchmarks/20261018-go-version-turn-screen/REPRODUCTION.md)

@@ -1,6 +1,6 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-18 (UTC).
+Current evidence date: 2026-10-19 (UTC).
 Release update, 2026-10-17 UTC: v0.56.0 was published on October 14. The
 release condition behind the merge hold is fulfilled; current reviews and CI
 still govern landing. Historical hold statements below retain their original
@@ -16,7 +16,30 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
-### Go version turns: 27 private repairs; 12 existing compact failures remain
+### Go cohort frontier: private C screen repaired; work direction unresolved
+
+The [cohort/frontier and restoration screen](compact-cohort-frontier-ordering-screen-20261019.md)
+now passes **306/306 clean Go C checks and 144 edit steps** privately. An
+ordinary shift cohort had omitted an already-shifted sibling from its live
+frontier. A causal three-history test retains two on production and all
+three with the repair. Combined with C-style version ordering and the
+owner-bound DFA proof, it fixes the last 12 qualified-type failures below.
+
+Replacing a per-dispatch restoration closure preserves all four complete
+private canonical vectors and six selected ledger rows. Twenty shuffled
+pairs measure Go R4 **−8.37%**, canonical `language` **−5.43%**, and
+`grammargen_lr` **−6.07%** parse time against the same private protocol.
+YAML allocations also fall; all three YAML timing changes are inconclusive.
+This is a private closure/value comparison, not production throughput evidence.
+
+Preserving the lost histories raises production work counters, including
+`grammargen_lr` parents **75,769 → 76,345**, reduction pauses **1,963 → 2,117**
+and no-action drops **8,172 → 8,443**. Every direction and all 440 timing rows
+are archived. No R3 exception is approved; no full fleet, 414-row ledger or
+RSS qualification ran for this protocol. Runtime remains `b17ca367` with all
+3,512 Go files unchanged. Ordinary YAML ownership and graduation are unchanged.
+
+### Earlier Go version-turn screen: 27 private repairs; 12 failures
 
 A new 300-case locked-C screen finds **39 failures in the unchanged runtime**:
 27 through fallback and 12 through compact. A private C-style pairwise version
