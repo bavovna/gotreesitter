@@ -8419,8 +8419,19 @@ func (s *diagnosticParserCoreGenericScheduler) run() error {
 			return err
 		}
 		if reserve := &s.stagedReserve; reserve.growAt != 0 && s.token.StartByte >= reserve.growAt {
-			s.compact.GrowRecordArenas(reserve.sourceBytes, reserve.maxBytes)
-			reserve.growAt = 0
+			if reserve.project {
+				budget, ok := core.RecordArenaProjectionBudget(diagnosticParserCoreSchedulerFootprintBytes(s), s.options.stopControlMemoryBudgetBytes, s.options.stopControlHardCeilingBytes)
+				if ok {
+					s.compact.ProjectRecordArenas(reserve.sourceBytes, s.token.StartByte, budget)
+				}
+				reserve.growAt, reserve.project = 0, false
+			} else {
+				s.compact.GrowRecordArenas(reserve.sourceBytes, reserve.maxBytes)
+				reserve.growAt = 0
+				if reserve.maxBytes > 0 && s.compact.ReserveRecordArenaBytes(reserve.sourceBytes, 0) > reserve.maxBytes {
+					reserve.growAt, reserve.project = core.RecordArenaProjectionStart(reserve.sourceBytes), true
+				}
+			}
 		}
 		if s.options.captureCertificationPeaks {
 			if err := s.captureCertificationPeak(); err != nil {

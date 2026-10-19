@@ -1,5 +1,13 @@
 # Compact read-history demand receipt — 2026-10-19
 
+**Owned-invariant evidence correction (2026-10-19):** The extra invariant job
+using `GTS_LAYOUT_OWNED_PROBE` did not activate ownership in the root test
+process; that variable is read only by the private ledger tool. Treat that
+job as ordinary-mode coverage. Explicit owned C and RSS checks retain their
+scope. The [progress-capacity receipt](compact-progress-arena-projection-receipt-20261019.md)
+adds an explicitly activated, route-asserted 72-step owned session for its
+independent production candidate; it does not certify a private protocol source.
+
 Explicitly known no-replay compact requests now skip lexer read-history
 collection. Those requests cannot publish incremental reuse receipts. Keeping
 their scan history and leaf provenance wastes CPU and storage. Requests with

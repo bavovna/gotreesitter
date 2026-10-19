@@ -1,5 +1,13 @@
 # Compact Go correctness and memory screen — 2026-10-19
 
+**Owned-invariant evidence correction (2026-10-19):** The extra invariant job
+using `GTS_LAYOUT_OWNED_PROBE` did not activate ownership in the root test
+process; that variable is read only by the private ledger tool. Treat that
+job as ordinary-mode coverage. Explicit owned C and RSS checks retain their
+scope. The [progress-capacity receipt](compact-progress-arena-projection-receipt-20261019.md)
+adds an explicitly activated, route-asserted 72-step owned session for its
+independent production candidate; it does not certify a private protocol source.
+
 This private candidate repairs all **39 failures** from the 300-case Go
 locked-C screen and passes the six original witnesses: **306/306 clean cases
 through compact, zero fallbacks**. It remains unpromoted. The qualified
