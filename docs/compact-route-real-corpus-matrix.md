@@ -16,6 +16,25 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Graph-link geometry: substantial storage target, prototype unqualified
+
+The [six-case retained-link census](benchmarks/20261019-link-metadata-census/README.md)
+uses runtime b513 without changing production source. The one-MiB Go witness
+contains **1,032,094 links**, of which **72.50%** carry zero score/order/flag
+metadata. A four-entry recent-key simulation needs **64,505** metadata records.
+A 16-byte dense record plus 24-byte metadata records estimates **33,027,008→
+18,061,624 live link bytes (−45.31%)**. Go query/grammargen estimates are
+**−43.82% / −41.93%**; owned-YAML estimates are about **−49.15%**.
+
+These are retained-graph geometry estimates. They omit capacity, rollback
+history, cache state, temporary buffers and allocator classes; **no allocation,
+RSS or throughput improvement is established**. The unqualified prototype
+preserves full-width graph identities, signed scores, ordering and all flags,
+with rollback/cache invalidation, memory accounting and shadow-copy coverage.
+Its focused compiler/tests are queued. No runtime, work pin, owner exception,
+route or graduation setting changes in this receipt.
+
+
 ### Stable YAML request window: rejected by the allocation ratchet
 
 The [six-file request-window screen](compact-yaml-stable-request-window-screen-20261019.md)
