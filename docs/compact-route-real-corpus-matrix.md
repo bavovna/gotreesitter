@@ -16,6 +16,33 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Stable YAML request window: rejected by the allocation ratchet
+
+The [six-file request-window screen](compact-yaml-stable-request-window-screen-20261019.md)
+preserves all **414 ledger rows**, four canonical trees/work vectors, **206 ×
+72-step** ordinary sessions, explicit owned YAML, **618 C checks**, the strict
+census, all **306 Go C outcomes / 300 routes**, large witnesses, memory/race/386
+and API/layout/R6/selector gates. All **126 RSS processes** pass, maximum
+**318.949 B/source byte**. Recovery pruning, rollback and namespace exhaustion
+also pass dedicated checks; the original race-selector typo and corrected
+replay remain available.
+
+All **480 shuffled rows** finish. Owned-YAML allocations stay **72 / 191**,
+with no timing improvement established. One-MiB Go allocation medians move
+**278→325 (+16.91%)**, failing the 10% ratchet; the high-variance distribution
+is inconclusive (**p=.930**), which does not waive that gate. Large-Go byte
+medians rise **2.16% (p=.109)**. YAML legacy R4 time rises **7.66% (p=.007)**;
+all other timings are inconclusive. **No runtime source is promoted.**
+
+Filtering the earlier b513 allocation profile puts **54.30% of sampled objects**
+under equivalent-state installation through request publication and shifts.
+No sampled allocation stack includes the removed election-compaction loop.
+These overlapping sampled shares are attribution, not a speed prediction.
+The next YAML target is those actual publication callers. The independent Go
+screen tests native 16-byte actions with direct field reads; it is not yet
+qualified and does not close E-A7. No pin, exception, route or graduation changes.
+
+
 ### Packed decoder follow-up: throughput unproven; direct consumers next
 
 The [six-file decoder follow-up](compact-packed-action-decoder-screen-20261019.md)
@@ -24,8 +51,8 @@ preserves eight-byte canonical actions and lossless exceptional values, but all
 Go full time moves **+1.77%**, query **+2.86%**, grammargen **+3.59%**, and
 one-MiB **+3.54%**; owned YAML moves **−2.79% / −0.60%**. No time/object median
 exceeds its ratchet. All directions remain in the receipt. **No runtime source
-is promoted**; the next Go target consumes encoded fields without building full
-Action values at common lookups.
+is promoted**. The next Go screen keeps direct field reads in native sixteen-
+byte Action values; encoded consumers remain an unqualified follow-up.
 
 All **414 ledger rows**, four canonical trees/work vectors, **206 × 72-step**
 ordinary sessions, explicit owned YAML, **618 C checks**, unchanged strict census,
@@ -42,7 +69,7 @@ Sampled allocation profiles include setup/calibration, and cumulative shares
 overlap. These are targets, not speedup predictions. A separate private stable-
 request-window proposal removes ordinary-election renumbering while retaining
 rollback, stale-reference checks and recovery compaction; it is not certified by
-this profile or by the decoder's gates.
+this profile or by the decoder's gates. Its completed rejection is recorded above.
 
 
 ### Packed action rows: smaller tables, Go throughput rejected
