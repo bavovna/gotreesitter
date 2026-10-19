@@ -54,9 +54,28 @@ history, cache state, temporary buffers and allocator classes; **no allocation,
 RSS or throughput improvement is established**. The unqualified prototype
 preserves full-width graph identities, signed scores, ordering and all flags,
 with rollback/cache invalidation, memory accounting and shadow-copy coverage.
-Its Core, scoped-race and 386 checks pass; combined qualification is running.
+Its combined correctness/counter gates pass; performance qualification is running.
 No runtime, work pin, owner exception, route or graduation setting changes
 in this receipt.
+
+
+### Version-state publication census: common node baselines stay inline
+
+The [six-case publication census](benchmarks/20261019-version-state-publication-census/README.md)
+counts newly created immutable wrappers on runtime b704. Their size is **64
+bytes**. Go query / grammargen create **113 / 1569** wrappers carrying a node
+baseline, and none carrying region/group metadata. Owned YAML R4 / 8 KiB /
+one-MiB create **37 / 140 / 19380** wrappers; **1 / 4 / 524** carry node
+baselines, and none carry region/group metadata. Large Go creates none at
+this publication site. All six compact parses complete with exact input pins,
+full root coverage and no errors.
+
+The independent twelve-file prototype keeps the full-width node baseline in
+a **32-byte** wrapper and moves only rare region/group fields into an optional
+immutable holder. Moving all recovery data out would add allocations on clean
+Go. Focused qualification is pending. These are constructor counts and layout
+targets, **not measured allocation, RSS or throughput wins**. No production
+source, counter pin, route, exception or graduation setting changes.
 
 
 ### Native 16-byte actions: safe, throughput win unproven
