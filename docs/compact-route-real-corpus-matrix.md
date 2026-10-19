@@ -16,6 +16,22 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Paired immutable snapshots: qualified allocation reduction
+
+The [paired-snapshot receipt](compact-scanner-snapshot-pairs-receipt-20261019.md)
+reduces owned-YAML R4 allocations **79→72 (−8.86%)** and 8 KiB allocations
+**218→191 (−12.39%)**. R4 bytes stay exact; 8 KiB bytes rise **1.28%**.
+All **440 timing rows** finish with no conclusive throughput difference and
+no time/object median above the ratchet. Ordinary routing stays unchanged.
+
+All **414 complete ledger rows**, six public full/edit rows and canonical Go
+work pins stay exact. The **206 × 72-step** sessions, explicit owned YAML,
+**618 C checks**, unchanged strict **120 / 39 / 45** census, memory contracts,
+races, native/386 regressions and API/layout/selector guards pass. All **126
+RSS processes** pass, maximum **329.136 B/source byte**; owned-YAML median RSS
+rises **3.93%**, within the ratchet. The pending Go correctness repair remains
+separate; no production pin, owner exception or graduation change follows.
+
 ### Immutable snapshot pages: allocation reduction, byte trade rejected
 
 The [five-file allocation screen](compact-scanner-snapshot-pages-screen-20261019.md)

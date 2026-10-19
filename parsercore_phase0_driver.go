@@ -2925,6 +2925,7 @@ type diagnosticParserCoreGenericScheduler struct {
 	versionLexerBeforeCheckpoint    core.CheckpointID
 	versionLexerRequests            []diagnosticParserCoreVersionLexerRequest
 	versionLexerMetadata            *core.FrozenValue[diagnosticParserCoreVersionLexerMetadata]
+	versionLexerSnapshotPages       core.ScannerSnapshotPages[diagnosticParserCoreVersionLexerSnapshot]
 	// versionLexerOwnershipActive marks the ragged election that switched this
 	// scheduler from its shared-token fast path to owned per-header cursors.
 	// versionLexerOwnershipActive keeps each live header on its own DFA and
@@ -4706,6 +4707,8 @@ func resetDiagnosticParserCoreGenericScheduler(scheduler *diagnosticParserCoreGe
 		return errors.New("parser-core phase zero: seed scheduler scratch is active")
 	}
 	clearDiagnosticParserCoreGenericSchedulerVersionState(scheduler)
+	snapshotPages := scheduler.versionLexerSnapshotPages
+	snapshotPages.Reset()
 	summaryHeaders := resetDiagnosticParserCoreRetainedSlice(scheduler.summaryHeaderScratch)
 	dispatchCells := resetDiagnosticParserCoreRetainedSlice(scheduler.dispatchScratch.cells)
 	noActionIndices := resetDiagnosticParserCoreRetainedSlice(scheduler.dispatchScratch.noActionIndices)
@@ -4737,9 +4740,10 @@ func resetDiagnosticParserCoreGenericScheduler(scheduler *diagnosticParserCoreGe
 	recoveryCostMemo := scheduler.recoveryCostMemo
 	recoveryCostMemo.Reset()
 	*scheduler = diagnosticParserCoreGenericScheduler{
-		reuseDependencies:    reuseDependencies,
-		recoveryCostMemo:     recoveryCostMemo,
-		summaryHeaderScratch: summaryHeaders,
+		versionLexerSnapshotPages: snapshotPages,
+		reuseDependencies:         reuseDependencies,
+		recoveryCostMemo:          recoveryCostMemo,
+		summaryHeaderScratch:      summaryHeaders,
 		dispatchScratch: diagnosticParserCoreDispatchScratch{
 			cells: dispatchCells, noActionIndices: noActionIndices,
 		},
@@ -5941,8 +5945,8 @@ func (s *diagnosticParserCoreGenericScheduler) newVersionLexerSnapshot(
 	if s == nil || s.compact == nil || s.tokenSource == nil || s.tokenSource.language == nil {
 		return nil, errors.New("parser-core phase zero: version lexer snapshot context is incomplete")
 	}
-	snapshot, err := newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
-		s.compact, s.tokenSource.language, owner, dfa, beforeID, afterID, s.versionLexerMetadata,
+	snapshot, err := newDiagnosticParserCoreVersionLexerSnapshotWithMetadataAndPages(
+		s.compact, s.tokenSource.language, owner, dfa, beforeID, afterID, s.versionLexerMetadata, &s.versionLexerSnapshotPages,
 	)
 	if err == nil {
 		s.versionLexerMetadata = snapshot.metadata
