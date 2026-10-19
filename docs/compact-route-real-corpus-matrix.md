@@ -16,6 +16,25 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Packed action rows: smaller tables, Go throughput rejected
+
+The [six-file packed-action screen](compact-packed-action-rows-screen-20261019.md)
+preserves all fields in eight-byte canonical / sixteen-byte exceptional entries,
+with unchanged row-header widths. All **414 complete ledger rows**, four canonical
+trees/work vectors, **206 × 72-step** ordinary sessions, explicit owned YAML,
+**618 C checks**, unchanged strict census, all **306 Go C statuses / 300 routes**,
+large Go/YAML witnesses, races, memory and API/layout/R6/selector guards pass.
+All **126 RSS processes** pass, maximum **296.914 B/source byte**.
+
+All **480 shuffled timing rows** complete. Go full DFA time rises **5.29%
+(p<.001)**, query_compile **4.17% (p=.028)** and grammargen_lr **5.61%
+(p=.008)**. Other timings are inconclusive; allocation-count medians stay exact.
+A separate retained-table probe reports **95424→77056 bytes**. The storage
+saving does not justify these throughput regressions: **the runtime stays
+private**. The follow-up targets decoding and full-Action stack copies.
+No production pin, route, exception or graduation changes.
+
+
 ### Compact graph nodes: qualified memory improvement
 
 The [24-byte graph-node receipt](compact-node24-lineage-precedence-receipt-20261019.md)
