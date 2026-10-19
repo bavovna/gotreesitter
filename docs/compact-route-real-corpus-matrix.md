@@ -16,6 +16,23 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Compact graph nodes: qualified memory improvement
+
+The [24-byte graph-node receipt](compact-node24-lineage-precedence-receipt-20261019.md)
+preserves full state/path/precedence widths, exact lineage sets and all **414
+complete ledger rows**. The one-MiB Go comparison reduces allocated bytes
+**579888608→528111072 (−8.93%, p<.001)**. Ordinary-YAML bytes fall **4.92% /
+5.42%**. All **480 benchmark rows** finish; every timing difference is
+inconclusive, and no time/object median exceeds its ratchet.
+
+All **206 × 72-step** ordinary sessions, explicit owned YAML, **618 C checks**,
+unchanged strict **120 / 39 / 45** census, all **306 Go C statuses / 300 routes**,
+large Go/YAML C witnesses, memory/pooling contracts, races, 386 and native
+guards pass. All **126 RSS processes** pass: median reductions are **7.13% Go /
+2.94% ordinary YAML / 6.11% owned YAML**, maximum **297.879 B/source byte**.
+The pending Go correctness repair remains separate. Routing, work pins,
+exceptions and graduation stay unchanged; no throughput improvement is claimed.
+
 ### Paired immutable snapshots: qualified allocation reduction
 
 The [paired-snapshot receipt](compact-scanner-snapshot-pairs-receipt-20261019.md)

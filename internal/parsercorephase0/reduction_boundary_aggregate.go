@@ -102,8 +102,8 @@ func (c *Core) aggregateReductionBoundary(
 			if !c.historicalCertificateAuthentication {
 				// Preserve the pre-D2 historical union and counter behavior.
 				if deadErr == nil {
-					incomparable := c.AlternativeSetIncomparable(historicalSet, dead.set)
-					unionChanged := c.alternativeSetUnion(&historicalSet, dead.set)
+					incomparable := c.AlternativeSetIncomparable(historicalSet, dead.alternativeSet())
+					unionChanged := c.alternativeSetUnion(&historicalSet, dead.alternativeSet())
 					wasBlended := historicalBlended
 					historicalBlended = historicalBlended || dead.isBlended() || incomparable
 					if unionChanged || historicalBlended != wasBlended {
@@ -140,9 +140,9 @@ func (c *Core) aggregateReductionBoundary(
 					if c.dropCohortAuthenticatedHistory != math.MaxUint64 {
 						c.dropCohortAuthenticatedHistory++
 					}
-					incomparable := c.AlternativeSetIncomparable(historicalSet, dead.set)
+					incomparable := c.AlternativeSetIncomparable(historicalSet, dead.alternativeSet())
 					historicalBlended = historicalBlended || dead.isBlended() || incomparable
-					c.alternativeSetUnion(&historicalSet, dead.set)
+					c.alternativeSetUnion(&historicalSet, dead.alternativeSet())
 					if _, refsErr := c.dropCohortRefUnion(&dropCohortRefs, deadRefs); refsErr != nil {
 						return refsErr
 					}

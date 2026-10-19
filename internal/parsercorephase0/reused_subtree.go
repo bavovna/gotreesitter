@@ -174,7 +174,7 @@ func (c *Core) validateReusedHead(head Head, poll func() error) error {
 }
 
 func reuseLineageClean(lineage nodeLineageView) bool {
-	return lineage.storedErrorCost == 0 && !lineage.isBlended() && !lineage.isConverged() && lineage.set.count == 0 && lineage.lineage == 0
+	return lineage.storedErrorCost == 0 && !lineage.isBlended() && !lineage.isConverged() && lineage.alternativeSet().count == 0 && lineage.lineage == 0
 }
 
 func (c *Core) invalidateReusedSubtreeProof(id SubtreeID) {

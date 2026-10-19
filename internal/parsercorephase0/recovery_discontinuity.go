@@ -50,7 +50,7 @@ func (c *Core) appendRecoveryDiscontinuityUncheckpointed(
 	predecessor Head,
 	context RecoveryDiscontinuityContext,
 ) (Head, error) {
-	previous, err := c.validateRecoveryDiscontinuityContext(predecessor, context)
+	_, err := c.validateRecoveryDiscontinuityContext(predecessor, context)
 	if err != nil {
 		return Head{}, err
 	}
@@ -59,7 +59,11 @@ func (c *Core) appendRecoveryDiscontinuityUncheckpointed(
 		return Head{}, err
 	}
 	link := linkRecord{prev: predecessor.Node, flags: linkFlagRecoveryDiscontinuity}
-	maximum := precedenceMaximumWitness{seed: previous.precedenceMax, hasSeed: true}
+	stored, err := c.storedNodePrecedence(predecessor.Node)
+	if err != nil {
+		return Head{}, err
+	}
+	maximum := precedenceMaximumWitness{seed: stored, hasSeed: true}
 	node, err := c.appendAdjacencyNodeAtWithPrecedenceAndStoredErrorCost(
 		context.ErrorState, context.ByteOffset, context.Checkpoint,
 		[]linkRecord{link}, maximum, previousLineage.storedErrorCost, true,

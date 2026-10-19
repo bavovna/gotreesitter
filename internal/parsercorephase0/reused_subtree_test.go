@@ -41,7 +41,7 @@ func TestReusedSubtreePublicationAndWidePrecedence(t *testing.T) {
 		if err != nil || len(paths) != 1 || paths[0].Score != int64(precedence) {
 			t.Fatalf("paths = %+v, %v", paths, err)
 		}
-		if c.nodes[out.Node-1].precedenceMax != int64(precedence) {
+		if storedNodeMaximumForTest(t, c, out.Node) != int64(precedence) {
 			t.Fatal("borrowed precedence was discarded as a leaf")
 		}
 		view, err := c.MaterializationView(payload)

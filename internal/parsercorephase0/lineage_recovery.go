@@ -10,7 +10,7 @@ type nodeLineageView struct {
 }
 
 func (v nodeLineageView) record() nodeLineageRecord {
-	return nodeLineageRecord{owner: v.owner, storedErrorCost: v.storedErrorCost, dropCohortRefIndex: v.dropCohortRefIndex, set: v.set, lineage: v.lineage, rank: v.rank, converged: v.isConverged(), blended: v.isBlended()}
+	return nodeLineageRecord{owner: v.owner, storedErrorCost: v.storedErrorCost, dropCohortRefIndex: v.dropCohortRefIndex, set: v.alternativeSet(), lineage: v.lineage, rank: v.rank, converged: v.isConverged(), blended: v.isBlended()}
 }
 func (c *Core) nodeLineageRecoveryAt(id NodeID) nodeLineageRecovery {
 	if uint64(id)-1 >= uint64(len(c.nodeLineageRecovery)) {
@@ -49,7 +49,8 @@ func (c *Core) publishNodeLineage(id NodeID, value nodeLineageRecord) error {
 	if uint64(id)-1 >= uint64(len(c.nodeLineages)) {
 		return errInvalidNodeLineage
 	}
-	hot := nodeLineageHot{owner: value.owner, set: value.set, lineage: value.lineage, rank: value.rank}
+	hot := nodeLineageHot{owner: value.owner, lineage: value.lineage, rank: value.rank, precedenceInline: c.nodeLineages[id-1].precedenceInline}
+	hot.setAlternativeSet(value.set)
 	hot.setConverged(value.converged)
 	hot.setBlended(value.blended)
 	c.nodeLineages[id-1] = hot
@@ -75,4 +76,14 @@ func (n *nodeLineageHot) setBlended(value bool) {
 	if value {
 		n.flags |= nodeLineageBlended
 	}
+}
+
+// The flattened fields reuse AlternativeSet's two padding bytes for immutable
+// precedence without increasing the 16-byte hot lineage record. Conversions
+// keep set operations independent of that node property.
+func (n *nodeLineageHot) alternativeSet() AlternativeSet {
+	return AlternativeSet{inline: [alternativeSetInlineCapacity]uint32{n.setWord}, count: n.setCount, flags: n.setFlags}
+}
+func (n *nodeLineageHot) setAlternativeSet(value AlternativeSet) {
+	n.setWord, n.setCount, n.setFlags = value.inline[0], value.count, value.flags
 }

@@ -788,11 +788,15 @@ func (c *Core) RecoveryGraphAggregateForHead(
 	if !aggregateOK || !aggregate.valid {
 		return result, false, errors.New("parser-core phase zero: recovery graph aggregate head is unreachable")
 	}
+	stored, err := c.nodePrecedenceMaximum(head.Node)
+	if err != nil {
+		return result, false, err
+	}
 	result = RecoveryGraphAggregate{
 		MaximumVisibleCount:     aggregate.maximumVisible,
 		MinimumErrorCost:        aggregate.minimumCost,
 		MaximumErrorCost:        aggregate.maximumCost,
-		StoredPrecedenceMaximum: c.nodes[head.Node-1].precedenceMax,
+		StoredPrecedenceMaximum: stored.value,
 		PathCount:               aggregate.pathCount,
 	}
 	return result, aggregate.supported, nil

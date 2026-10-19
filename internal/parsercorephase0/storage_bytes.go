@@ -61,6 +61,7 @@ func (c *Core) StorageBytes() uint64 {
 		return 0
 	}
 	return uint64(len(c.nodes))*coreNodeRecordBytes +
+		uint64(len(c.nodePrecedenceWide))*coreInt64Bytes +
 		uint64(len(c.nodeLineageRefSets))*coreNodeLineageRefSetBytes +
 		uint64(len(c.links))*coreLinkRecordBytes +
 		uint64(len(c.dropCohortLinkRefIndexes))*coreUint32Bytes +
@@ -162,6 +163,7 @@ func (c *Core) FootprintBytes() uint64 {
 		return 0
 	}
 	total := uint64(cap(c.nodes))*coreNodeRecordBytes +
+		uint64(cap(c.nodePrecedenceWide))*coreInt64Bytes +
 		uint64(cap(c.links))*coreLinkRecordBytes +
 		uint64(cap(c.subtrees))*coreSubtreeRecordBytes +
 		uint64(cap(c.recoveryVisibleCounts))*coreRecoveryVisibleCountBytes +
@@ -365,6 +367,7 @@ func (c *Core) releaseRecordArenaReserve() {
 		return
 	}
 	c.nodes = nil
+	c.nodePrecedenceWide = nil
 	c.nodeLineages = nil
 	c.nodeLineageRecovery = nil
 	c.nodeLineageRefSets = nil
@@ -403,6 +406,7 @@ func (c *Core) releaseOversizedRetention() {
 		return
 	}
 	c.nodes = nil
+	c.nodePrecedenceWide = nil
 	c.nodeLineages = nil
 	c.nodeLineageRecovery = nil
 	c.nodeLineageRefSets = nil

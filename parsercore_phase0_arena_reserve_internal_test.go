@@ -23,6 +23,7 @@ func TestCompactIncrementalDoesNotReserveFullSource(t *testing.T) {
 	source := []byte("package p\n" + strings.Repeat("func f() {}\n", 16000))
 	stop := errors.New("reservation probe complete")
 	var footprints [2]uint64
+	var plannedFreshReserve uint64
 	for index, incremental := range []bool{false, true} {
 		if err := runner.compact.ResetReleasingRetention(); err != nil {
 			t.Fatal(err)
@@ -32,6 +33,10 @@ func TestCompactIncrementalDoesNotReserveFullSource(t *testing.T) {
 		}
 		observer := diagnosticParserCoreSeedObserver{beforeElection: func(s *diagnosticParserCoreGenericScheduler) error {
 			footprints[index] = s.compact.FootprintBytes()
+			if !incremental {
+				prefix, _ := core.RecordArenaReservePlan(len(source))
+				plannedFreshReserve = s.compact.ReserveRecordArenaBytes(prefix, compactArenaReserveBytes(s.options.stopControlMemoryBudgetBytes, s.options.stopControlHardCeilingBytes))
+			}
 			return stop
 		}}
 		_, tokens, err := runner.executeSchedulerOpenWithObserverAndErrorRuns(source, runner.compact, true, observer, false)
@@ -42,8 +47,10 @@ func TestCompactIncrementalDoesNotReserveFullSource(t *testing.T) {
 			t.Fatalf("incremental=%t footprint=%d err=%v", incremental, footprints[index], err)
 		}
 	}
-	if footprints[0] < 1<<20 || footprints[1] >= footprints[0]/4 {
-		t.Fatalf("initial arena footprints: fresh=%d incremental=%d", footprints[0], footprints[1])
+	// Check the planned reserve rather than a fixed byte floor: smaller
+	// record layouts may legitimately take the fresh reserve below one MiB.
+	if plannedFreshReserve == 0 || footprints[0] < plannedFreshReserve || footprints[1] >= plannedFreshReserve/4 {
+		t.Fatalf("initial arena footprints: planned=%d fresh=%d incremental=%d", plannedFreshReserve, footprints[0], footprints[1])
 	}
 }
 

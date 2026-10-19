@@ -144,7 +144,7 @@ func (c *Core) recordNodeLineage(head Head, rank CleanPathRankSelection, lineage
 	if len(c.transactions) != 0 {
 		c.nodeLineageJournal = append(c.nodeLineageJournal, nodeLineageMutation{
 			node: head.Node, owner: node.owner, dropCohortRefIndex: c.nodeLineageRecoveryAt(head.Node).dropCohortRefIndex,
-			setCount: node.set.count, setFlags: node.set.flags, setWord: node.set.inline[0],
+			setCount: node.alternativeSet().count, setFlags: node.alternativeSet().flags, setWord: node.alternativeSet().inline[0],
 			lineage: node.lineage, rank: node.rank, converged: node.isConverged(), blended: node.isBlended(),
 			storedErrorCost: c.nodeLineageRecoveryAt(head.Node).storedErrorCost,
 		})
@@ -184,7 +184,7 @@ func (c *Core) recordHeadOwner(head Head, lineage uint32) error {
 	if len(c.transactions) != 0 {
 		c.nodeLineageJournal = append(c.nodeLineageJournal, nodeLineageMutation{
 			node: head.Node, owner: node.owner, dropCohortRefIndex: c.nodeLineageRecoveryAt(head.Node).dropCohortRefIndex,
-			setCount: node.set.count, setFlags: node.set.flags, setWord: node.set.inline[0],
+			setCount: node.alternativeSet().count, setFlags: node.alternativeSet().flags, setWord: node.alternativeSet().inline[0],
 			lineage: node.lineage, rank: node.rank, converged: node.isConverged(), blended: node.isBlended(),
 			storedErrorCost: c.nodeLineageRecoveryAt(head.Node).storedErrorCost,
 		})
@@ -221,7 +221,7 @@ func (c *Core) recordNodeStoredErrorCost(head Head, cost uint32) error {
 	if len(c.transactions) != 0 {
 		c.nodeLineageJournal = append(c.nodeLineageJournal, nodeLineageMutation{
 			node: head.Node, owner: node.owner, dropCohortRefIndex: c.nodeLineageRecoveryAt(head.Node).dropCohortRefIndex,
-			setCount: node.set.count, setFlags: node.set.flags, setWord: node.set.inline[0],
+			setCount: node.alternativeSet().count, setFlags: node.alternativeSet().flags, setWord: node.alternativeSet().inline[0],
 			lineage: node.lineage, rank: node.rank, converged: node.isConverged(), blended: node.isBlended(),
 			storedErrorCost: c.nodeLineageRecoveryAt(head.Node).storedErrorCost,
 		})
@@ -258,10 +258,12 @@ func (c *Core) recordNodeLineageSet(head Head, set AlternativeSet, setBlended bo
 	if err != nil {
 		return err
 	}
-	before := node.set
+	before := node.alternativeSet()
 	beforeBlended := node.isBlended()
 	incomparable := c.AlternativeSetIncomparable(before, set)
-	setChanged := c.alternativeSetUnion(&node.set, set)
+	updated := before
+	setChanged := c.alternativeSetUnion(&updated, set)
+	node.setAlternativeSet(updated)
 	nextBlended := beforeBlended || setBlended || incomparable
 	if !setChanged && nextBlended == beforeBlended {
 		return nil
@@ -314,7 +316,7 @@ func (c *Core) recordNodeLineageRefs(head Head, refs DropCohortRefSet) error {
 	if len(c.transactions) != 0 {
 		c.nodeLineageJournal = append(c.nodeLineageJournal, nodeLineageMutation{
 			node: head.Node, owner: node.owner, dropCohortRefIndex: c.nodeLineageRecoveryAt(head.Node).dropCohortRefIndex,
-			setCount: node.set.count, setFlags: node.set.flags, setWord: node.set.inline[0],
+			setCount: node.alternativeSet().count, setFlags: node.alternativeSet().flags, setWord: node.alternativeSet().inline[0],
 			lineage: node.lineage, rank: node.rank, converged: node.isConverged(), blended: node.isBlended(),
 			storedErrorCost: c.nodeLineageRecoveryAt(head.Node).storedErrorCost,
 		})
@@ -340,8 +342,11 @@ func (c *Core) recordNodeLineageMember(head Head, event, branch uint16) error {
 	if err != nil {
 		return err
 	}
-	before := node.set
-	if !c.alternativeSetInsert(&node.set, packAlternativeSetMember(event, branch)) {
+	before := node.alternativeSet()
+	updated := before
+	changed := c.alternativeSetInsert(&updated, packAlternativeSetMember(event, branch))
+	node.setAlternativeSet(updated)
+	if !changed {
 		return nil
 	}
 	c.invalidateReusedLineageProof(head.Node)
@@ -927,9 +932,9 @@ func (c *Core) mergeNodeLineageMetadata(leftID, rightID, targetID NodeID) error 
 			return err
 		}
 	}
-	merged.set = left.set
-	merged.blended = left.isBlended() || right.isBlended() || c.AlternativeSetIncomparable(left.set, right.set)
-	c.alternativeSetUnion(&merged.set, right.set)
+	merged.set = left.alternativeSet()
+	merged.blended = left.isBlended() || right.isBlended() || c.AlternativeSetIncomparable(left.alternativeSet(), right.alternativeSet())
+	c.alternativeSetUnion(&merged.set, right.alternativeSet())
 	merged.rank, merged.lineage = mergeNodeLineageScalars(
 		left.rank, left.lineage, right.rank, right.lineage,
 	)

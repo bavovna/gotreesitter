@@ -455,12 +455,11 @@ type BoundaryIndexStats struct {
 }
 
 type nodeRecord struct {
-	state         StateID
-	byteOffset    uint32
-	firstLink     uint32
-	linkCount     uint32
-	pathCount     uint64
-	precedenceMax int64
+	state      StateID
+	byteOffset uint32
+	firstLink  uint32
+	linkCount  uint32
+	pathCount  uint64
 }
 
 // precedenceCandidate is a computed precedence value. It carries no
@@ -513,11 +512,14 @@ type nodeLineageRecord struct {
 }
 
 type nodeLineageHot struct {
-	owner   uint32
-	set     AlternativeSet
-	lineage uint16
-	rank    CleanPathRankSelection
-	flags   uint8
+	owner            uint32
+	setWord          uint32
+	lineage          uint16
+	precedenceInline int16
+	setCount         uint8
+	setFlags         uint8
+	rank             CleanPathRankSelection
+	flags            uint8
 }
 
 type nodeLineageRecovery struct {
@@ -772,11 +774,12 @@ func (l linkRecord) validateUncommonShape() error {
 }
 
 func (c *Core) nodePrecedenceMaximum(id NodeID) (precedenceCandidate, error) {
-	node, err := c.node(id)
+	_, err := c.node(id)
 	if err != nil {
 		return precedenceCandidate{}, err
 	}
-	return precedenceCandidate{value: node.precedenceMax}, nil
+	value, err := c.storedNodePrecedence(id)
+	return precedenceCandidate{value: value}, err
 }
 
 func (c *Core) linkPrecedenceMaximum(link linkRecord) (precedenceCandidate, error) {
@@ -1300,6 +1303,7 @@ type Core struct {
 	limits              Limits
 	diagnostics         diagnosticOptions
 	nodes               []nodeRecord
+	nodePrecedenceWide  []int64
 	nodeLineages        []nodeLineageHot
 	nodeLineageRecovery []nodeLineageRecovery
 	nodeLineageRefSets  []DropCohortRefSet
@@ -1522,6 +1526,7 @@ type diagnosticOptions struct {
 }
 
 type checkpoint struct {
+	nodePrecedenceWide                                                        int
 	nodeLineageRecovery                                                       int
 	nodeLineageRefSets                                                        []DropCohortRefSet
 	nodes, nodeLineages, nodeCheckpoints, links, subtrees, externalProvenance int
@@ -1645,7 +1650,8 @@ func (c *Core) markInto(mark *checkpoint) {
 	}
 	c.nextTransaction++
 	*mark = checkpoint{
-		nodes: len(c.nodes), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
+		nodePrecedenceWide: len(c.nodePrecedenceWide),
+		nodes:              len(c.nodes), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
 		nodeLineageRefSets: c.nodeLineageRefSets,
 		links:              len(c.links), subtrees: len(c.subtrees),
 		nodeCheckpoints:                 len(c.nodeCheckpoints),
@@ -1760,6 +1766,7 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 	}
 	c.classificationPhase++
 	c.nodes = c.nodes[:mark.nodes]
+	c.nodePrecedenceWide = c.nodePrecedenceWide[:mark.nodePrecedenceWide]
 	c.nodeLineages = c.nodeLineages[:mark.nodeLineages]
 	c.nodeLineageRefSets = mark.nodeLineageRefSets
 	c.nodeLineageRecovery = c.nodeLineageRecovery[:mark.nodeLineageRecovery]
@@ -1803,9 +1810,9 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 		}
 		c.nodeLineages[nodeIndex].owner = mutation.owner
 		c.writeNodeLineageRecovery(mutation.node, nodeLineageRecovery{storedErrorCost: mutation.storedErrorCost, dropCohortRefIndex: mutation.dropCohortRefIndex})
-		c.nodeLineages[nodeIndex].set.count = mutation.setCount
-		c.nodeLineages[nodeIndex].set.flags = mutation.setFlags
-		c.nodeLineages[nodeIndex].set.inline[0] = mutation.setWord
+		c.nodeLineages[nodeIndex].setCount = mutation.setCount
+		c.nodeLineages[nodeIndex].setFlags = mutation.setFlags
+		c.nodeLineages[nodeIndex].setWord = mutation.setWord
 		c.nodeLineages[nodeIndex].lineage = mutation.lineage
 		c.nodeLineages[nodeIndex].rank = mutation.rank
 		c.nodeLineages[nodeIndex].setConverged(mutation.converged)
@@ -2384,6 +2391,7 @@ func (c *Core) Reset() error {
 		return err
 	}
 	c.nodes = c.nodes[:0]
+	c.nodePrecedenceWide = c.nodePrecedenceWide[:0]
 	c.nodeLineages = c.nodeLineages[:0]
 	c.nodeLineageRecovery = c.nodeLineageRecovery[:0]
 	c.nodeLineageRefSets = c.nodeLineageRefSets[:0]
@@ -4077,7 +4085,11 @@ func (c *Core) condenseDirectAppend(key boundaryKey, probe boundaryProbe, prev *
 	if err != nil {
 		return condenseOutcome{}, err
 	}
-	maximumValue, err := checkedAddScore(prev.precedenceMax, contribution)
+	previousMaximum, err := c.storedNodePrecedence(in.prev)
+	if err != nil {
+		return condenseOutcome{}, err
+	}
+	maximumValue, err := checkedAddScore(previousMaximum, contribution)
 	if err != nil {
 		return condenseOutcome{}, errors.New("parser-core phase zero: precedence maximum overflow")
 	}
@@ -6721,24 +6733,22 @@ func (c *Core) appendNode(r nodeRecord) (NodeID, error) {
 }
 
 func (c *Core) appendNodeAt(r nodeRecord, checkpoint CheckpointID) (NodeID, error) {
-	if r.linkCount == 0 {
-		r.precedenceMax = 0
-	} else {
+	var stored int64
+	if r.linkCount != 0 {
 		maximum, err := c.computePrecedenceMaximumFromNode(r, precedenceMaximumWitness{})
 		if err != nil {
 			return 0, err
 		}
-		r.precedenceMax = maximum.value
+		stored = maximum.value
 	}
-	return c.appendNodeRecord(r, checkpoint)
+	return c.appendNodeRecord(r, checkpoint, stored)
 }
 
 func (c *Core) appendNodeAtWithMaximum(r nodeRecord, checkpoint CheckpointID, maximum int64) (NodeID, error) {
-	r.precedenceMax = maximum
-	return c.appendNodeRecord(r, checkpoint)
+	return c.appendNodeRecord(r, checkpoint, maximum)
 }
 
-func (c *Core) appendNodeRecord(r nodeRecord, checkpoint CheckpointID) (NodeID, error) {
+func (c *Core) appendNodeRecord(r nodeRecord, checkpoint CheckpointID, maximum int64) (NodeID, error) {
 	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
 		return 0, errors.New("parser-core phase zero: node arena cap")
 	}
@@ -6751,8 +6761,12 @@ func (c *Core) appendNodeRecord(r nodeRecord, checkpoint CheckpointID) (NodeID, 
 	if err := c.validatePublishedNodeDAGAt(r, next, checkpoint); err != nil {
 		return 0, err
 	}
+	inline := inlineNodePrecedence(maximum)
 	c.nodes = append(c.nodes, r)
-	c.nodeLineages = append(c.nodeLineages, nodeLineageHot{})
+	c.nodeLineages = append(c.nodeLineages, nodeLineageHot{precedenceInline: inline})
+	if inline == wideNodePrecedence {
+		c.storeWideNodePrecedence(next, maximum)
+	}
 	if !c.externalPayloadsQuiescent {
 		c.nodeCheckpoints = append(c.nodeCheckpoints, checkpoint)
 	}
@@ -6966,7 +6980,7 @@ func (c *Core) NodeLineageAlternativeSet(id NodeID) (AlternativeSet, error) {
 	if err != nil {
 		return AlternativeSet{}, err
 	}
-	return record.set, nil
+	return record.alternativeSet(), nil
 }
 
 // AlternativeSetMembers resolves set's sorted member slice, reading through

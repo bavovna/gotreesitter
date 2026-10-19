@@ -64,11 +64,11 @@ func newRuleTableFixture(t *testing.T) ruleTableFixture {
 
 func (f ruleTableFixture) nodeMaximum(t *testing.T, id NodeID) int64 {
 	t.Helper()
-	record, err := f.core.node(id)
+	record, err := f.core.nodePrecedenceMaximum(id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return record.precedenceMax
+	return record.value
 }
 
 // storedBelowLinkMaximum builds the rule-1 gadget: a node whose stored

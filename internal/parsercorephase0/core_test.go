@@ -2720,8 +2720,8 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 	if got := unsafe.Sizeof(materializationPostorderFrame{}); got != 24 {
 		t.Fatalf("materializationPostorderFrame size = %d, want 24", got)
 	}
-	if got := unsafe.Sizeof(nodeRecord{}); got != 32 {
-		t.Fatalf("nodeRecord size = %d, want 32", got)
+	if got := unsafe.Sizeof(nodeRecord{}); got != 24 {
+		t.Fatalf("nodeRecord size = %d, want 24", got)
 	}
 	// Store optional reference sets separately; every graph node pays this
 	// record width, even when no certificates are recorded.

@@ -49,7 +49,7 @@ func TestAlternativeSetTaggedWordNestedRollback(t *testing.T) {
 	if !errors.Is(err, stop) || c.nodeLineages[h.Node-1] != old {
 		t.Fatalf("nested spill commit/outer rollback changed exact lineage: err=%v got=%+v want=%+v", err, c.nodeLineages[h.Node-1], old)
 	}
-	if got, ok := c.AlternativeSetMembers(c.nodeLineages[h.Node-1].set); !ok || !slices.Equal(got, []uint32{packAlternativeSetMember(9, 0)}) {
+	if got, ok := c.AlternativeSetMembers(c.nodeLineages[h.Node-1].alternativeSet()); !ok || !slices.Equal(got, []uint32{packAlternativeSetMember(9, 0)}) {
 		t.Fatal("rollback restored spill offset as member")
 	}
 }
