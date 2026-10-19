@@ -16,6 +16,21 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Ordinary YAML streamed ownership: smaller output, timing rejected
+
+The [latest private screen](compact-yaml-streamed-prefix-screen-20261019.md)
+completes ordinary YAML on compact through both 524-document C witnesses.
+Fifty work/reuse comparisons pass; public constructions fall **288→232** on
+R4 and **1156→925** on 8 KiB, with whole-request peaks unchanged at **2→2**.
+Both 72-step YAML sessions and metadata/memory checks pass.
+
+All **440 timing rows** finish, but ordinary time rises **16.66% / 42.63%** and
+allocation counts rise **37→43 / 34→83**. Go full time rises **10.81%**, above
+the median ratchet despite p=.134. Owned timings are inconclusive. The thirteen-
+file source remains private; no pin, routing or graduation change follows.
+The allocation profile instead identifies immutable scanner snapshots as the
+next target (**75.32% of allocated bytes**); this share is not a speed estimate.
+
 ### Go correctness repair: memory gates pass; R3 owner review ready
 
 The [counter-exception review](compact-go-correctness-counter-review-20261019.md)
