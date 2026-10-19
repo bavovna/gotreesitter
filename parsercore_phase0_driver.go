@@ -5855,11 +5855,18 @@ func (s *diagnosticParserCoreGenericScheduler) installEquivalentVersionLexerStat
 	recoveryGroup := header.recoveryGroupIdentity()
 	missingGroup := header.recoveryMissingGroupIdentity()
 	baseline, baselineSet := header.recoveryNodeBaseline()
+	// Intern exactly the acceptance identity publishVersionState would keep.
+	// A closed recovery region can retain a group after both live keys clear.
+	acceptanceGroup := recoveredRootGroupOf(*header)
+	if recoveryGroup != 0 || missingGroup != 0 {
+		acceptanceGroup = recoveredRootGroup{recovery: recoveryGroup, missing: missingGroup}
+	}
 	matches := func(state *diagnosticParserCoreVersionState) bool {
 		return state != nil && state.s3Region == region &&
 			diagnosticParserCoreVersionLexerSnapshotEqual(state.relexSnapshot, snapshot) &&
 			state.lexerRequest == requestReference && state.recoveryGroup == recoveryGroup &&
-			state.missingGroup == missingGroup && state.recoveryNodeBaseline == baseline &&
+			state.missingGroup == missingGroup && state.acceptanceGroup == acceptanceGroup &&
+			state.recoveryNodeBaseline == baseline &&
 			state.recoveryNodeBaselineSet == baselineSet
 	}
 	for index := range s.headers {

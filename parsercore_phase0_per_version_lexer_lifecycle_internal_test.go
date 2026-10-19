@@ -4,6 +4,7 @@ package gotreesitter
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -892,5 +893,43 @@ func TestDiagnosticParserCoreOwnedLexerBindingRejectsUnknownCheckpointsAtomicall
 		if !exact || start != known || end != known {
 			t.Fatalf("scanner phase changed: %d/%d/%t", start, end, exact)
 		}
+	}
+}
+
+func TestVersionLexerInterningPreservesClosedAcceptanceGroup(t *testing.T) {
+	for _, want := range []recoveredRootGroup{{recovery: 17}, {missing: 19}, {recovery: 17, missing: 19}, {}} {
+		t.Run(fmt.Sprintf("recovery=%d/missing=%d", want.recovery, want.missing), func(t *testing.T) {
+			other := recoveredRootGroup{recovery: 31, missing: 37}
+			prior := &diagnosticParserCoreVersionState{acceptanceGroup: want}
+			header := diagnosticParserCoreHeader{versionState: prior}
+			scheduler := &diagnosticParserCoreGenericScheduler{headers: []diagnosticParserCoreHeader{{versionState: &diagnosticParserCoreVersionState{acceptanceGroup: other}}}}
+			if err := scheduler.installEquivalentVersionLexerState(&header, nil, 0, nil); err != nil {
+				t.Fatal(err)
+			}
+			if got := recoveredRootGroupOf(header); got != want {
+				t.Fatalf("interning changed closed acceptance group: got %+v want %+v", got, want)
+			}
+			if prior.acceptanceGroup != want || recoveredRootGroupOf(scheduler.headers[0]) != other {
+				t.Fatal("publication mutated an immutable sibling")
+			}
+		})
+	}
+}
+
+func TestVersionLexerOwnershipPreservesEffectiveAcceptanceGroup(t *testing.T) {
+	scheduler := &diagnosticParserCoreGenericScheduler{}
+	left := &diagnosticParserCoreVersionState{acceptanceGroup: recoveredRootGroup{recovery: 17}}
+	right := &diagnosticParserCoreVersionState{acceptanceGroup: recoveredRootGroup{missing: 19}}
+	if scheduler.versionLexerStateEqual(left, right) {
+		t.Fatal("distinct closed recovery elections became one lexer owner")
+	}
+	right.acceptanceGroup = left.acceptanceGroup
+	if !scheduler.versionLexerStateEqual(left, right) {
+		t.Fatal("equal closed recovery elections became different owners")
+	}
+	left.recoveryGroup, right.recoveryGroup = 17, 17
+	right.acceptanceGroup = recoveredRootGroup{}
+	if !scheduler.versionLexerStateEqual(left, right) {
+		t.Fatal("equivalent active fallback identity became a different owner")
 	}
 }

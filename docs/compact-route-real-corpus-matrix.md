@@ -16,6 +16,29 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Closed acceptance-group identity: qualified correctness repair
+
+The [three-file identity repair](compact-acceptance-group-identity-receipt-20261019.md)
+preserves retained recovery-election groups during immutable interning and
+lexer-owner equality. Both new regressions fail before and pass after,
+including race and 386 coverage. All **414 complete ledger rows**, four canonical
+trees/work vectors, **206 × 72-step** ordinary sessions, explicit owned YAML,
+**618 C checks**, unchanged strict census, **306 Go C outcomes / 300 routes**,
+large witnesses, memory/race and API/layout/R6/selector gates pass.
+
+All **480 shuffled rows** finish, all twelve timings are inconclusive and all
+object medians stay exact; no time/object median fails its ratchet. Directional
+movements include Go grammargen **+6.88%**, owned YAML R4 **+7.68%** and ordinary
+YAML 8 KiB **+7.52%**; no speedup is claimed. All **126 RSS processes** pass,
+maximum **297.914 B/source byte**. All 3518 Go source hashes match the qualified
+candidate. No pin, exception, route or graduation changes.
+
+The corrected malformed-YAML oracle retains **417/723 passing checks** on both
+revisions, the same 306 failures and exact public vectors. The initial
+clean-helper error and its replay remain available. This repair proves internal
+identity preservation; remaining public C mismatches stay open.
+
+
 ### Graph-link geometry: substantial storage target, prototype unqualified
 
 The [six-case retained-link census](benchmarks/20261019-link-metadata-census/README.md)

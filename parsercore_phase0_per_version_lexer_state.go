@@ -184,6 +184,13 @@ func (s *diagnosticParserCoreGenericScheduler) versionLexerStateEqual(
 		left.recoveryNodeBaselineSet != right.recoveryNodeBaselineSet {
 		return false
 	}
+	// A closed acceptance group still controls the final recovery election.
+	// Keep effective group identity even after the live recovery keys clear.
+	if left.acceptanceGroup != right.acceptanceGroup &&
+		recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: left}) !=
+			recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: right}) {
+		return false
+	}
 	if left.lexerRequest == 0 || right.lexerRequest == 0 {
 		return left.lexerRequest == right.lexerRequest
 	}
