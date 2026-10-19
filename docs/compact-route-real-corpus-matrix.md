@@ -16,6 +16,35 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Packed decoder follow-up: throughput unproven; direct consumers next
+
+The [six-file decoder follow-up](compact-packed-action-decoder-screen-20261019.md)
+preserves eight-byte canonical actions and lossless exceptional values, but all
+**twelve timing differences are inconclusive** across **480 shuffled rows**.
+Go full time moves **+1.77%**, query **+2.86%**, grammargen **+3.59%**, and
+one-MiB **+3.54%**; owned YAML moves **−2.79% / −0.60%**. No time/object median
+exceeds its ratchet. All directions remain in the receipt. **No runtime source
+is promoted**; the next Go target consumes encoded fields without building full
+Action values at common lookups.
+
+All **414 ledger rows**, four canonical trees/work vectors, **206 × 72-step**
+ordinary sessions, explicit owned YAML, **618 C checks**, unchanged strict census,
+all **306 Go C outcomes / 300 routes**, large Go/YAML witnesses, memory/race/386
+and API/layout/R6/selector gates pass. All **126 RSS processes** pass, maximum
+**295.695 B/source byte**; ratios **0.994932 Go / 0.967289 ordinary YAML /
+0.968543 owned YAML**. No pin, exception, route or graduation changes.
+
+The [fresh owned-YAML attribution](benchmarks/20261019-yaml-owned-attribution/README.md)
+uses runtime b513 on the 8012-byte witness with exact routes and work. Header
+publication accounts for **63.35% of sampled allocation objects**; snapshot
+validation has **8.61% cumulative CPU**, and acceptance materialization **13.52%**.
+Sampled allocation profiles include setup/calibration, and cumulative shares
+overlap. These are targets, not speedup predictions. A separate private stable-
+request-window proposal removes ordinary-election renumbering while retaining
+rollback, stale-reference checks and recovery compaction; it is not certified by
+this profile or by the decoder's gates.
+
+
 ### Packed action rows: smaller tables, Go throughput rejected
 
 The [six-file packed-action screen](compact-packed-action-rows-screen-20261019.md)
