@@ -16,6 +16,30 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Go correctness protocol: broad C screen passes; RSS still rejects promotion
+
+The [combined correctness/memory screen](compact-go-correctness-memory-screen-20261019.md)
+repairs all **39 / 300** expanded Go C failures and passes all **306 clean C
+cases through compact**, 144 generic edit steps, **206 × 72-step invariants**,
+**618 smoke-C checks**, the unchanged **120 / 39 / 45** strict census, races,
+memory contracts and large-file C checks. Four canonical deep digests and
+all 414 numeric fixture-ledger rows are unchanged. One C decline location
+changes. **65 canonical work fields increase; 12 decrease.** Every old/new
+value is retained; no owner exception is approved or requested here.
+
+The flat origin-receipt store fails two Go RSS probes at **400.43 / 401.72
+B/source B**. Paged storage removes **13,651,080 allocated bytes** on the
+same one-MiB Go witness with complete work vectors unchanged. Its narrowed
+42-probe Go screen passes (max **384.25**, median ratio **0.97693**), but
+its complete 126-probe run still fails one Go sample at **404.16**. Median
+ratios are Go **1.07590**, ordinary YAML **1.00221**, owned YAML **0.99459**.
+The hard ceiling overrides the passing median ratchet. All failed probes
+remain included. No timing claim transfers to the final paged candidate.
+
+Both private sources remain unpromoted. The qualified runtime remains the
+read-history guard `5c463e56` below. The next step is to reduce the large-Go
+memory peak; routing, allowlists, YAML ownership and graduation are unchanged.
+
 ### Qualified no-replay demand: canonical Go work without unused history
 
 The [read-history demand receipt](compact-read-history-demand-receipt-20261019.md)
