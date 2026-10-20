@@ -127,7 +127,7 @@ func TestPrecedenceRuleTableDuplicateMergeKeepsStoredValue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	nodesBefore := len(f.core.nodes)
+	nodesBefore := f.core.nodes.Len()
 	folded := precedenceMaximumWitness{}
 	merged, changed, err := f.core.mergePredecessorsBounded(gadget, duplicate, 0, &folded)
 	if err != nil {
@@ -136,7 +136,7 @@ func TestPrecedenceRuleTableDuplicateMergeKeepsStoredValue(t *testing.T) {
 	if changed || merged != gadget {
 		t.Fatalf("duplicate merge changed=%v merged=%d, want unchanged incumbent %d", changed, merged, gadget)
 	}
-	if nodesAfter := len(f.core.nodes); nodesAfter != nodesBefore {
+	if nodesAfter := f.core.nodes.Len(); nodesAfter != nodesBefore {
 		t.Fatalf("duplicate merge published %d new nodes, want zero", nodesAfter-nodesBefore)
 	}
 	if got := f.nodeMaximum(t, gadget); got != 3 {

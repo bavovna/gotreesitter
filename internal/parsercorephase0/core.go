@@ -1315,7 +1315,7 @@ type Core struct {
 	selectedPolicy         *SelectedStorePolicy
 	limits                 Limits
 	diagnostics            diagnosticOptions
-	nodes                  []nodeRecord
+	nodes                  nodeRecordBlocks
 	nodePathCountsWide     []nodePathCountRecord
 	nodePrecedenceWide     []int64
 	nodePrecedenceWideBase NodeID
@@ -1668,7 +1668,7 @@ func (c *Core) markInto(mark *checkpoint) {
 	*mark = checkpoint{
 		nodePrecedenceWide:     len(c.nodePrecedenceWide),
 		nodePrecedenceWideBase: c.nodePrecedenceWideBase,
-		nodes:                  len(c.nodes), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
+		nodes:                  c.nodes.Len(), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
 		nodeLineageRefSets: c.nodeLineageRefSets,
 		links:              len(c.links), subtrees: len(c.subtrees),
 		nodeCheckpoints:                 len(c.nodeCheckpoints),
@@ -1782,8 +1782,10 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 		panic("parser-core phase zero: classification phase overflow during rollback")
 	}
 	c.classificationPhase++
+	if !c.nodes.Truncate(mark.nodes) {
+		panic("parser-core phase zero: checkpoint crosses retired node block")
+	}
 	c.truncateNodePathCounts(mark.nodes)
-	c.nodes = c.nodes[:mark.nodes]
 	c.nodePrecedenceWide = c.nodePrecedenceWide[:mark.nodePrecedenceWide]
 	c.nodePrecedenceWideBase = mark.nodePrecedenceWideBase
 	c.nodeLineages = c.nodeLineages[:mark.nodeLineages]
@@ -1824,7 +1826,7 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 	for index := len(c.nodeLineageJournal) - 1; index >= mark.nodeLineageJournal; index-- {
 		mutation := c.nodeLineageJournal[index]
 		nodeIndex := int(mutation.node) - 1
-		if nodeIndex < 0 || nodeIndex >= len(c.nodes) {
+		if nodeIndex < 0 || nodeIndex >= c.nodes.Len() {
 			continue
 		}
 		c.nodeLineages[nodeIndex].owner = mutation.owner
@@ -2410,7 +2412,7 @@ func (c *Core) Reset() error {
 		return err
 	}
 	c.nodePathCountsWide = c.nodePathCountsWide[:0]
-	c.nodes = c.nodes[:0]
+	c.nodes.Reset()
 	c.nodePrecedenceWide = c.nodePrecedenceWide[:0]
 	c.nodePrecedenceWideBase = 0
 	c.nodeLineages = c.nodeLineages[:0]
@@ -2628,8 +2630,10 @@ func (c *Core) Seed(state StateID, byteOffset uint32) (Head, error) {
 		return Head{}, err
 	}
 	if err := c.publishBoundary(probe, id); err != nil {
-		c.truncateNodePathCounts(len(c.nodes) - 1)
-		c.nodes = c.nodes[:len(c.nodes)-1]
+		c.truncateNodePathCounts(c.nodes.Len() - 1)
+		if !c.nodes.Truncate(c.nodes.Len() - 1) {
+			panic("parser-core phase zero: seed rollback crosses retired node block")
+		}
 		c.nodeLineages = c.nodeLineages[:len(c.nodeLineages)-1]
 		if !c.externalPayloadsQuiescent {
 			c.nodeCheckpoints = c.nodeCheckpoints[:len(c.nodeCheckpoints)-1]
@@ -3586,7 +3590,7 @@ func (c *Core) appendPrivate(state StateID, byteOffset uint32, in linkInput) (He
 	if uint64(len(c.links))+1 > uint64(c.limits.MaxLinks) || uint64(len(c.links)) >= math.MaxUint32 {
 		return Head{}, errors.New("parser-core phase zero: link arena cap")
 	}
-	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
+	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
 		return Head{}, errors.New("parser-core phase zero: node arena cap")
 	}
 	flags := uint32(0)
@@ -4007,7 +4011,7 @@ func (c *Core) condenseWithOutcomeAtomic(key boundaryKey, in linkInput) (condens
 		}
 		return condenseOutcome{}, errors.New("parser-core phase zero: link arena cap")
 	}
-	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
+	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
 		if oldID != 0 {
 			c.recordLinkUnionRejected()
 		}
@@ -4100,7 +4104,7 @@ func (c *Core) condenseDirectAppend(key boundaryKey, probe boundaryProbe, prevPa
 	if uint64(len(c.links))+1 > uint64(c.limits.MaxLinks) || uint64(len(c.links)) >= math.MaxUint32 {
 		return condenseOutcome{}, errors.New("parser-core phase zero: link arena cap")
 	}
-	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
+	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
 		return condenseOutcome{}, errors.New("parser-core phase zero: node arena cap")
 	}
 	// The caller resolved prev and the payload already, so compute the new
@@ -5190,10 +5194,10 @@ func (c *Core) appendAdjacencyNodeAtWithPrecedenceAndStoredErrorCost(
 	if uint64(len(c.links))+uint64(len(links)) > uint64(c.limits.MaxLinks) || uint64(len(c.links))+uint64(len(links)) > math.MaxUint32 {
 		return 0, errors.New("parser-core phase zero: link arena cap")
 	}
-	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
+	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
 		return 0, errors.New("parser-core phase zero: node arena cap")
 	}
-	next := NodeID(uint64(len(c.nodes)) + 1)
+	next := NodeID(uint64(c.nodes.Len()) + 1)
 	pathCount := uint64(0)
 	for _, link := range links {
 		if link.prev == 0 || link.prev >= next {
@@ -5412,7 +5416,7 @@ func (c *Core) replaceBoundaryLink(key boundaryKey, probe boundaryProbe, oldID N
 	if uint64(len(c.links))+uint64(len(oldLinks)) > uint64(c.limits.MaxLinks) || uint64(len(c.links))+uint64(len(oldLinks)) > math.MaxUint32 {
 		return Head{}, errors.New("parser-core phase zero: link arena cap")
 	}
-	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
+	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
 		return Head{}, errors.New("parser-core phase zero: node arena cap")
 	}
 	// A single incoming replacement is consumed synchronously below. Keep
@@ -6392,7 +6396,7 @@ func (c *Core) appendSingleDerivationLinks(id NodeID, reverseLinks []LinkID) ([]
 			return reverseLinks, true, errors.New("parser-core phase zero: adjacency exceeds recorded link count")
 		}
 		reverseLinks = append(reverseLinks, linkID)
-		if len(reverseLinks) >= len(c.nodes) {
+		if len(reverseLinks) >= c.nodes.Len() {
 			return reverseLinks, true, errors.New("parser-core phase zero: graph cycle")
 		}
 		id = link.prev
@@ -6570,7 +6574,7 @@ func (c *Core) NodeCount() int {
 	if c == nil {
 		return 0
 	}
-	return len(c.nodes)
+	return c.nodes.Len()
 }
 
 func (c *Core) SubtreeArenaLen() int {
@@ -6661,7 +6665,7 @@ func (c *Core) Stats(head Head) (Stats, error) {
 		return Stats{}, err
 	}
 	return Stats{
-		Nodes: uint32(len(c.nodes)), Links: uint32(len(c.links)), Subtrees: uint32(len(c.subtrees)), Children: uint32(len(c.children)),
+		Nodes: uint32(c.nodes.Len()), Links: uint32(len(c.links)), Subtrees: uint32(len(c.subtrees)), Children: uint32(len(c.children)),
 		CurrentExactPaths: nPaths,
 	}, nil
 }
@@ -6779,7 +6783,7 @@ func (c *Core) appendNodeAtWithMaximum(r nodeInput, checkpoint CheckpointID, max
 }
 
 func (c *Core) appendNodeRecord(r nodeInput, checkpoint CheckpointID, maximum int64) (NodeID, error) {
-	if uint64(len(c.nodes))+1 > uint64(c.limits.MaxNodes) || uint64(len(c.nodes)) >= math.MaxUint32 {
+	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
 		return 0, errors.New("parser-core phase zero: node arena cap")
 	}
 	if !c.externalPayloadsQuiescent && checkpoint != 0 {
@@ -6787,12 +6791,14 @@ func (c *Core) appendNodeRecord(r nodeInput, checkpoint CheckpointID, maximum in
 			return 0, errors.New("parser-core phase zero: node scanner checkpoint is unavailable")
 		}
 	}
-	next := NodeID(uint64(len(c.nodes)) + 1)
+	next := NodeID(uint64(c.nodes.Len()) + 1)
 	if err := c.validatePublishedNodeDAGAt(r.record(), next, checkpoint); err != nil {
 		return 0, err
 	}
 	inline := inlineNodePrecedence(maximum)
-	c.nodes = append(c.nodes, r.record())
+	if id, ok := c.nodes.Append(r.record(), c.limits.MaxNodes); !ok || id != next {
+		return 0, errors.New("parser-core phase zero: node arena publication failed")
+	}
 	c.nodeLineages = append(c.nodeLineages, nodeLineageHot{precedenceInline: inline, flags: c.appendNodePathCount(next, r.pathCount)})
 	if inline == wideNodePrecedence {
 		c.storeWideNodePrecedence(next, maximum)
@@ -6987,10 +6993,12 @@ func (c *Core) recordLinkUnionRejected() {
 }
 
 func (c *Core) node(id NodeID) (*nodeRecord, error) {
-	if id == 0 || uint64(id) > uint64(len(c.nodes)) {
-		return nil, fmt.Errorf("parser-core phase zero: invalid node id %d", id)
+	if id != 0 && uint64(id) <= uint64(c.nodes.Len()) {
+		if node := c.nodes.At(int(id - 1)); node != nil {
+			return node, nil
+		}
 	}
-	return &c.nodes[id-1], nil
+	return nil, fmt.Errorf("parser-core phase zero: invalid node id %d", id)
 }
 
 func (c *Core) nodeLineageHot(id NodeID) (*nodeLineageHot, error) {

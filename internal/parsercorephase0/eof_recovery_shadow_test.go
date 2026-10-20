@@ -37,7 +37,7 @@ func TestDiagnosticEOFRecoveryClonePlanAccountsEveryRequestedByte(t *testing.T) 
 	live := &Core{
 		metadataConstructionAuthenticated: true,
 		plans:                             &diagnosticEOFRecoveryPlanOnlyProvider{identity: 1},
-		nodes:                             make([]nodeRecord, 2),
+		nodes:                             nodeBlocksFromSliceForTest(make([]nodeRecord, 2)),
 		nodePrecedenceWide:                make([]int64, 2),
 		nodeLineages:                      make([]nodeLineageHot, 2),
 		nodeCheckpoints:                   make([]CheckpointID, 2),
@@ -253,7 +253,7 @@ func TestDiagnosticEOFRecoveryForkReservesValidationScratchWithoutGrowth(t *test
 		plans:                             sourceProvider,
 		limits:                            (Limits{}).withDefaults(),
 		metadataConstructionAuthenticated: true,
-		nodes:                             []nodeRecord{{}},
+		nodes:                             nodeBlocksFromSliceForTest([]nodeRecord{{}}),
 		subtrees: []subtreeRecord{
 			{terminal: true, startByte: 0, endByte: 1},
 			{terminal: true, extra: true, startByte: 1, endByte: 2},

@@ -389,7 +389,7 @@ func TestReductionScratchPanicRollsBackAndRetriesCleanly(t *testing.T) {
 	beforeBoundaries := cloneBoundaryMap(compact.boundaries)
 	beforeWork := compact.Work()
 	beforeArenas := [...]int{
-		len(compact.nodes), len(compact.links), len(compact.subtrees),
+		compact.nodes.Len(), len(compact.links), len(compact.subtrees),
 		len(compact.children), len(compact.fields), len(compact.aliases),
 	}
 	func() {
@@ -409,7 +409,7 @@ func TestReductionScratchPanicRollsBackAndRetriesCleanly(t *testing.T) {
 		t.Fatal(err)
 	}
 	afterArenas := [...]int{
-		len(compact.nodes), len(compact.links), len(compact.subtrees),
+		compact.nodes.Len(), len(compact.links), len(compact.subtrees),
 		len(compact.children), len(compact.fields), len(compact.aliases),
 	}
 	if after != before || afterArenas != beforeArenas || !reflect.DeepEqual(compact.boundaries.logicalMap(), beforeBoundaries) || compact.Work() != beforeWork {

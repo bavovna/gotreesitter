@@ -162,7 +162,7 @@ func TestPhase0APopRouteProofPreservesMixedAndTrailingPayloadIdentity(t *testing
 	}
 	wantLinks := make([]LinkID, 0, len(inputs))
 	for nodeID := head.Node; nodeID != seed.Node; {
-		node := core.nodes[nodeID-1]
+		node := *core.nodes.At(int(nodeID - 1))
 		if node.linkCount != 1 || node.firstLink == 0 {
 			t.Fatalf("mixed physical node %d links=%d first=%d", nodeID, node.linkCount, node.firstLink)
 		}
@@ -208,7 +208,7 @@ func TestPhase0APopRouteProofPreservesMixedAndTrailingPayloadIdentity(t *testing
 func TestPhase0APopRouteRollbackTombstonesAndRetryRemainsDistinct(t *testing.T) {
 	core, head := newSharedReductionFixture(t, true)
 	run := phase0ABeginShiftProvenanceRun(t, core, phase0ARouteLimits())
-	core.limits.MaxNodes = uint32(len(core.nodes))
+	core.limits.MaxNodes = uint32(core.nodes.Len())
 	if _, err := core.Reduce(head, 9, 0, ForkOrder{}); err == nil {
 		t.Fatal("node-capped reduction succeeded")
 	}

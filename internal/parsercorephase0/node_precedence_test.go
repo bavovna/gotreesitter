@@ -39,7 +39,7 @@ func TestNodePrecedenceFullWidthAndInlineBoundaries(t *testing.T) {
 		if (len(core.nodePrecedenceWide) != 0) != wide {
 			t.Fatalf("score=%d wide storage length=%d", score, len(core.nodePrecedenceWide))
 		}
-		if cap(core.nodePrecedenceWide) > cap(core.nodes) {
+		if cap(core.nodePrecedenceWide) > core.nodes.Capacity() {
 			t.Fatal("wide capacity exceeds node capacity")
 		}
 		if score == math.MinInt64 || score == math.MaxInt64 {

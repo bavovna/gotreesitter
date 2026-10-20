@@ -287,7 +287,7 @@ func planDiagnosticEOFRecoveryClone(live *Core, payloads []SubtreeID, providerWr
 		count int
 		bytes uint64
 	}{
-		{len(live.nodes), coreNodeRecordBytes},
+		{1, live.nodes.CloneActiveFootprintBytes()},
 		{len(live.nodePrecedenceWide), coreInt64Bytes},
 		{len(live.nodePathCountsWide), coreNodePathCountRecordBytes},
 		{len(live.nodeLineages), coreNodeLineageRecordBytes},
@@ -457,7 +457,7 @@ func cloneDiagnosticEOFRecoveryCore(
 	shadow.plans = nil
 	shadow.selectedProvider = nil
 	shadow.selectedPolicy = nil
-	shadow.nodes = cloneDiagnosticSlice(live.nodes, 0)
+	shadow.nodes = live.nodes.CloneActive()
 	shadow.nodePrecedenceWide = cloneDiagnosticSlice(live.nodePrecedenceWide, 0)
 	shadow.nodePathCountsWide = cloneDiagnosticSlice(live.nodePathCountsWide, 0)
 	shadow.nodeLineages = cloneDiagnosticSlice(live.nodeLineages, 0)
@@ -560,7 +560,7 @@ func diagnosticEOFRecoveryCopiedArenasEqual(live, shadow *Core) bool {
 		len(shadow.children) < len(live.children) {
 		return false
 	}
-	return equalDiagnosticSlice(live.nodes, shadow.nodes) &&
+	return equalDiagnosticNodeBlocks(&live.nodes, &shadow.nodes) &&
 		live.nodePrecedenceWideBase == shadow.nodePrecedenceWideBase &&
 		equalDiagnosticSlice(live.nodePrecedenceWide, shadow.nodePrecedenceWide) &&
 		equalDiagnosticSlice(live.nodePathCountsWide, shadow.nodePathCountsWide) &&
@@ -622,7 +622,7 @@ func diagnosticEOFRecoveryStorageDisjoint(live, shadow *Core) bool {
 	if live == nil || shadow == nil || live == shadow {
 		return false
 	}
-	return disjointDiagnosticSlice(live.nodes, shadow.nodes) &&
+	return disjointDiagnosticNodeBlocks(&live.nodes, &shadow.nodes) &&
 		disjointDiagnosticSlice(live.nodePrecedenceWide, shadow.nodePrecedenceWide) &&
 		disjointDiagnosticSlice(live.nodePathCountsWide, shadow.nodePathCountsWide) &&
 		disjointDiagnosticSlice(live.nodeLineages, shadow.nodeLineages) &&

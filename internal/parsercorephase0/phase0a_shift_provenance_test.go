@@ -393,7 +393,7 @@ func TestPhase0ATerminalHookAuthenticationFailuresAreStickyAndNonSemantic(t *tes
 		predecessor func(*Core) NodeID
 	}{
 		{name: "zero-predecessor", predecessor: func(*Core) NodeID { return 0 }},
-		{name: "unknown-predecessor", predecessor: func(core *Core) NodeID { return NodeID(len(core.nodes) + 1) }},
+		{name: "unknown-predecessor", predecessor: func(core *Core) NodeID { return NodeID(core.nodes.Len() + 1) }},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			core, run, _, payload := newFixture(t, subtreeRecord{symbol: 9, endByte: 1, terminal: true})

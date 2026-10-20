@@ -48,7 +48,7 @@ func TestReusedSubtreeProofVisitsScaleWithNewRecords(t *testing.T) {
 			if polls != 2*int(count) {
 				t.Fatalf("reduced=%t count=%d polls=%d, want %d", reduced, count, polls, 2*count)
 			}
-			if uint64(c.reuseProof.nodes) >= uint64(len(c.nodes)) || c.reuseProof.subtrees == 0 {
+			if uint64(c.reuseProof.nodes) >= uint64(c.nodes.Len()) || c.reuseProof.subtrees == 0 {
 				t.Fatal("proof cursors did not track publication")
 			}
 		}

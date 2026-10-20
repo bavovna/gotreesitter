@@ -177,7 +177,7 @@ func TestRecoverEOFAcceptOwnedRollsBackPartialPublication(t *testing.T) {
 		t.Fatal(err)
 	}
 	beforeSubtrees := fixture.core.SubtreeArenaLen()
-	fixture.core.limits.MaxNodes = uint32(len(fixture.core.nodes))
+	fixture.core.limits.MaxNodes = uint32(fixture.core.nodes.Len())
 	err = fixture.core.ApplySchedulerAtomic(func(owner SchedulerTransactionToken) error {
 		_, _, operationErr := fixture.core.RecoverEOFAcceptOwned(owner, fixture.head, fixture.payload, 0, 2)
 		if operationErr == nil {

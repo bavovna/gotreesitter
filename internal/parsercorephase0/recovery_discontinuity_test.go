@@ -512,7 +512,7 @@ func TestRecoveryDiscontinuityRejectsUnauthenticatedContextAndOrdinaryNullableLi
 		{ByteOffset: 1},
 		{ByteOffset: 0, Checkpoint: 1},
 	} {
-		before := len(core.nodes)
+		before := core.nodes.Len()
 		err := core.ApplySchedulerAtomic(func(token SchedulerTransactionToken) error {
 			_, appendErr := core.AppendRecoveryDiscontinuityOwned(token, seed, context)
 			return appendErr
@@ -520,7 +520,7 @@ func TestRecoveryDiscontinuityRejectsUnauthenticatedContextAndOrdinaryNullableLi
 		if err == nil {
 			t.Fatalf("context=%+v was accepted", context)
 		}
-		if len(core.nodes) != before {
+		if core.nodes.Len() != before {
 			t.Fatalf("context=%+v changed node arena after rejection", context)
 		}
 	}
@@ -687,7 +687,7 @@ func TestRecoveryDiscontinuityMergeRollbackRestoresLineageSpill(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	beforeNodes := len(core.nodes)
+	beforeNodes := core.nodes.Len()
 	beforeLinks := len(core.links)
 	beforeSpill := slices.Clone(core.alternativeSpillArena)
 	beforeLineages := slices.Clone(core.nodeLineages)
@@ -702,8 +702,8 @@ func TestRecoveryDiscontinuityMergeRollbackRestoresLineageSpill(t *testing.T) {
 	if !errors.Is(err, sentinel) {
 		t.Fatalf("rollback error=%v, want %v", err, sentinel)
 	}
-	if len(core.nodes) != beforeNodes || len(core.links) != beforeLinks || !slices.Equal(core.alternativeSpillArena, beforeSpill) || !reflect.DeepEqual(core.nodeLineages, beforeLineages) || core.Work() != beforeWork {
-		t.Fatalf("rollback changed nodes=%d/%d links=%d/%d spill=%v/%v lineages equal=%t work=%+v/%+v", len(core.nodes), beforeNodes, len(core.links), beforeLinks, core.alternativeSpillArena, beforeSpill, reflect.DeepEqual(core.nodeLineages, beforeLineages), core.Work(), beforeWork)
+	if core.nodes.Len() != beforeNodes || len(core.links) != beforeLinks || !slices.Equal(core.alternativeSpillArena, beforeSpill) || !reflect.DeepEqual(core.nodeLineages, beforeLineages) || core.Work() != beforeWork {
+		t.Fatalf("rollback changed nodes=%d/%d links=%d/%d spill=%v/%v lineages equal=%t work=%+v/%+v", core.nodes.Len(), beforeNodes, len(core.links), beforeLinks, core.alternativeSpillArena, beforeSpill, reflect.DeepEqual(core.nodeLineages, beforeLineages), core.Work(), beforeWork)
 	}
 }
 
@@ -740,7 +740,7 @@ func TestRecoveryDiscontinuityMergeRejectsDifferentStoredCostsBeforeMutation(t *
 	if err != nil || rightCost != 8 {
 		t.Fatalf("right marker stored cost=%d err=%v, want 8", rightCost, err)
 	}
-	beforeNodes, beforeLinks, beforeWork := len(core.nodes), len(core.links), core.Work()
+	beforeNodes, beforeLinks, beforeWork := core.nodes.Len(), len(core.links), core.Work()
 	err = core.ApplySchedulerAtomic(func(owner SchedulerTransactionToken) error {
 		_, mergeErr := core.MergeRecoveryDiscontinuityHeadsOwned(owner, context, left, right)
 		return mergeErr
@@ -748,8 +748,8 @@ func TestRecoveryDiscontinuityMergeRejectsDifferentStoredCostsBeforeMutation(t *
 	if err == nil {
 		t.Fatal("different stored costs unexpectedly merged")
 	}
-	if len(core.nodes) != beforeNodes || len(core.links) != beforeLinks || core.Work() != beforeWork {
-		t.Fatalf("rejected merge mutated graph or telemetry: nodes=%d/%d links=%d/%d work=%+v/%+v", len(core.nodes), beforeNodes, len(core.links), beforeLinks, core.Work(), beforeWork)
+	if core.nodes.Len() != beforeNodes || len(core.links) != beforeLinks || core.Work() != beforeWork {
+		t.Fatalf("rejected merge mutated graph or telemetry: nodes=%d/%d links=%d/%d work=%+v/%+v", core.nodes.Len(), beforeNodes, len(core.links), beforeLinks, core.Work(), beforeWork)
 	}
 }
 

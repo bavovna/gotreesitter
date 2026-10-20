@@ -26,7 +26,7 @@ func TestLiveCondenseIndependentOwnerKeepsHistorySeparate(t *testing.T) {
 			if err != nil || len(links) != 1 {
 				t.Fatalf("left links=%v err=%v", links, err)
 			}
-			beforeNodes := len(compact.nodes)
+			beforeNodes := compact.nodes.Len()
 			sentinel := errors.New("rollback witness")
 			err = compact.ApplySchedulerAtomic(func(owner SchedulerTransactionToken) error {
 				return compact.runLiveCondenseCandidates([]CondenseCandidate{{Head: right, Independent: independent}}, func() error {
@@ -58,8 +58,8 @@ func TestLiveCondenseIndependentOwnerKeepsHistorySeparate(t *testing.T) {
 				})
 			})
 			if rollback {
-				if !errors.Is(err, sentinel) || len(compact.nodes) != beforeNodes {
-					t.Fatalf("rollback nodes=%d want=%d err=%v", len(compact.nodes), beforeNodes, err)
+				if !errors.Is(err, sentinel) || compact.nodes.Len() != beforeNodes {
+					t.Fatalf("rollback nodes=%d want=%d err=%v", compact.nodes.Len(), beforeNodes, err)
 				}
 				if canonical, ok := compact.CanonicalBoundary(3, 1, false, 0); !ok || canonical != right {
 					t.Fatalf("rollback canonical=%+v/%t want=%+v", canonical, ok, right)

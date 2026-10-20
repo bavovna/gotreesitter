@@ -91,7 +91,7 @@ func TestLinkProvenanceDefaultOffAndAccounting(t *testing.T) {
 	if core.dropCohortLinkRefIndexes != nil {
 		t.Fatal("new core allocated link provenance sidecar")
 	}
-	want := uint64(len(core.nodes))*coreNodeRecordBytes + uint64(len(core.links))*coreLinkRecordBytes +
+	want := uint64(core.nodes.Len())*coreNodeRecordBytes + uint64(len(core.links))*coreLinkRecordBytes +
 		uint64(len(core.subtrees))*coreSubtreeRecordBytes + uint64(len(core.children))*coreChildRecordBytes +
 		uint64(len(core.dropCohortRecords))*coreDropCohortRecordBytes +
 		uint64(len(core.dropCohortMembers))*coreDropCohortMemberBytes +
@@ -330,15 +330,15 @@ func TestReductionLinkChainHandoffRejectsMalformedMetadata(t *testing.T) {
 		edit func(*Core, NodeID, LinkChainRef)
 	}{
 		{name: "mixed empty", edit: func(core *Core, nodeID NodeID, _ LinkChainRef) {
-			core.nodes[nodeID-1].firstLink = 0
+			(*core.nodes.At(int(nodeID - 1))).firstLink = 0
 		}},
 		{name: "first out of bounds", edit: func(core *Core, nodeID NodeID, value LinkChainRef) {
-			core.nodes[nodeID-1].firstLink = uint32(len(core.links) + 1)
-			core.nodes[nodeID-1].linkCount = value.Count
+			(*core.nodes.At(int(nodeID - 1))).firstLink = uint32(len(core.links) + 1)
+			(*core.nodes.At(int(nodeID - 1))).linkCount = value.Count
 		}},
 		{name: "count exceeds arena", edit: func(core *Core, nodeID NodeID, value LinkChainRef) {
-			core.nodes[nodeID-1].firstLink = uint32(value.First)
-			core.nodes[nodeID-1].linkCount = uint32(len(core.links) + 1)
+			(*core.nodes.At(int(nodeID - 1))).firstLink = uint32(value.First)
+			(*core.nodes.At(int(nodeID - 1))).linkCount = uint32(len(core.links) + 1)
 		}},
 	}
 	for _, test := range tests {
@@ -363,7 +363,7 @@ func TestReductionLinkChainHandoffRejectsMalformedMetadata(t *testing.T) {
 
 func TestReductionLinkChainHandoffRollbackAndReset(t *testing.T) {
 	fixture := newLinkProvenanceFixture(t, 8)
-	beforeNodes, beforeLinks := len(fixture.core.nodes), len(fixture.core.links)
+	beforeNodes, beforeLinks := fixture.core.nodes.Len(), len(fixture.core.links)
 	var escaped Head
 	err := fixture.core.ApplySchedulerAtomic(func(_ SchedulerTransactionToken) error {
 		id, err := fixture.core.appendNode(nodeInput{
@@ -382,8 +382,8 @@ func TestReductionLinkChainHandoffRollbackAndReset(t *testing.T) {
 	if err == nil {
 		t.Fatal("forced rollback returned nil")
 	}
-	if len(fixture.core.nodes) != beforeNodes || len(fixture.core.links) != beforeLinks {
-		t.Fatalf("rollback arena lengths=%d/%d, want %d/%d", len(fixture.core.nodes), len(fixture.core.links), beforeNodes, beforeLinks)
+	if fixture.core.nodes.Len() != beforeNodes || len(fixture.core.links) != beforeLinks {
+		t.Fatalf("rollback arena lengths=%d/%d, want %d/%d", fixture.core.nodes.Len(), len(fixture.core.links), beforeNodes, beforeLinks)
 	}
 	if _, err := fixture.core.reductionLinkChainForHead(escaped); err == nil {
 		t.Fatal("rolled-back reduction output head remained readable")

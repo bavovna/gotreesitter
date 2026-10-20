@@ -76,7 +76,7 @@ func TestPhase0ATrailingExtraRejectsNonPrivateMigrationPredecessor(t *testing.T)
 		if appendErr != nil {
 			return appendErr
 		}
-		core.nodes[private.Node-1].linkCount = 2
+		(*core.nodes.At(int(private.Node - 1))).linkCount = 2
 		phase0AObserveTrailingExtraMigration(core, 0, core.boundaryKey(4, 2), linkInput{prev: private.Node, payload: extra, scoreDelta: paths[0].trailing[0].scoreDelta})
 		return forced
 	})
@@ -259,7 +259,7 @@ func TestPhase0ATrailingExtraDuplicatePayloadUsesDistinctPhysicalSources(t *test
 
 func TestPhase0ATrailingExtraRollbackRetainsTombstoneAndDoesNotReuseSlot(t *testing.T) {
 	core, run, head, _ := phase0AObservedTrailingReductionFixture(t, false, false)
-	core.limits.MaxNodes = uint32(len(core.nodes) + 1)
+	core.limits.MaxNodes = uint32(core.nodes.Len() + 1)
 	if _, err := core.Reduce(head, 1, 0, ForkOrder{}); err == nil {
 		t.Fatal("node-capped trailing-extra reduction succeeded")
 	}
