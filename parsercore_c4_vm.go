@@ -29,6 +29,7 @@ package gotreesitter
 // ever produces a decline of its own.
 
 import (
+	"math"
 	"os"
 	"sync"
 
@@ -591,25 +592,43 @@ func (s *diagnosticParserCoreGenericScheduler) corridorDirectShift(rowIndex uint
 	}
 	token := s.token
 	action := s.corridorRows[rowIndex].At(0)
-	head, err := s.compact.ShiftDirectWithLiveCondenseCandidatesOwned(
-		*s.freshSessionOwner,
-		nil,
-		s.headers[0].head,
-		core.Symbol(token.Symbol),
-		core.StateID(action.State),
-		extra,
-		core.Token{
-			Symbol:    core.Symbol(token.Symbol),
-			StartByte: token.StartByte,
-			EndByte:   token.EndByte,
-			Extra:     extra,
-			External:  token.ExternalScannerToken,
-			// The generic shift carries the lexer skipped-prefix provenance;
-			// jsdoc's tiling proof reads it at materialization.
-			LexerSkippedPrefixLength: diagnosticParserCoreLexerSkippedPrefixLength(token, s.options.captureLexerSkippedPrefixProvenance),
-		},
-		core.ForkOrder{},
-	)
+	header := &s.headers[0]
+	// A newly published head needs no later owner call when canonicalization
+	// is the identity, lineage has no drop references, and eager callbacks are off.
+	// Creation-sequence overflow keeps the original publication/error path.
+	fuseOwner := s.singleHeaderProbeIsIdentity() && header.creationSeq < math.MaxUint32 &&
+		header.dropCohortRefs.Empty() &&
+		!header.dropCohortRefs.Overflowed() && !header.dropCohortRefs.Blended() &&
+		(s.options.eagerMaterializer == nil || !s.options.eagerMaterializer.eager)
+	shiftedToken := core.Token{
+		Symbol:    core.Symbol(token.Symbol),
+		StartByte: token.StartByte,
+		EndByte:   token.EndByte,
+		Extra:     extra,
+		External:  token.ExternalScannerToken,
+		// The generic shift carries the lexer skipped-prefix provenance;
+		// jsdoc's tiling proof reads it at materialization.
+		LexerSkippedPrefixLength: diagnosticParserCoreLexerSkippedPrefixLength(token, s.options.captureLexerSkippedPrefixProvenance),
+	}
+	var head core.Head
+	ownerPublished := false
+	if fuseOwner {
+		publication := core.ShiftHeadLineage{
+			Owner: uint32(header.creationSeq) + 1, PreviousHead: header.lastPersistedHead,
+			Set: header.altSet, Lineage: header.cleanPathLineage, Rank: header.cleanPathRank,
+			Blended: header.blended, PublishLineage: header.convergedReductionSplit,
+			SetDirty: header.altSet != header.lastPersistedAltSet || header.blended != header.lastPersistedBlended,
+		}
+		head, ownerPublished, err = s.compact.ShiftDirectAndPublishLineageOwned(
+			*s.freshSessionOwner, nil, header.head, core.Symbol(token.Symbol),
+			core.StateID(action.State), extra, shiftedToken, core.ForkOrder{}, publication,
+		)
+	} else {
+		head, err = s.compact.ShiftDirectWithLiveCondenseCandidatesOwned(
+			*s.freshSessionOwner, nil, header.head, core.Symbol(token.Symbol),
+			core.StateID(action.State), extra, shiftedToken, core.ForkOrder{},
+		)
+	}
 	if err != nil {
 		return false, err
 	}
@@ -632,6 +651,17 @@ func (s *diagnosticParserCoreGenericScheduler) corridorDirectShift(rowIndex uint
 		s.skipCanonicalProbe()
 	} else if err := s.canonicalize(); err != nil {
 		return false, err
+	}
+	// ownerPublished authenticates a newly created head, not a condensed
+	// existing node. The eligibility proof above makes every intervening step
+	// pure header bookkeeping: no callback or canonical replacement can move it.
+	if ownerPublished {
+		if header.convergedReductionSplit {
+			header.lastPersistedHead = header.head
+			header.lastPersistedAltSet = header.altSet
+			header.lastPersistedBlended = header.blended
+		}
+		return true, nil
 	}
 	if err := s.persistHeaderLineageOwned(*s.freshSessionOwner); err != nil {
 		return false, err

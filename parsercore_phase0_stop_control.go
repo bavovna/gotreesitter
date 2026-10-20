@@ -109,7 +109,8 @@ func appendDiagnosticParserCoreFootprintRef(
 	if pointer == nil {
 		return refs
 	}
-	return append(refs, diagnosticParserCoreFootprintRef{pointer: pointer, kind: kind})
+	refs = append(refs, diagnosticParserCoreFootprintRef{pointer: pointer, kind: kind})
+	return refs
 }
 
 func appendDiagnosticParserCoreVersionFootprintRefs(
@@ -348,6 +349,10 @@ func diagnosticParserCoreSchedulerFootprintBytes(s *diagnosticParserCoreGenericS
 	// buffer keeps repeated polls allocation-free while growing exactly for a
 	// wider frontier.
 	refs := s.footprintRefs[:0]
+	currentStorage, _ := s.versionLexerSnapshotPages.CurrentStorage()
+	currentStorageSeen := false
+	var lastStorage *core.ScannerSnapshotStorage
+
 	defer func() {
 		clear(refs)
 		s.footprintRefs = refs[:0]
@@ -378,9 +383,22 @@ func diagnosticParserCoreSchedulerFootprintBytes(s *diagnosticParserCoreGenericS
 		case diagnosticParserCoreFootprintRegion:
 			addBytes(diagnosticParserCoreVersionS3RegionFootprintBytes((*diagnosticParserCoreS3Region)(ref.pointer)))
 		case diagnosticParserCoreFootprintSnapshot:
-			addBytes(diagnosticParserCoreVersionLexerSnapshotFootprintBytes((*diagnosticParserCoreVersionLexerSnapshot)(ref.pointer)))
+			snapshot := (*diagnosticParserCoreVersionLexerSnapshot)(ref.pointer)
+			addBytes(diagnosticParserCoreVersionLexerSnapshotFootprintWithoutStorage(snapshot))
+			if storage := snapshot.storage; storage != nil {
+				// The sorted record pointers group slots of one allocation;
+				// no separately allocated record can lie inside that object.
+				if storage != lastStorage {
+					addBytes(storage.FootprintBytes())
+					lastStorage = storage
+				}
+				currentStorageSeen = currentStorageSeen || storage == currentStorage
+			}
 		}
 		index = next
+	}
+	if !currentStorageSeen {
+		addBytes(currentStorage.FootprintBytes())
 	}
 	add(cap(refs), unsafe.Sizeof(diagnosticParserCoreFootprintRef{}))
 	add(cap(s.headers), unsafe.Sizeof(diagnosticParserCoreHeader{}))

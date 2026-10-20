@@ -2481,6 +2481,8 @@ func (s *diagnosticParserCoreCanonicalScratch) canonicalizeWithMutation(
 		}
 		s.keys = s.keys[:len(headers)]
 	}
+	var smallHeads core.CanonicalHeadMask
+	headsDistinct := len(normalized) <= diagnosticParserCoreLinearCanonicalLimit
 	for index := range normalized {
 		header := &normalized[index]
 		state, byteOffset, err := compact.Boundary(header.head)
@@ -2521,6 +2523,19 @@ func (s *diagnosticParserCoreCanonicalScratch) canonicalizeWithMutation(
 			checkpoint: header.checkpoint, versionState: versionState,
 		}
 		s.keys[index] = key
+		if headsDistinct {
+			headsDistinct = smallHeads.Add(header.head)
+		}
+	}
+	// Distinct mask bits prove distinct heads and complete canonical keys.
+	// A collision retains exact grouping; it cannot certify an equal head.
+	// The existing scan has already authenticated boundaries and lexer owners.
+	if headsDistinct {
+		for index := range normalized {
+			normalized[index].freshness = 0
+		}
+		s.nextBuffer = uint8(target ^ 1)
+		return normalized, 0, nil
 	}
 	var out []diagnosticParserCoreHeader
 	var err error
@@ -2910,6 +2925,7 @@ type diagnosticParserCoreGenericScheduler struct {
 	versionLexerBeforeCheckpoint    core.CheckpointID
 	versionLexerRequests            []diagnosticParserCoreVersionLexerRequest
 	versionLexerMetadata            *core.FrozenValue[diagnosticParserCoreVersionLexerMetadata]
+	versionLexerSnapshotPages       core.ScannerSnapshotPages[diagnosticParserCoreVersionLexerSnapshot]
 	// versionLexerOwnershipActive marks the ragged election that switched this
 	// scheduler from its shared-token fast path to owned per-header cursors.
 	// versionLexerOwnershipActive keeps each live header on its own DFA and
@@ -4691,6 +4707,8 @@ func resetDiagnosticParserCoreGenericScheduler(scheduler *diagnosticParserCoreGe
 		return errors.New("parser-core phase zero: seed scheduler scratch is active")
 	}
 	clearDiagnosticParserCoreGenericSchedulerVersionState(scheduler)
+	snapshotPages := scheduler.versionLexerSnapshotPages
+	snapshotPages.Reset()
 	summaryHeaders := resetDiagnosticParserCoreRetainedSlice(scheduler.summaryHeaderScratch)
 	dispatchCells := resetDiagnosticParserCoreRetainedSlice(scheduler.dispatchScratch.cells)
 	noActionIndices := resetDiagnosticParserCoreRetainedSlice(scheduler.dispatchScratch.noActionIndices)
@@ -4722,9 +4740,10 @@ func resetDiagnosticParserCoreGenericScheduler(scheduler *diagnosticParserCoreGe
 	recoveryCostMemo := scheduler.recoveryCostMemo
 	recoveryCostMemo.Reset()
 	*scheduler = diagnosticParserCoreGenericScheduler{
-		reuseDependencies:    reuseDependencies,
-		recoveryCostMemo:     recoveryCostMemo,
-		summaryHeaderScratch: summaryHeaders,
+		versionLexerSnapshotPages: snapshotPages,
+		reuseDependencies:         reuseDependencies,
+		recoveryCostMemo:          recoveryCostMemo,
+		summaryHeaderScratch:      summaryHeaders,
 		dispatchScratch: diagnosticParserCoreDispatchScratch{
 			cells: dispatchCells, noActionIndices: noActionIndices,
 		},
@@ -5836,11 +5855,18 @@ func (s *diagnosticParserCoreGenericScheduler) installEquivalentVersionLexerStat
 	recoveryGroup := header.recoveryGroupIdentity()
 	missingGroup := header.recoveryMissingGroupIdentity()
 	baseline, baselineSet := header.recoveryNodeBaseline()
+	// Intern exactly the acceptance identity publishVersionState would keep.
+	// A closed recovery region can retain a group after both live keys clear.
+	acceptanceGroup := recoveredRootGroupOf(*header)
+	if recoveryGroup != 0 || missingGroup != 0 {
+		acceptanceGroup = recoveredRootGroup{recovery: recoveryGroup, missing: missingGroup}
+	}
 	matches := func(state *diagnosticParserCoreVersionState) bool {
 		return state != nil && state.s3Region == region &&
 			diagnosticParserCoreVersionLexerSnapshotEqual(state.relexSnapshot, snapshot) &&
 			state.lexerRequest == requestReference && state.recoveryGroup == recoveryGroup &&
-			state.missingGroup == missingGroup && state.recoveryNodeBaseline == baseline &&
+			state.missingGroup == missingGroup && state.acceptanceGroup == acceptanceGroup &&
+			state.recoveryNodeBaseline == baseline &&
 			state.recoveryNodeBaselineSet == baselineSet
 	}
 	for index := range s.headers {
@@ -5926,8 +5952,8 @@ func (s *diagnosticParserCoreGenericScheduler) newVersionLexerSnapshot(
 	if s == nil || s.compact == nil || s.tokenSource == nil || s.tokenSource.language == nil {
 		return nil, errors.New("parser-core phase zero: version lexer snapshot context is incomplete")
 	}
-	snapshot, err := newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
-		s.compact, s.tokenSource.language, owner, dfa, beforeID, afterID, s.versionLexerMetadata,
+	snapshot, err := newDiagnosticParserCoreVersionLexerSnapshotWithMetadataAndPages(
+		s.compact, s.tokenSource.language, owner, dfa, beforeID, afterID, s.versionLexerMetadata, &s.versionLexerSnapshotPages,
 	)
 	if err == nil {
 		s.versionLexerMetadata = snapshot.metadata
@@ -6313,13 +6339,10 @@ func (s *diagnosticParserCoreGenericScheduler) bindVersionLexerRequest(
 	if s == nil || request == nil || !request.valid || request.electionIndex != s.electionIndex {
 		return errors.New("parser-core phase zero: cannot bind an invalid version lexer request")
 	}
-	if _, _, ok := s.compact.CheckpointReceipt(request.beforeID); !ok {
-		return errDiagnosticParserCoreUnknownCheckpointIdentity
-	}
-	if _, _, ok := s.compact.CheckpointReceipt(request.afterID); !ok {
-		return errDiagnosticParserCoreUnknownCheckpointIdentity
-	}
-	if err := s.compact.SetPhaseExternalTokenScannerCheckpoints(request.beforeID, request.afterID); err != nil {
+	if err := s.compact.BindScannerElection(request.beforeID, request.afterID); err != nil {
+		if errors.Is(err, core.ErrUnknownScannerCheckpoint) {
+			return errDiagnosticParserCoreUnknownCheckpointIdentity
+		}
 		return err
 	}
 	s.token = request.token
@@ -8407,8 +8430,19 @@ func (s *diagnosticParserCoreGenericScheduler) run() error {
 			return err
 		}
 		if reserve := &s.stagedReserve; reserve.growAt != 0 && s.token.StartByte >= reserve.growAt {
-			s.compact.GrowRecordArenas(reserve.sourceBytes, reserve.maxBytes)
-			reserve.growAt = 0
+			if reserve.project {
+				budget, ok := core.RecordArenaProjectionBudget(diagnosticParserCoreSchedulerFootprintBytes(s), s.options.stopControlMemoryBudgetBytes, s.options.stopControlHardCeilingBytes)
+				if ok {
+					s.compact.ProjectRecordArenas(reserve.sourceBytes, s.token.StartByte, budget)
+				}
+				reserve.growAt, reserve.project = 0, false
+			} else {
+				s.compact.GrowRecordArenas(reserve.sourceBytes, reserve.maxBytes)
+				reserve.growAt = 0
+				if reserve.maxBytes > 0 && s.compact.ReserveRecordArenaBytes(reserve.sourceBytes, 0) > reserve.maxBytes {
+					reserve.growAt, reserve.project = core.RecordArenaProjectionStart(reserve.sourceBytes), true
+				}
+			}
 		}
 		if s.options.captureCertificationPeaks {
 			if err := s.captureCertificationPeak(); err != nil {

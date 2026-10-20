@@ -358,6 +358,13 @@ func (s *diagnosticParserCoreGenericScheduler) importCompactReuseDependency(id c
 // Observe all elected and speculative lexer reads, including probes owned by
 // different GLR heads. The sorted history remains conservative across restores.
 func (s *diagnosticParserCoreGenericScheduler) beginCompactLegacyReads() {
+	// Only publication with replay can stamp reusable public nodes. A known
+	// no-replay request cannot consume this history; low-level scheduler
+	// callers without a materialization context keep the conservative path.
+	if s.options.materializationContextSet && !s.options.materializationForceReplayParseStates {
+		s.reuseDependencies.idleReads = nil
+		return
+	}
 	d := s.tokenSource
 	if s.options.compactIncrementalReuse != nil || d == nil || d.lexer == nil || !legacyReuseReadsEligible(d, d.lexer.source) || !d.compactReuseForwardDependenciesOnly() {
 		// This request cannot use the history. Drop its idle allocation before

@@ -1,0 +1,5 @@
+{
+  "Replace": {
+    "/candidate/cmd/perfcounterledger/main.go": "/evidence/counter_main.go.txt"
+  }
+}

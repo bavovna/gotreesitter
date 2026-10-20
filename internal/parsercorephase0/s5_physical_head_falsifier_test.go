@@ -16,7 +16,7 @@ func appendS5SyntheticNode(t *testing.T, core *Core, state StateID, byteOffset u
 	node, err := core.appendNodeRecord(nodeRecord{
 		state: state, byteOffset: byteOffset,
 		firstLink: uint32(linkID), linkCount: 1, pathCount: pathCount,
-	}, core.checkpoint)
+	}, core.checkpoint, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

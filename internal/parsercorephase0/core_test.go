@@ -540,6 +540,10 @@ func TestHeadOwnerRollsBackWithSchedulerTransaction(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+	provenance, err = compact.nodeLineage(head.Node)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if provenance.owner != 8 {
 		t.Fatalf("committed owner = %d, want 8", provenance.owner)
 	}
@@ -2694,7 +2698,8 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 	for name, typ := range map[string]reflect.Type{
 		"node":                   reflect.TypeFor[nodeRecord](),
 		"materialization-frame":  reflect.TypeFor[materializationPostorderFrame](),
-		"node-lineage":           reflect.TypeFor[nodeLineageRecord](),
+		"node-lineage":           reflect.TypeFor[nodeLineageHot](),
+		"lineage-recovery":       reflect.TypeFor[nodeLineageRecovery](),
 		"link":                   reflect.TypeFor[linkRecord](),
 		"subtree":                reflect.TypeFor[subtreeRecord](),
 		"external-provenance":    reflect.TypeFor[externalPayloadProvenance](),
@@ -2715,8 +2720,8 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 	if got := unsafe.Sizeof(materializationPostorderFrame{}); got != 24 {
 		t.Fatalf("materializationPostorderFrame size = %d, want 24", got)
 	}
-	if got := unsafe.Sizeof(nodeRecord{}); got != 32 {
-		t.Fatalf("nodeRecord size = %d, want 32", got)
+	if got := unsafe.Sizeof(nodeRecord{}); got != 24 {
+		t.Fatalf("nodeRecord size = %d, want 24", got)
 	}
 	// Store optional reference sets separately; every graph node pays this
 	// record width, even when no certificates are recorded.
@@ -3210,7 +3215,7 @@ func diagnosticReduceTable(childCount uint8, dynamicPrecedence int16) *fakeTable
 func TestDominantCapacityBytesIncludesColdLineageGrowth(t *testing.T) {
 	var c Core
 	before := c.DominantCapacityBytes()
-	c.nodeLineages = make([]nodeLineageRecord, 0, 256)
+	c.nodeLineages = make([]nodeLineageHot, 0, 256)
 	lineage := c.DominantCapacityBytes()
 	if lineage <= before || len(c.nodeLineages) != 0 {
 		t.Fatal("inactive cold lineage capacity did not signal growth")

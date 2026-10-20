@@ -271,3 +271,39 @@ func TestCompactRelexScratchPooledReuse(t *testing.T) {
 	}
 	t.Logf("warm=%g cold-relex=%g allocations", warm, cold)
 }
+
+func TestCompactCanonicalNoReplayReadHistory(t *testing.T) {
+	fixture := loadDiagnosticParserCoreCanonicalFixture(t, "grammargen_lr")
+	runner, err := newParserCoreFreshFullRunner(parserCoreWarmGoScanner, parserCoreFreshFullCanonicalOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var expected string
+	for _, row := range diagnosticParserCoreCanonicalAdmissions {
+		if row.id == fixture.ID {
+			requireDiagnosticParserCoreCanonicalFixtureIdentity(t, fixture, row)
+			expected = row.deepTreeSHA256
+		}
+	}
+	if expected == "" {
+		t.Fatal("missing source/digest pin")
+	}
+	for i := 0; i < 2; i++ {
+		tree, err := runner.parse(fixture.Source)
+		if err != nil {
+			t.Fatal(err)
+		}
+		digest := requireDiagnosticParserCoreCanonicalTreeDigest(t, tree, runner.lang)
+		disabled := tree.incrementalReuseDisabled
+		tree.Release()
+		if digest != expected {
+			t.Fatalf("deep tree changed: %s", digest)
+		}
+		if !disabled {
+			t.Fatal("no-replay publication unexpectedly enabled reuse")
+		}
+		if runner.scheduler.reuseDependencies.reads != nil || runner.scheduler.reuseDependencies.idleReads != nil {
+			t.Fatal("no-replay canonical parse collected unused history")
+		}
+	}
+}

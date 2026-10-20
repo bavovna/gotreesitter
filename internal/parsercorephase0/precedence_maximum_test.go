@@ -21,11 +21,11 @@ func TestPrecedenceMaximumCertificateValues(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			seedRecord, err := core.node(seed.Node)
+			seedRecord, err := core.nodePrecedenceMaximum(seed.Node)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if seedRecord.precedenceMax != 0 {
+			if seedRecord.value != 0 {
 				t.Fatalf("seed certificate=%+v, want zero", seedRecord)
 			}
 			payload := appendShallowPayload(t, core, shallowPayloadSpec{
@@ -37,11 +37,11 @@ func TestPrecedenceMaximumCertificateValues(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			record, err := core.node(child)
+			record, err := core.nodePrecedenceMaximum(child)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if record.precedenceMax != test.score {
+			if record.value != test.score {
 				t.Fatalf("certificate=%+v, want %d", record, test.score)
 			}
 		})
@@ -61,11 +61,11 @@ func TestPrecedenceMaximumLeafContributionIsZero(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	record, err := core.node(child)
+	record, err := core.nodePrecedenceMaximum(child)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if record.precedenceMax != 0 {
+	if record.value != 0 {
 		t.Fatalf("leaf certificate=%+v, want zero contribution", record)
 	}
 }
@@ -158,7 +158,7 @@ func TestPrecedenceMaximumDiscardedIncomingEdgeIsRetained(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if oldRecord.precedenceMax != 2 || newRecord.precedenceMax != 18 {
+	if storedNodeMaximumForTest(t, core, oldTop.Node) != 2 || storedNodeMaximumForTest(t, core, merged.Node) != 18 {
 		t.Fatalf("old/new certificates=%+v/%+v, want 2/18", oldRecord, newRecord)
 	}
 	links, err := core.nodeLinks(*newRecord)
@@ -218,12 +218,12 @@ func TestPrecedenceMaximumReplacementThenLaterCandidateUsesOrder(t *testing.T) {
 			if !changed {
 				t.Fatal("ordered replacement did not publish a new node")
 			}
-			record, err := core.node(merged)
+			record, err := core.nodePrecedenceMaximum(merged)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if record.precedenceMax != test.want {
-				t.Fatalf("ordered precedence maximum=%d, want %d", record.precedenceMax, test.want)
+			if record.value != test.want {
+				t.Fatalf("ordered precedence maximum=%d, want %d", record.value, test.want)
 			}
 		})
 	}
@@ -272,12 +272,12 @@ func TestPrecedenceMaximumNestedOuterNegativeRecomputesFromMergedPredecessor(t *
 	if merged == old {
 		t.Fatal("nested outer merge did not publish a fresh boundary")
 	}
-	record, err := core.node(merged.Node)
+	record, err := core.nodePrecedenceMaximum(merged.Node)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if record.precedenceMax != -10 {
-		t.Fatalf("nested outer precedence maximum=%d, want -10", record.precedenceMax)
+	if record.value != -10 {
+		t.Fatalf("nested outer precedence maximum=%d, want -10", record.value)
 	}
 }
 
@@ -338,12 +338,12 @@ func TestPrecedenceMaximumReplacementThenNestedNegativeUsesOuterCandidate(t *tes
 	if !changed {
 		t.Fatal("replacement and nested merge did not publish a fresh node")
 	}
-	record, err := core.node(merged)
+	record, err := core.nodePrecedenceMaximum(merged)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if record.precedenceMax != 5 {
-		t.Fatalf("replacement and nested precedence maximum=%d, want 5", record.precedenceMax)
+	if record.value != 5 {
+		t.Fatalf("replacement and nested precedence maximum=%d, want 5", record.value)
 	}
 	if !witness.hasPostReplacement {
 		t.Fatal("replacement and nested merge lost the authenticated outer post-replacement candidate")

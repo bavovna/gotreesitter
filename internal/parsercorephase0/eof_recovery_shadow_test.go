@@ -37,7 +37,8 @@ func TestDiagnosticEOFRecoveryClonePlanAccountsEveryRequestedByte(t *testing.T) 
 		metadataConstructionAuthenticated: true,
 		plans:                             &diagnosticEOFRecoveryPlanOnlyProvider{identity: 1},
 		nodes:                             make([]nodeRecord, 2),
-		nodeLineages:                      make([]nodeLineageRecord, 2),
+		nodePrecedenceWide:                make([]int64, 2),
+		nodeLineages:                      make([]nodeLineageHot, 2),
 		nodeCheckpoints:                   make([]CheckpointID, 2),
 		links:                             make([]linkRecord, 3),
 		subtrees:                          make([]subtreeRecord, 4),
@@ -66,6 +67,7 @@ func TestDiagnosticEOFRecoveryClonePlanAccountsEveryRequestedByte(t *testing.T) 
 		t.Fatalf("plan clone: %v", err)
 	}
 	wantCopied := uint64(2)*coreNodeRecordBytes +
+		uint64(2)*coreInt64Bytes +
 		uint64(2)*coreNodeLineageRecordBytes +
 		uint64(2)*coreCheckpointIDBytes +
 		uint64(3)*coreLinkRecordBytes +
@@ -362,5 +364,34 @@ func TestDiagnosticEOFRecoveryProviderBindRejectsAliasesAndWideCapabilities(t *t
 	}
 	if shadow.tables != nil || shadow.plans == nil || shadow.selectedProvider != nil {
 		t.Fatalf("provider slots tables=%v plans=%v selected=%v", shadow.tables, shadow.plans, shadow.selectedProvider)
+	}
+}
+
+func TestNodePrecedenceEOFShadowOwnsWideValues(t *testing.T) {
+	live := newTinyCoreWithLimits(t, Limits{})
+	if _, err := live.Seed(1, 0); err != nil {
+		t.Fatal(err)
+	}
+	id, err := live.appendNodeAtWithMaximum(nodeRecord{state: 2, pathCount: 1}, 0, 1<<40)
+	if err != nil {
+		t.Fatal(err)
+	}
+	shadow := cloneDiagnosticEOFRecoveryCore(live, 0, diagnosticEOFRecoveryValidationDemand{})
+	if !diagnosticEOFRecoveryCopiedArenasEqual(live, shadow) || !diagnosticEOFRecoveryStorageDisjoint(live, shadow) {
+		t.Fatal("wide shadow was not an independent equal copy")
+	}
+	if got := storedNodeMaximumForTest(t, shadow, id); got != 1<<40 {
+		t.Fatal("shadow lost full-width precedence")
+	}
+	shadow.nodePrecedenceWide[id-1] = 7
+	if got := storedNodeMaximumForTest(t, live, id); got != 1<<40 {
+		t.Fatal("shadow changed live precedence")
+	}
+	if diagnosticEOFRecoveryCopiedArenasEqual(live, shadow) {
+		t.Fatal("wide mutation passed arena equality")
+	}
+	shadow.nodePrecedenceWide = live.nodePrecedenceWide
+	if diagnosticEOFRecoveryStorageDisjoint(live, shadow) {
+		t.Fatal("wide alias passed disjointness")
 	}
 }

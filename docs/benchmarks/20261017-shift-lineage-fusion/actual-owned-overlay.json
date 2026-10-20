@@ -1,0 +1,5 @@
+{
+  "Replace": {
+    "/workspace/cmd/perfcounterledger/main.go": "/evidence/owned-ledger.go"
+  }
+}

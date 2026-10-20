@@ -26,6 +26,7 @@ type diagnosticParserCoreVersionLexerSnapshot struct {
 	// the snapshot, while frontier and checkpoint phases may advance safely.
 	compact        *core.Core
 	coreGeneration uint64
+	storage        *core.ScannerSnapshotStorage
 	language       *Language
 	metadata       *core.FrozenValue[diagnosticParserCoreVersionLexerMetadata]
 	dfa            dfaRelexSnapshot
@@ -183,6 +184,13 @@ func (s *diagnosticParserCoreGenericScheduler) versionLexerStateEqual(
 		left.recoveryNodeBaselineSet != right.recoveryNodeBaselineSet {
 		return false
 	}
+	// A closed acceptance group still controls the final recovery election.
+	// Keep effective group identity even after the live recovery keys clear.
+	if left.acceptanceGroup != right.acceptanceGroup &&
+		recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: left}) !=
+			recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: right}) {
+		return false
+	}
 	if left.lexerRequest == 0 || right.lexerRequest == 0 {
 		return left.lexerRequest == right.lexerRequest
 	}
@@ -231,11 +239,16 @@ func (s *diagnosticParserCoreVersionLexerSnapshot) clone() *diagnosticParserCore
 	if s == nil {
 		return nil
 	}
-	out := *s
-	out.dfa = cloneDiagnosticParserCoreDFARelexSnapshot(s.dfa)
+	out, payload, start, end, tried := core.NewScannerSnapshotRecord[diagnosticParserCoreVersionLexerSnapshot](
+		s.dfa.externalPayload, s.dfa.externalTokenStart, s.dfa.externalTokenEnd, s.dfa.extZeroTried,
+	)
+	*out = *s
+	out.storage = nil
+	out.dfa.externalPayload, out.dfa.externalTokenStart, out.dfa.externalTokenEnd = payload, start, end
+	out.dfa.extZeroTried = tried
 	out.beforeCheckpointBytes = cloneBytesForDiagnosticParserCoreVersion(s.beforeCheckpointBytes)
 	out.afterCheckpointBytes = cloneBytesForDiagnosticParserCoreVersion(s.afterCheckpointBytes)
-	return &out
+	return out
 }
 
 // copyDiagnosticParserCoreVersionCheckpoint obtains a complete private copy
@@ -284,6 +297,15 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 	dfa dfaRelexSnapshot, beforeCheckpoint, afterCheckpoint core.CheckpointID,
 	previous *core.FrozenValue[diagnosticParserCoreVersionLexerMetadata],
 ) (*diagnosticParserCoreVersionLexerSnapshot, error) {
+	return newDiagnosticParserCoreVersionLexerSnapshotWithMetadataAndPages(compact, language, owner, dfa, beforeCheckpoint, afterCheckpoint, previous, nil)
+}
+
+func newDiagnosticParserCoreVersionLexerSnapshotWithMetadataAndPages(
+	compact *core.Core, language *Language, owner core.SchedulerTransactionToken,
+	dfa dfaRelexSnapshot, beforeCheckpoint, afterCheckpoint core.CheckpointID,
+	previous *core.FrozenValue[diagnosticParserCoreVersionLexerMetadata],
+	pages *core.ScannerSnapshotPages[diagnosticParserCoreVersionLexerSnapshot],
+) (*diagnosticParserCoreVersionLexerSnapshot, error) {
 	scanner, err := diagnosticParserCoreVersionLexerScannerContractForLanguage(language)
 	if err != nil {
 		return nil, err
@@ -304,7 +326,11 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 	if _, _, ok := compact.CheckpointReceiptOwned(owner, afterCheckpoint); !ok {
 		return nil, errDiagnosticParserCoreUnknownCheckpointIdentity
 	}
-	dfa = cloneDiagnosticParserCoreDFARelexSnapshot(dfa)
+	out, payload, start, end, tried, storage := pages.New(
+		dfa.externalPayload, dfa.externalTokenStart, dfa.externalTokenEnd, dfa.extZeroTried,
+	)
+	dfa.externalPayload, dfa.externalTokenStart, dfa.externalTokenEnd = payload, start, end
+	dfa.extZeroTried = tried
 	afterBytes, afterInfo, err := copyDiagnosticParserCoreVersionCheckpointWithPrivateCopy(compact, owner, afterCheckpoint, dfa.externalPayload)
 	if err != nil {
 		return nil, err
@@ -321,7 +347,8 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 	if checkpointIdentityRequired && !checkpointIdentityValid {
 		return nil, errors.New("parser-core phase zero: version lexer snapshot requires a complete checkpoint identity")
 	}
-	return &diagnosticParserCoreVersionLexerSnapshot{
+	*out = diagnosticParserCoreVersionLexerSnapshot{
+		storage:        storage,
 		compact:        compact,
 		coreGeneration: generation,
 		language:       language,
@@ -336,7 +363,8 @@ func newDiagnosticParserCoreVersionLexerSnapshotWithMetadata(
 		afterCheckpointBytes:  afterBytes,
 		beforeCheckpointInfo:  beforeInfo,
 		afterCheckpointInfo:   afterInfo,
-	}, nil
+	}
+	return out, nil
 }
 
 func (s *diagnosticParserCoreVersionLexerSnapshot) validateGeneration() error {
@@ -566,12 +594,27 @@ func diagnosticParserCoreVersionS3RegionFootprintBytes(region *diagnosticParserC
 }
 
 func diagnosticParserCoreVersionLexerSnapshotFootprintBytes(snapshot *diagnosticParserCoreVersionLexerSnapshot) uint64 {
+	bytes := diagnosticParserCoreVersionLexerSnapshotFootprintWithoutStorage(snapshot)
+	if snapshot != nil && snapshot.storage != nil {
+		extra := snapshot.storage.FootprintBytes()
+		if extra > math.MaxUint64-bytes {
+			return math.MaxUint64
+		}
+		bytes += extra
+	}
+	return bytes
+}
+
+func diagnosticParserCoreVersionLexerSnapshotFootprintWithoutStorage(snapshot *diagnosticParserCoreVersionLexerSnapshot) uint64 {
 	if snapshot == nil {
 		return 0
 	}
 	// dfa is embedded in the snapshot record, so sizeof(snapshot) already
 	// includes its scalar fields and slice headers.
-	total := uint64(unsafe.Sizeof(*snapshot))
+	total := uint64(0)
+	if snapshot.storage == nil {
+		total = uint64(unsafe.Sizeof(*snapshot))
+	}
 	// Conservatively charge the shared holder once per snapshot. Sharing cannot
 	// bypass the existing per-version memory budget.
 	if snapshot.metadata != nil {
@@ -593,10 +636,12 @@ func diagnosticParserCoreVersionLexerSnapshotFootprintBytes(snapshot *diagnostic
 		}
 		total += bytes
 	}
-	add(cap(snapshot.dfa.externalPayload), 1)
-	add(cap(snapshot.dfa.externalTokenStart), 1)
-	add(cap(snapshot.dfa.externalTokenEnd), 1)
-	add(cap(snapshot.dfa.extZeroTried), unsafe.Sizeof(bool(false)))
+	if snapshot.storage == nil {
+		add(cap(snapshot.dfa.externalPayload), 1)
+		add(cap(snapshot.dfa.externalTokenStart), 1)
+		add(cap(snapshot.dfa.externalTokenEnd), 1)
+		add(cap(snapshot.dfa.extZeroTried), unsafe.Sizeof(bool(false)))
+	}
 	add(cap(snapshot.beforeCheckpointBytes), 1)
 	add(cap(snapshot.afterCheckpointBytes), 1)
 	return total

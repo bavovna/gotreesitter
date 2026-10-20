@@ -1,6 +1,10 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-17 (UTC).
+Current evidence date: 2026-10-19 (UTC).
+Parent PR #1486 merged to main as `88dc1d9c3ff15cc2b8b5c53864455fc3a24a9d34`
+after all 78 checks passed. Branch integration `b876c5b5` preserves all 414
+ledger rows and passes focused TypeScript/TSX C checks. Combined engine gates
+remain in progress; historical receipts below retain their own source scope.
 Release update, 2026-10-17 UTC: v0.56.0 was published on October 14. The
 release condition behind the merge hold is fulfilled; current reviews and CI
 still govern landing. Historical hold statements below retain their original
@@ -15,6 +19,715 @@ Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
+
+### Closed acceptance-group identity: qualified correctness repair
+
+The [three-file identity repair](compact-acceptance-group-identity-receipt-20261019.md)
+preserves retained recovery-election groups during immutable interning and
+lexer-owner equality. Both new regressions fail before and pass after,
+including race and 386 coverage. All **414 complete ledger rows**, four canonical
+trees/work vectors, **206 × 72-step** ordinary sessions, explicit owned YAML,
+**618 C checks**, unchanged strict census, **306 Go C outcomes / 300 routes**,
+large witnesses, memory/race and API/layout/R6/selector gates pass.
+
+All **480 shuffled rows** finish, all twelve timings are inconclusive and all
+object medians stay exact; no time/object median fails its ratchet. Directional
+movements include Go grammargen **+6.88%**, owned YAML R4 **+7.68%** and ordinary
+YAML 8 KiB **+7.52%**; no speedup is claimed. All **126 RSS processes** pass,
+maximum **297.914 B/source byte**. All 3518 Go source hashes match the qualified
+candidate. No pin, exception, route or graduation changes.
+
+The corrected malformed-YAML oracle retains **417/723 passing checks** on both
+revisions, the same 306 failures and exact public vectors. The initial
+clean-helper error and its replay remain available. This repair proves internal
+identity preservation; remaining public C mismatches stay open.
+
+
+### Graph links: fewer allocated bytes, higher RSS
+
+The [29-file split-link candidate](compact-link-hot-cold-allocation-receipt-20261019.md)
+keeps identities in **16-byte** records and full-width immutable metadata in
+a shared sidecar. On runtime b704, all **414 ledger rows**, four canonical
+trees/work vectors, **206 × 72-step** sessions, owned YAML, **618 C checks**,
+unchanged strict census, **306 Go C outcomes / 300 routes**, large witnesses,
+memory/race/386 and API/layout/R6/selector gates pass.
+
+All **480 shuffled rows** finish. One-MiB Go allocated bytes fall **6.89%**
+(**539585416→502397808**), ordinary YAML R4 **10.19%** (**14840→13328**), and
+ordinary YAML 8 KiB **12.47%** (**49097→42976**), all p<.001. Every timing
+difference is inconclusive. Ordinary YAML 8 KiB time moves **+7.53% (p=.060)**
+and query Go **+5.32% (p=.820)**. No throughput improvement is established.
+
+The costs remain explicit: ordinary YAML adds **one object/op**, and large-Go
+object medians move **328→344 (+4.88%, p=.124)**. All **126 RSS processes**
+pass, maximum **308.558 B/source byte**, but median RSS rises **6.02% Go /
+1.50% ordinary YAML / 4.47% owned YAML**. No time/object or RSS median fails
+its ratchet. No-edit always allocates nothing. The prototype remains unpromoted
+while current-main qualification is prepared; these measurements precede
+main 88dc1d9c. No route, work pin, exception or graduation changes.
+
+The earlier [retained-link census](benchmarks/20261019-link-metadata-census/README.md)
+remains geometry evidence; its 45.31% live-link estimate is not an RSS claim.
+The complete new replay preserves the compiler setup failures and all samples.
+
+
+### Version-state publication census: common node baselines stay inline
+
+The [six-case publication census](benchmarks/20261019-version-state-publication-census/README.md)
+counts newly created immutable wrappers on runtime b704. Their size is **64
+bytes**. Go query / grammargen create **113 / 1569** wrappers carrying a node
+baseline, and none carrying region/group metadata. Owned YAML R4 / 8 KiB /
+one-MiB create **37 / 140 / 19380** wrappers; **1 / 4 / 524** carry node
+baselines, and none carry region/group metadata. Large Go creates none at
+this publication site. All six compact parses complete with exact input pins,
+full root coverage and no errors.
+
+The independent twelve-file prototype keeps the full-width node baseline in
+a **32-byte** wrapper and moves only rare region/group fields into an optional
+immutable holder. Moving all recovery data out would add allocations on clean
+Go. Focused storage, immutability, 386 and race checks pass before main
+integration; current-main qualification is running. These are constructor counts and layout
+targets, **not measured allocation, RSS or throughput wins**. No production
+source, counter pin, route, exception or graduation setting changes.
+
+
+### Native 16-byte actions: safe, throughput win unproven
+
+The [two-file direct-layout screen](compact-action16-native-layout-screen-20261019.md)
+preserves complete fields in a native sixteen-byte Action. All **414 ledger
+rows**, four canonical trees/work vectors, **206 × 72-step** sessions, owned
+YAML, **618 C checks**, unchanged strict census, **306 Go C outcomes / 300
+routes**, large witnesses, Core/386/race, memory and API/layout/R6/selector
+gates pass. All **480 shuffled rows** finish; all twelve timing differences
+are inconclusive and every object median stays exact. Go full moves **−2.02%
+(p=.414)**, one-MiB **−3.75% (p=.265)** and query **+0.66% (p=.799)**. No
+throughput win is established. All **126 RSS processes** pass, maximum
+**297.617 B/source byte**. The source remains held; the evidence preserves all
+samples and the prerequisite-monitor timeout before timing began. No runtime,
+route, pin, exception or graduation changes.
+
+
+### Stable YAML request window: rejected by the allocation ratchet
+
+The [six-file request-window screen](compact-yaml-stable-request-window-screen-20261019.md)
+preserves all **414 ledger rows**, four canonical trees/work vectors, **206 ×
+72-step** ordinary sessions, explicit owned YAML, **618 C checks**, the strict
+census, all **306 Go C outcomes / 300 routes**, large witnesses, memory/race/386
+and API/layout/R6/selector gates. All **126 RSS processes** pass, maximum
+**318.949 B/source byte**. Recovery pruning, rollback and namespace exhaustion
+also pass dedicated checks; the original race-selector typo and corrected
+replay remain available.
+
+All **480 shuffled rows** finish. Owned-YAML allocations stay **72 / 191**,
+with no timing improvement established. One-MiB Go allocation medians move
+**278→325 (+16.91%)**, failing the 10% ratchet; the high-variance distribution
+is inconclusive (**p=.930**), which does not waive that gate. Large-Go byte
+medians rise **2.16% (p=.109)**. YAML legacy R4 time rises **7.66% (p=.007)**;
+all other timings are inconclusive. **No runtime source is promoted.**
+
+Filtering the earlier b513 allocation profile puts **54.30% of sampled objects**
+under equivalent-state installation through request publication and shifts.
+No sampled allocation stack includes the removed election-compaction loop.
+These overlapping sampled shares are attribution, not a speed prediction.
+The next YAML target is those actual publication callers. The independent Go
+screen tests native 16-byte actions with direct field reads; it is not yet
+qualified and does not close E-A7. No pin, exception, route or graduation changes.
+
+
+### Packed decoder follow-up: throughput unproven; direct consumers next
+
+The [six-file decoder follow-up](compact-packed-action-decoder-screen-20261019.md)
+preserves eight-byte canonical actions and lossless exceptional values, but all
+**twelve timing differences are inconclusive** across **480 shuffled rows**.
+Go full time moves **+1.77%**, query **+2.86%**, grammargen **+3.59%**, and
+one-MiB **+3.54%**; owned YAML moves **−2.79% / −0.60%**. No time/object median
+exceeds its ratchet. All directions remain in the receipt. **No runtime source
+is promoted**. The next Go screen keeps direct field reads in native sixteen-
+byte Action values; encoded consumers remain an unqualified follow-up.
+
+All **414 ledger rows**, four canonical trees/work vectors, **206 × 72-step**
+ordinary sessions, explicit owned YAML, **618 C checks**, unchanged strict census,
+all **306 Go C outcomes / 300 routes**, large Go/YAML witnesses, memory/race/386
+and API/layout/R6/selector gates pass. All **126 RSS processes** pass, maximum
+**295.695 B/source byte**; ratios **0.994932 Go / 0.967289 ordinary YAML /
+0.968543 owned YAML**. No pin, exception, route or graduation changes.
+
+The [fresh owned-YAML attribution](benchmarks/20261019-yaml-owned-attribution/README.md)
+uses runtime b513 on the 8012-byte witness with exact routes and work. Header
+publication accounts for **63.35% of sampled allocation objects**; snapshot
+validation has **8.61% cumulative CPU**, and acceptance materialization **13.52%**.
+Sampled allocation profiles include setup/calibration, and cumulative shares
+overlap. These are targets, not speedup predictions. A separate private stable-
+request-window proposal removes ordinary-election renumbering while retaining
+rollback, stale-reference checks and recovery compaction; it is not certified by
+this profile or by the decoder's gates. Its completed rejection is recorded above.
+
+
+### Packed action rows: smaller tables, Go throughput rejected
+
+The [six-file packed-action screen](compact-packed-action-rows-screen-20261019.md)
+preserves all fields in eight-byte canonical / sixteen-byte exceptional entries,
+with unchanged row-header widths. All **414 complete ledger rows**, four canonical
+trees/work vectors, **206 × 72-step** ordinary sessions, explicit owned YAML,
+**618 C checks**, unchanged strict census, all **306 Go C statuses / 300 routes**,
+large Go/YAML witnesses, races, memory and API/layout/R6/selector guards pass.
+All **126 RSS processes** pass, maximum **296.914 B/source byte**.
+
+All **480 shuffled timing rows** complete. Go full DFA time rises **5.29%
+(p<.001)**, query_compile **4.17% (p=.028)** and grammargen_lr **5.61%
+(p=.008)**. Other timings are inconclusive; allocation-count medians stay exact.
+A separate retained-table probe reports **95424→77056 bytes**. The storage
+saving does not justify these throughput regressions: **the runtime stays
+private**. The follow-up targets decoding and full-Action stack copies.
+No production pin, route, exception or graduation changes.
+
+
+### Compact graph nodes: qualified memory improvement
+
+The [24-byte graph-node receipt](compact-node24-lineage-precedence-receipt-20261019.md)
+preserves full state/path/precedence widths, exact lineage sets and all **414
+complete ledger rows**. The one-MiB Go comparison reduces allocated bytes
+**579888608→528111072 (−8.93%, p<.001)**. Ordinary-YAML bytes fall **4.92% /
+5.42%**. All **480 benchmark rows** finish; every timing difference is
+inconclusive, and no time/object median exceeds its ratchet.
+
+All **206 × 72-step** ordinary sessions, explicit owned YAML, **618 C checks**,
+unchanged strict **120 / 39 / 45** census, all **306 Go C statuses / 300 routes**,
+large Go/YAML C witnesses, memory/pooling contracts, races, 386 and native
+guards pass. All **126 RSS processes** pass: median reductions are **7.13% Go /
+2.94% ordinary YAML / 6.11% owned YAML**, maximum **297.879 B/source byte**.
+The pending Go correctness repair remains separate. Routing, work pins,
+exceptions and graduation stay unchanged; no throughput improvement is claimed.
+
+### Paired immutable snapshots: qualified allocation reduction
+
+The [paired-snapshot receipt](compact-scanner-snapshot-pairs-receipt-20261019.md)
+reduces owned-YAML R4 allocations **79→72 (−8.86%)** and 8 KiB allocations
+**218→191 (−12.39%)**. R4 bytes stay exact; 8 KiB bytes rise **1.28%**.
+All **440 timing rows** finish with no conclusive throughput difference and
+no time/object median above the ratchet. Ordinary routing stays unchanged.
+
+All **414 complete ledger rows**, six public full/edit rows and canonical Go
+work pins stay exact. The **206 × 72-step** sessions, explicit owned YAML,
+**618 C checks**, unchanged strict **120 / 39 / 45** census, memory contracts,
+races, native/386 regressions and API/layout/selector guards pass. All **126
+RSS processes** pass, maximum **329.136 B/source byte**; owned-YAML median RSS
+rises **3.93%**, within the ratchet. The pending Go correctness repair remains
+separate; no production pin, owner exception or graduation change follows.
+
+### Immutable snapshot pages: allocation reduction, byte trade rejected
+
+The [five-file allocation screen](compact-scanner-snapshot-pages-screen-20261019.md)
+keeps six complete public full/edit work rows exact and passes focused ownership,
+memory, C/edit and Go/YAML invariant gates. Fresh pages never overwrite published
+records; the allocator's native/386/race tests pass.
+
+All **440 shuffled-pair rows** finish. Owned 8 KiB allocations fall **218→181**,
+but R4 falls only **79→76** while bytes rise **13032→18392 (+41.13%)**.
+Every timing comparison is inconclusive. The five-file source remains private:
+unused page capacity must be reduced before this can be a runtime improvement.
+It includes neither ordinary ownership activation nor the pending Go repair.
+
+### Ordinary YAML streamed ownership: smaller output, timing rejected
+
+The [latest private screen](compact-yaml-streamed-prefix-screen-20261019.md)
+completes ordinary YAML on compact through both 524-document C witnesses.
+Fifty work/reuse comparisons pass; public constructions fall **288→232** on
+R4 and **1156→925** on 8 KiB, with whole-request peaks unchanged at **2→2**.
+Both 72-step YAML sessions and metadata/memory checks pass.
+
+All **440 timing rows** finish, but ordinary time rises **16.66% / 42.63%** and
+allocation counts rise **37→43 / 34→83**. Go full time rises **10.81%**, above
+the median ratchet despite p=.134. Owned timings are inconclusive. The thirteen-
+file source remains private; no pin, routing or graduation change follows.
+The allocation profile instead identifies immutable scanner snapshots as the
+next target (**75.32% of allocated bytes**); this share is not a speed estimate.
+
+### Go correctness repair: memory gates pass; R3 owner review ready
+
+The [counter-exception review](compact-go-correctness-counter-review-20261019.md)
+contains the complete 17-file private proposal and every one of its 77 changed
+canonical fields: **65 increases / 12 decreases**. Fresh published-runtime
+controls reproduce **39/300** expanded C failures; the proposal passes all
+**306 clean cases** and **144 generic edit steps**. All **206 × 72-step**
+ordinary sessions, explicitly activated owned YAML, **618 C checks**, strict
+204-row equality, memory contracts, true publication stop controls and races
+pass. All 12 API tag sets and layout/R6/selector guards pass after moving the
+adapter interface into `internal/`.
+
+All **126 RSS processes** pass, including initial samples; candidate Go maximum
+**324.343 B/source byte**. Median ratios are Go **1.009375**, ordinary YAML
+**1.001307**, owned YAML **0.977019**. This qualifies the combined source's
+memory safety, not throughput. No official timing comparison crosses its
+unapproved work direction. No production pin, routing or graduation change
+occurs; the runtime remains private pending R3 owner approval and later
+performance qualification. Earlier failed memory/API/cache attempts remain
+visible in their original scopes.
+
+
+### Qualified progress-based capacity: large-Go allocation win
+
+Runtime `54863cf280722c720bda81c2a8480f2398255730` adds a late capacity estimate
+from actual record counts while retaining the early reserve and memory limits.
+The [receipt](compact-progress-arena-projection-receipt-20261019.md) records
+**827,364,832→592,422,760 B/op (−28.40%, p<.001)** on the one-MiB Go witness.
+Timing **1.181→1.138 s, p=.277** is inconclusive. Allocation count medians
+**305→326.5, p=.439** rise 7.05%, within the 10% ratchet; every direction and
+all 480 benchmark rows remain visible. No throughput improvement is claimed.
+
+All **414 complete work/reuse rows**, four canonical trees/work vectors and
+the large-Go complete work stay exact. The **206 × 72-step invariants**,
+explicitly activated owned-YAML 72-step session, **618 C checks**, unchanged
+**120 / 39 / 45** strict census, races, memory contracts, native/386 checks
+and layout/API/selector guards pass. All **126 RSS probes** pass; candidate
+Go peaks at **331.515 B/source byte**, with matched median ratio **0.925638**.
+Ordinary and owned YAML ratios are **0.997552 / 1.000859**. No new work exception,
+routing change or graduation follows.
+
+A separate earlier combined C-correct protocol/projection screen passes 42 Go
+RSS processes (maximum **334.046**, ratio **0.937044**) but retains 65 unapproved
+canonical increases. Its source has no full fleet/three-case RSS/timing
+qualification. The independent production result does not certify that source.
+
+**Owned-invariant evidence correction:** Prior extra jobs that set only
+`GTS_LAYOUT_OWNED_PROBE` did not activate ownership in the invariant process.
+Treat those jobs as ordinary-mode coverage. The current receipt's separate
+wrapper explicitly activates ownership and proves compact=1/fallback=0 before
+running all 72 steps. Explicit owned C/RSS cases retain their scope.
+
+
+### Go correctness protocol: broad C screen passes; RSS still rejects promotion
+
+The [combined correctness/memory screen](compact-go-correctness-memory-screen-20261019.md)
+repairs all **39 / 300** expanded Go C failures and passes all **306 clean C
+cases through compact**, 144 generic edit steps, **206 × 72-step invariants**,
+**618 smoke-C checks**, the unchanged **120 / 39 / 45** strict census, races,
+memory contracts and large-file C checks. Four canonical deep digests and
+all 414 numeric fixture-ledger rows are unchanged. One C decline location
+changes. **65 canonical work fields increase; 12 decrease.** Every old/new
+value is retained; no owner exception is approved or requested here.
+
+The flat origin-receipt store fails two Go RSS probes at **400.43 / 401.72
+B/source B**. Paged storage removes **13,651,080 allocated bytes** on the
+same one-MiB Go witness with complete work vectors unchanged. Its narrowed
+42-probe Go screen passes (max **384.25**, median ratio **0.97693**), but
+its complete 126-probe run still fails one Go sample at **404.16**. Median
+ratios are Go **1.07590**, ordinary YAML **1.00221**, owned YAML **0.99459**.
+The hard ceiling overrides the passing median ratchet. All failed probes
+remain included. No timing claim transfers to the final paged candidate.
+
+Both private sources remain unpromoted. That screen used the read-history
+runtime `5c463e56`; the newer independent projection above reduces the large-Go
+memory peak. Its qualification does not transfer to either private source.
+Ordinary YAML ownership and compact graduation remain open.
+
+### Qualified no-replay demand: canonical Go work without unused history
+
+The [read-history demand receipt](compact-read-history-demand-receipt-20261019.md)
+skips lexer histories only when publication explicitly disables replay.
+Unknown-context and replay-enabled callers retain collection. Twenty shuffled
+pairs support **−6.49% / −6.20%** parse time on canonical Go `rewrite` /
+`query_compile`. Large canonical Go bytes fall **1,155,584 → 107,520
+(−90.70%)**. These benchmarks disable replay; public Go controls and all YAML
+timing changes are inconclusive. No-edit stays at zero bytes and allocations.
+
+All **414 work/reuse rows**, four complete canonical vectors/deep digests,
+**206 × 72-step invariants**, **618 C checks**, unchanged **120 / 39 / 45**
+strict census, races, memory contracts, native/default/tagged/386 tests and
+layout/API/selector checks pass. All **126 RSS probes** pass; median ratios
+are Go **1.02408**, ordinary YAML **1.00023** and owned YAML **0.99864**, with
+maximum candidate **373.06 B/source B**. These are safety measurements.
+
+This bucket changes one runtime file and two existing tests. It includes none
+of the private version-ordering protocol below. No counter exception is needed.
+Routing, allowlists, ordinary YAML fallback and graduation remain unchanged.
+
+### Go cohort frontier: private C screen repaired; work direction unresolved
+
+The [cohort/frontier and restoration screen](compact-cohort-frontier-ordering-screen-20261019.md)
+now passes **306/306 clean Go C checks and 144 edit steps** privately. An
+ordinary shift cohort had omitted an already-shifted sibling from its live
+frontier. A causal three-history test retains two on production and all
+three with the repair. Combined with C-style version ordering and the
+owner-bound DFA proof, it fixes the last 12 qualified-type failures below.
+
+Replacing a per-dispatch restoration closure preserves all four complete
+private canonical vectors and six selected ledger rows. Twenty shuffled
+pairs measure Go R4 **−8.37%**, canonical `language` **−5.43%**, and
+`grammargen_lr` **−6.07%** parse time against the same private protocol.
+YAML allocations also fall; all three YAML timing changes are inconclusive.
+This is a private closure/value comparison, not production throughput evidence.
+
+Preserving the lost histories raises production work counters, including
+`grammargen_lr` parents **75,769 → 76,345**, reduction pauses **1,963 → 2,117**
+and no-action drops **8,172 → 8,443**. Every direction and all 440 timing rows
+are archived. No R3 exception is approved; no full fleet, 414-row ledger or
+RSS qualification ran for that screen. Its production reference was `b17ca367`
+with all 3,512 Go files unchanged at the time. Ordinary YAML ownership and
+graduation are unchanged.
+
+### Earlier Go version-turn screen: 27 private repairs; 12 failures
+
+A new 300-case locked-C screen finds **39 failures in the unchanged runtime**:
+27 through fallback and 12 through compact. A private C-style pairwise version
+permutation plus authenticated publication union fixes those 27 fallback
+failures and adds none in this screen. It still fails the same 12 qualified-type
+cases, so it is **not promoted**. All 300 prototype cases use compact; the
+unchanged runtime routes 90 and falls back on 210. These are correctness and
+admission observations, not throughput or work-ratchet qualification.
+
+The six original generic-call witnesses now pass through compact with no
+fallback in the private ordering probe, with the eight-link cap unchanged.
+Seven selected existing Go certification, incremental, reuse and recovery
+suites pass. The larger screen rejects a one-best-version ordering shortcut:
+252/300 exact cases become **288/300** only with C's pairwise slot permutation.
+
+Direct payload sums rule out the earlier suspected precedence miscount.
+The remaining qualified-type witness is C-exact on forced legacy, which keeps
+the explicit-type-argument call at precedence 2; compact publishes the index
+call. The [screen](compact-go-version-turn-order-screen-20261018.md) retains all
+variants, unchanged-runtime controls, exact replay patches, failed C evidence
+and the next branch-retention question. No new timing, ledger, fleet or RSS
+qualification ran. Production stays `b17ca367`; graduation is unchanged.
+
+### DFA origin proof: private cap removal; selection variant rejected
+
+An owner/source/reset-bound proof for identical DFA terminal IDs removes the
+**9 > 8** failure from all three combined-call Go witnesses, keeping the cap
+at eight. They still decline at tied acceptance; all six public witnesses
+remain C-exact on existing routes. Earlier selection alone does not finish
+the five generic witnesses.
+
+Extending receipts to copies of one actual elected read finishes every
+runner witness, but **five of six public C checks fail**: compact chooses
+`call_expression(index_expression)` where C and legacy choose
+`type_conversion_expression(generic_type)`. That variant is rejected.
+The existing unproven-history checks and 19 origin/context negatives pass,
+but lexical ownership does not authorize the independent tree-selection rule.
+
+A narrowed oracle trace finds equal effective precedence 1 and the same
+relative call/conversion symbol order in both grammars. Simple renumbering
+cannot fix the choice. The [screen](compact-dfa-terminal-origin-screen-20261018.md)
+retains all variants, failed C evidence, exact source pins and the remaining
+precedence/version-ranking question. No counter/timing/fleet/RSS qualification
+was launched after rejection. Runtime stays `b17ca367`; routing and graduation
+remain unchanged.
+
+A separate legacy-only trace resolves the witness at aggregate precedence
+**−3 versus 1**, while the compact local fold reports **1 versus 1**. The
+comparison scopes differ, so this identifies a concrete precedence-attribution
+check rather than proving a propagation bug. Its oracle reference passes.
+
+### Scanner record coallocation: qualified YAML allocation win
+
+Runtime `b17ca367a85d419514554e88f4477a339fd3ecba` freezes eligible snapshot
+records, byte fields and trial masks in one typed allocation. Owned YAML
+allocations fall **109 → 79 (−27.52%)** on R4 and **336 → 218 (−35.12%)**
+on 8 KiB. Bytes rise **1.24% / 1.44%**; twenty shuffled pairs establish no
+supported throughput difference. Disjoint field capacities retain complete
+memory accounting, and all identity/reset/checkpoint checks remain intact.
+
+All **414 counter rows**, five consumed and four canonical vectors,
+**206 × 72-step invariants**, **618 C checks**, unchanged **120 / 39 / 45**
+strict census, races, memory contracts and actual-source guards pass. All
+126 RSS probes pass the ceiling and median ratchet. Go RSS median ratio
+**1.03008**, initial **337.07 → 370.15**, and maximum **389.01 B/source B**
+remain recorded. The [receipt](compact-scanner-record-coallocation-receipt-20261018.md)
+retains all directions and replay evidence. Ordinary YAML still falls back;
+routing, allowlists and graduation are unchanged.
+
+### Go generic-call frontier: ownership proof remains the blocker
+
+Three two-generic-call witnesses reach **9 > 8** live links sharing one graph
+predecessor. Their terminal values match, but exact leaf identities form four
+groups. The existing selector already activates for relevant comparisons;
+it still correctly rejects unproven DFA histories. This isolates an ownership
+proof target without changing the cap or weakening selection.
+
+All six public witnesses remain C-exact on their current routes. Observed
+and unobserved frontier records match. The
+[attribution screen](compact-go-generic-call-frontier-screen-20261018.md)
+retains source pins, complete traces and limits; it makes no runtime or
+throughput claim.
+
+### Combined shift and lineage publication: qualified Go win
+
+Runtime `6d5b0b07e44a8f4fd1ab66d3246a485fde303909` combines eligible direct
+shifts with checked owner and scalar/alternative lineage publication. It
+retains owner conflicts, journals, rollback, condensed-head publication and
+the guards for callbacks, drop references and creation-sequence overflow.
+Twenty shuffled pairs support **1.27% less Go R4 time, p=.003**, and
+**0.46% / 0.45%** less time on query/language fixtures. Other compact Go and
+all YAML differences remain inconclusive. The **+0.58%, p=.011** default-Go
+edit slowdown is retained without attribution.
+
+All **414 counter rows**, five consumed vectors, four canonical vectors,
+**206 × 72-step invariants**, **618 C fixture checks**, the unchanged strict
+**120 / 39 / 45** census, races, memory contracts and actual-source guards
+pass. All 126 standalone RSS probes pass 400 B/source B and the matched
+medians pass the 10% ratchet. The initial Go RSS **342.07 → 355.67** remains
+recorded. The [receipt](compact-shift-lineage-fusion-receipt-20261017.md)
+retains the complete measurements and limits. Ordinary YAML still falls
+back; this bucket does not graduate a language.
+
+### Direct shared-request publication: private allocation win
+
+Direct publication removes the producer's temporary before-cursor wrapper.
+R4 publications fall **224 → 169** and allocations **1,253 → 1,198**; allocated
+bytes fall **3.52%**. The 8 KiB stream removes **220** publications/allocations
+and **3.50%** of bytes. Both variants pass **19 C fixtures / 57 unique parse
+comparisons** and a **72-step YAML invariant session**. Complete Core,
+scheduler and runtime values otherwise match on R4 and 8/32 KiB; both YAML
+ledger rows match.
+
+Twenty shuffled pairs establish **no supported throughput difference**, with
+intervals up to 27%. All 120 rows and the legacy control remain in the
+[screen](compact-shared-request-publication-screen-20261018.md). This compares
+two unpromoted producers. R4 still exceeds the qualified diagnostic route's
+102 tokens / 60 publications at **107 / 169**; no runtime, counter exception
+or graduation is claimed. The same-start drop proof remains strict, and C4
+removal, empty-action re-lex and selective-marker activation remain rejected.
+
+### Actual shared lookahead ownership: private correctness pathway
+
+Two private variants complete ordinary YAML compact parsing on R4 and the
+8/32 KiB streams with the diagnostic probe and artifact exception disabled.
+Each passes **19 fixtures / 57 fresh-edit-fresh locked-C comparisons** and
+allocation-free no-edit reparses. Publication before the first reduction also
+passes a **72-step YAML invariant session**. This does not establish compact
+incremental reuse or graduation.
+
+R4 reductions fall **209 → 183**, canonicalizations **326 → 293**, and
+per-request re-lex restores **18 → 0**, but elections rise **102 → 107** and
+snapshot publications **60 → 224**; nodes remain **484**. Shared-cursor rejoin
+restores remain. Late fork publication and a lighter canonical-origin guard
+still decline on all three stream witnesses. These counter/admission failures
+block promotion, so no randomized timing or new runtime is claimed. The
+[screen](compact-shared-lookahead-origin-screen-20261018.md) retains source
+patches, the actual-origin trace, passing and failing controls, and replay
+commands. That screen used runtime `6d5b0b07e44a8f4fd1ab66d3246a485fde303909`.
+
+### Scanner byte-field packing: no measured gain, not promoted
+
+Twenty shuffled pairs preserve all **414 counter rows** and five consumed
+vectors but establish **no supported throughput or YAML allocation gain**.
+Owned YAML stays at **109 / 336 allocations** on R4 / 8 KiB; ordinary YAML
+attempt plus fallback stays at **37**. All 440 samples, every timing direction,
+focused C/invariant/race/386 checks and full Core results remain in the
+[screen](compact-scanner-byte-packing-screen-20261018.md).
+
+An untimed field census explains the miss: these freezes have one populated
+14–34-byte field and a separate **113-boolean trial mask**. Byte-only packing
+cannot combine those copies. Full-fleet/RSS and actual-source qualification
+were not run after rejection. Runtime, routes and graduation remain unchanged.
+
+### Scanner fingerprint entry split: mixed result, not promoted
+
+Isolating complete value binding encoding reduces the nil/pointer entry's
+stack reservation **4,304 → 152 bytes**, without omitting identity or callback
+checks. Twenty pairs improve owned YAML R4 **1.28%, p=.046**, and ordinary
+YAML attempt plus fallback **1.09%, p=.011**, but compact Go R4 slows
+**0.98%, p=.001**. The default-full **−0.93%, p=.011** control shift remains
+unattributed. This runtime is not promoted.
+
+All **414 counter rows**, five consumed vectors and allocation medians remain
+exact. Focused C, invariant, ownership, race/386 and full Core checks pass;
+full-fleet/RSS and actual-source qualification were not run after rejection.
+The [screen](compact-scanner-fingerprint-entry-screen-20261018.md) retains all
+440 samples, compiler evidence, the corrected metric-parser audit and limits.
+
+### Combined reduction publication: inconclusive, not promoted
+
+A private general/corridor variant reaches **69.39% of Go** and **66.55% of
+owned-YAML reductions** in activation probes while retaining classification,
+owner-conflict, history and rollback checks. All **414 ledger rows**, five
+consumed vectors, focused C/invariant/race/386 gates and full Core suites pass.
+Twenty shuffled pairs establish **no supported throughput or allocation gain**;
+timing intervals reach 13%. Every timing direction and all 440 samples remain
+in the [screen](compact-reduction-lineage-fusion-screen-20261018.md).
+
+This runtime is not promoted. No additional seeds, full-fleet/RSS qualification,
+actual-source gate, counter exception, route change or graduation is claimed.
+The qualified shift-publication runtime above remains active.
+
+### Paired terminal cursors: qualified owned-stream win
+
+Runtime `5e52cf2a2644f3d38785513eebc39f8cf8a506b2` reuses a fully validated
+terminal's proof within the current comparison pair and directly consumes a
+matching right leaf while charging its logical visit. It adds no retained
+storage and preserves distinct-terminal checks, error order and budgets.
+Twenty pairs support **1.20% less time, p=.007**, on the owned YAML 8 KiB
+stream. Compact Go, owned R4 and ordinary YAML timing differences remain
+inconclusive. Default Go full parsing slows **1.02%, p<.001**, retained without
+compact-work attribution.
+
+All **414 counter rows**, four canonical vectors, **206 × 72-step invariants**,
+**618 locked-C fixture checks**, strict **120 / 39 / 45** route census, races,
+memory contracts and exact-source guards pass. All 126 standalone RSS probes
+pass 400 B/source B; twenty matched pairs per Go/ordinary/owned case pass the
+10% median ratchet. The initial Go RSS **341.85 → 395.31** remains recorded.
+The [receipt](compact-paired-terminal-cursors-receipt-20261017.md) retains every
+timing direction and gate limit. Ordinary YAML routing and graduation remain
+open.
+
+### Boundary-probe result transport and first-slot inlining: rejected
+
+Two independent twenty-pair screens reject caller-owned probe results and an
+inline first-slot variant. The first establishes no supported compact gain
+and slows Go R4 **1.16%, p=.038**, with wide timing intervals. The second
+confirms actual hot-path inlining (**cost 58**) and non-escaping scratch, yet
+slows four Go workloads **0.89–1.42%** and both owned YAML workloads
+**0.62–0.77%**. Compiler inlining does not establish a throughput win.
+
+Both preserve all **414 counter rows**, allocation counts, exact full-key
+checks, generation and journal behavior, with focused C/invariant/race/386
+gates passing. The [receipt](compact-boundary-probe-screens-20261017.md)
+retains all **880 timed rows**, source patches, compiler evidence, every
+control direction and noise limits. No runtime promotion or full-fleet/RSS
+qualification is claimed.
+
+### Cached visible-count walk: rejected
+
+Twenty pairs find no supported compact Go or YAML speedup from separating the
+cold visible-node walk and reading cached child totals directly. All **414
+counter rows** and allocation counts stay exact; focused core/C/invariant,
+race and 386 checks pass. Supported default-full/no-edit control shifts
+**−0.52% / −4.17%** remain unattributed. The
+[screen](compact-visible-count-screen-20261017.md) retains all 440 timing rows
+and the private source. No runtime promotion or full-fleet/RSS qualification
+is claimed.
+
+### Condensation entry split: smaller frame rejected on throughput
+
+A byte-identical extraction of 325 fold/history lines reduces the amd64 entry
+stack reservation **1,032 → 272 bytes**, yet twenty pairs slow four compact
+Go workloads **0.79–1.64%** and owned YAML R4 **1.04%**. Large Go, the owned
+stream and ordinary YAML differences remain inconclusive. All **414 counter
+rows**, allocation counts and byte medians stay exact; focused correctness,
+C, invariant, race and 386 gates pass. The
+[screen](compact-condense-entry-screen-20261017.md) retains all 440 samples,
+compiler/source evidence and control movements. This runtime is rejected;
+no full-fleet or RSS qualification is claimed.
+
+### Terminal-only provenance filter: rejected
+
+Twenty pairs reject a cache-free own-pair filter: Go R4 slows **0.75%**,
+ordinary YAML **0.89%**, and the owned YAML stream **1.12%**. Other compact
+timing changes are inconclusive. All **414 counter rows** and allocation
+counts stay exact; focused C, edit-invariant, race and 386 checks pass. The
+source adds no retained storage but receives no runtime promotion or full
+fleet/RSS qualification.
+
+The [receipt](compact-provenance-lookup-screen-20261017.md#terminal-only-absence-screen)
+retains all 440 samples and control directions. Baseline profiling locates
+most provenance search in reduction-terminal comparisons, motivating a
+separate pair-local shared-terminal validation experiment, qualified above.
+The rejected filter is absent from that runtime.
+
+### Provenance lookup hints: rejected, including inline control
+
+Two independent twenty-pair comparisons reject a fixed 256-byte position-hint
+table. Initial hints improve the owned YAML stream **0.68%**, but Go R4 and
+large parsing slow **0.76% / 0.89%**. A controlled split restores getter
+inlining (**cost 79**, versus **128** before and **71** in the baseline), yet
+still slows three canonical Go fixtures **0.62–0.84%** and ordinary YAML
+**1.26%**. Its owned-YAML changes are inconclusive. Inlining alone does not
+resolve the measured regressions.
+
+Both sources preserve all **414 counter rows** and allocation counts, with
+focused C/invariant/race/386 gates passing. No runtime is promoted and no
+full-fleet or RSS qualification is claimed. The
+[receipt](compact-provenance-lookup-screen-20261017.md) retains all 880 timing
+rows, every control direction, source patches and compiler evidence. A
+separate terminal-only lookup alternative is outside these measured sources.
+
+### Ownership no-op guard: rejected; fresh attribution retained
+
+Twenty pairs reject an authenticated live-owner guard: compact Go R4 slows
+**1.22%**, and rewrite/query/language slow **0.34–0.80%**. Large Go and all
+three YAML comparisons are inconclusive. Allocation counts and all **414
+counter rows** stay exact, and focused correctness, C, invariant, race and
+386 checks pass. No runtime source or graduation change is promoted.
+
+Fresh unchanged-baseline profiles put reduction construction near **20%
+cumulative** in both Go and the owned YAML stream. YAML's external-provenance
+binary search is **3.37% flat**, motivating a bounded live-record lookup hint.
+The [receipt](compact-owner-publication-screen-20261017.md) retains all 440
+timing rows, default-control shifts, attribution scope and source patch.
+
+### Action-row storage: two measured rejections
+
+Independent twenty-pair comparisons from `a03d0842994a85aa26cf494c8c67404e1e64e999`
+reject packed and full inline singleton action rows. Packed storage slows all
+five compact Go fixtures **3.12–3.84%** and the three YAML paths **2.62–4.18%**
+(all p<.001). Keeping the full action inline still slows compact Go
+**0.65–1.73%** and the owned YAML stream **0.75%**; its other YAML changes are
+inconclusive. The packed cold-table reduction does not yield a warm-parse win.
+
+Both candidates pass focused correctness, locked-C, edit invariants, race and
+386 checks with all **414 ledger rows exact** and allocation counts unchanged.
+They receive no full-fleet or RSS qualification and no runtime promotion. The
+[receipt](compact-action-storage-screen-20261017.md) retains all 880 timed rows,
+source patches, counter hashes, validation scope and default-control shifts.
+Routing, allowlists and graduation stay unchanged.
+
+### Scheduler checkpoint binding and reduction aggregation
+
+Runtime `027a10d5a75eb59b45a7a0c3477e9254a7c8553e` binds scanner checkpoint IDs
+without discarded receipt copies and moves general reduction-history work into
+an internal helper. Authentication, callback-sensitive reads, output order and
+rollback retain their behavior. The public election representation stays intact.
+
+Twenty direct combined pairs support **−0.46% Go language / −0.80% Go R4** and
+**−1.13% owned YAML R4 / −1.22% owned 8 KiB / −0.59% ordinary attempt plus
+fallback**. Other compact Go differences remain inconclusive. Allocation counts
+stay exact; default controls, including no-edit **+0.61%** at zero allocations,
+are recorded without compact-work attribution. Component gains also repeat in
+fresh YAML seeds; their separate percentages are not added to this result.
+
+All **414 counter rows**, four canonical vectors/deep digests, **206 × 72-step
+invariants**, **618 C checks**, races and memory contracts pass. The strict
+census retains **120 compact C-exact / 39 passing legacy / 45 existing legacy
+mismatches**. Actual source/API counts stay **756 / 12 / 454 / 101**, and all
+65 selectors resolve against 7,732 discovered functions.
+
+An initial unchanged-Go baseline RSS probe fails at **401.11 bytes/source
+byte**. It remains in the evidence. All twenty matched Go pairs and all
+initial candidate probes pass the unchanged 400 ceiling; candidate matched
+maximum is **376.06**. Its matched median moves **+2.28%**, within the unchanged
+10% ratchet; no RSS saving is claimed. The
+[receipt](compact-scheduler-overhead-receipt-20261017.md) retains that failure,
+the diagnostic/repeated measurements, the rejected 264→200-byte election
+representation, every timing direction, and complete qualification scope.
+Ordinary YAML ownership, routing, allowlists and graduation remain unchanged.
+
+### Canonical head mask: qualified Go throughput bucket
+
+Runtime `75507f35ec6caece2125157b192e7c54060573e3` folds an eight-byte head-ID
+mask into the existing normalized-frontier scan. Distinct bits prove singleton
+canonical groups; collisions retain exact grouping. Boundary remapping,
+version-lexer authentication, metadata and rollback stay intact.
+
+Twenty shuffled pairs measure **0.89–1.74% less parse time across all five
+compact Go fixtures**, with allocation counts unchanged. All **forty** YAML
+pairs are retained; their three pooled timing differences are inconclusive.
+The first marginal stream result does not replicate and is not claimed as a
+YAML win. The default no-edit control's −1.45% movement bypasses this operation
+and remains unattributed, with zero allocations.
+
+All **414 counter rows**, four complete canonical work vectors/deep digests,
+**206 × 72-step invariants**, **618 C fixture checks**, races, one-MiB C checks,
+and memory/source/API gates pass. The strict census keeps **120 compact
+C-exact / 39 passing legacy / 45 existing legacy mismatches**, all 204 rows
+exact. All standalone parser RSS probes stay below 400 bytes/source byte;
+no statistical RSS win is claimed. Source/API counts remain **756 / 12 / 454 /
+101**; all 65 CI selectors resolve against 7,728 discovered functions.
+
+The [receipt](compact-canonical-head-mask-receipt-20261017.md) records every
+direction, both YAML repetitions, the mixed generic-key precursor, and the
+untimed array precursor. Their qualifications are not conflated. Ordinary
+YAML routing, allowlists and the global default remain unchanged.
+
 
 **Do not graduate yet.** The E-A exit gate requires median compact/legacy time
 at most 1.0 and worst at most 1.15 across all 206 grammars, including declined
@@ -48,6 +761,26 @@ mismatches that the earlier comparator missed. The [initial per-language receipt
 contains sample hashes, routes, decline reasons, and first differences. No
 language was skipped in this strengthened check. This is one fresh real file
 per language, not a grammar-wide parity certificate.
+
+### Compact lineage storage: qualified retained-capacity reduction
+
+The direct 16-byte node-provenance record keeps recovery costs and reference
+indexes in a lazy sidecar. Retained lineage capacity falls **42.86%** on all
+four canonical Go files; large Go falls **4,948,160 → 2,827,520 bytes**.
+Twenty pairs establish small rewrite/owned-YAML-stream gains of **0.48% /
+0.51%** (p=.040/.003), with unchanged allocation counts. Other Go and ordinary
+YAML timing changes remain inconclusive. Ordinary YAML bytes fall
+**16,760 → 15,608**, with 37 allocations.
+
+All **414 ledger rows**, **206 invariant sessions**, **618 C fixture checks**,
+and **204 strict real-file rows** retain their results. Race, 386, memory and
+standalone 1 MiB RSS gates pass. A new callback regression guard prevents a
+recovery-cost snapshot from crossing reduction-plan callbacks; baseline passes,
+the first temporary sidecar fails, and the fixed source passes. The
+[focused receipt](compact-lineage-storage-receipt-20261017.md) records rejected
+sharing/plain-sidecar screens, every timing direction, the +4.21% default no-edit
+control, exact counter pins, RSS scope, and existing strict-census failures.
+No broad Go throughput, ownership, allowlist, or graduation claim follows.
 
 ### YAML scanner lookahead: qualified shipped-route throughput win
 

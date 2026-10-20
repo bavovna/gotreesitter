@@ -376,8 +376,8 @@ func TestDiagnosticShallowNonExactOuterEdgeUsesPrecedenceMaximum(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if oldRecord.precedenceMax != 1 || newRecord.precedenceMax != 2 {
-		t.Fatalf("old/new precedence maxima=%d/%d, want 1/2", oldRecord.precedenceMax, newRecord.precedenceMax)
+	if storedNodeMaximumForTest(t, core, head.Node) != 1 || storedNodeMaximumForTest(t, core, newHead.Node) != 2 {
+		t.Fatalf("old/new records=%+v/%+v, want stored maxima 1/2", oldRecord, newRecord)
 	}
 }
 
