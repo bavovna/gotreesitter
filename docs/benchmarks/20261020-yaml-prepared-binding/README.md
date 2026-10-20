@@ -68,6 +68,7 @@ python3 /evidence/analyze-perf.py plus benchstat. A writable locked-C cache
 remains at /workspace/harness_out/parity_c_ref_cache/linux_amd64.
 
 This is a grammar-owned scanner/Q-lane component, related to #1308 without
-completing its checkpoint work. It is stacked on core PR1488. Retarget to main
-and finish its own current CI before merging. Ordinary YAML compact ownership,
+completing its checkpoint work. Core PR1488 merged as
+2769aea23c6c8621db5368b6d9c3257bcb3c9b25 after 74 successful checks and four
+skips. This PR is based on main and requires its own current CI before merging. Ordinary YAML compact ownership,
 Go throughput and compact graduation remain open.
