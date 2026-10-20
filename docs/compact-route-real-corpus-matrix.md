@@ -4,7 +4,11 @@ Current evidence date: 2026-10-20 (UTC).
 Parent PR #1486 merged to main as `88dc1d9c3ff15cc2b8b5c53864455fc3a24a9d34`
 after all 78 checks passed. Branch integration `b876c5b5` preserves all 414
 ledger rows and passes focused TypeScript/TSX C checks. The final whole-PR matched-order audit passes all 414 rows and 480 timings;
-editor-latency CI remains in progress. Historical receipts below retain their own source scope.
+[PR #1487](https://github.com/odvcencio/gotreesitter/pull/1487) merged as
+`a8ecfc80cac24b7921f464386bfefa8db3840426` after 74 successful checks and
+four skips, including the completed editor-latency gate. Integrating that
+squash leaves all 3524 Go files in the qualified wrapper assembly unchanged.
+Historical receipts below retain their own source scope.
 Release update, 2026-10-17 UTC: v0.56.0 was published on October 14. The
 release condition behind the merge hold is fulfilled; current reviews and CI
 still govern landing. Historical hold statements below retain their original
