@@ -7676,3 +7676,5 @@ GTS_REAL_CORPUS_MANIFEST=corpus_real/manifest.json \
 
 The corpus directory is ignored by Git.
 Rebuild it from the exact profile before a new campaign.
+
+Ordinary YAML with 16-byte graph nodes remains held: [combined memory screen](compact-yaml-node16-memory-screen-20261020.md) records a 1.16443 ordinary RSS ratio across 20 matched pairs; all 50 focused work comparisons pass, but no timing or allowlist promotion follows the failed 1.10 memory ratchet.

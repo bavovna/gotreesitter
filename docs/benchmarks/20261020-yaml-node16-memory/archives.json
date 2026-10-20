@@ -1,0 +1,38 @@
+{
+  "baseline_commit": "2264c231a57bb1f22c93e4929b0a5e73ed6441e5",
+  "baseline_go_files": 3527,
+  "candidate_go_files": 3539,
+  "candidate_overlay_files": 32,
+  "counter_comparisons": 50,
+  "initial_probes": 6,
+  "matched_probes": 120,
+  "ratios": {
+    "go": 1.001548051236386,
+    "yaml_ordinary": 1.1644318575887183,
+    "yaml_owned": 0.9136698851972933
+  },
+  "candidate_max_bytes_per_source": 304.8237644610721,
+  "safety_pass": false,
+  "full_fleet_run": false,
+  "randomized_timing_run": false,
+  "archives": [
+    {
+      "name": "source-protocol.tar.gz",
+      "bytes": 832434,
+      "members": 61,
+      "sha256": "8b08a5390fe6d0b3b967e24707c3bc3f127d634e05d2e2c494fdff9c25a7fe3f"
+    },
+    {
+      "name": "qualification.tar.gz",
+      "bytes": 57449,
+      "members": 28,
+      "sha256": "61e1639cefbcdd912b6d1fc7d161116c345ad98276c90fdfb2fad56c9dd7d786"
+    },
+    {
+      "name": "observations.tar.gz",
+      "bytes": 137960,
+      "members": 288,
+      "sha256": "e8d77c1faa5bf44b48ff54c64f9ce59a76a7fa932e379ad9fdf7737509b6259d"
+    }
+  ]
+}
