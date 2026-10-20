@@ -53,7 +53,7 @@ func TestDiagnosticParserCoreCanonicalVersionLexerSnapshotIdentity(t *testing.T)
 			}
 
 			shared[count-1].versionState = &diagnosticParserCoreVersionState{
-				s3Region: &diagnosticParserCoreS3Region{}, relexSnapshot: firstSnapshot,
+				relexSnapshot: firstSnapshot, recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: &diagnosticParserCoreS3Region{}}),
 			}
 			out, err = scratch.canonicalize(compact, shared)
 			if err != nil {
@@ -93,7 +93,7 @@ func TestDiagnosticParserCoreReductionSiblingAdoptionRequiresVersionLexerSnapsho
 	}
 
 	scheduler.headers[1].versionState = &diagnosticParserCoreVersionState{
-		s3Region: &diagnosticParserCoreS3Region{}, relexSnapshot: firstSnapshot,
+		relexSnapshot: firstSnapshot, recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: &diagnosticParserCoreS3Region{}}),
 	}
 	adopted, err = scheduler.adoptUpdatedReductionSibling(
 		0, head, core.CleanPathRankUnknown, 0, core.AlternativeSet{}, false, false, false,
@@ -494,10 +494,10 @@ func TestDiagnosticParserCoreCanonicalKeyAndGroupSnapshotsAreAccounted(t *testin
 	keyRegion := &diagnosticParserCoreS3Region{children: make([]core.SubtreeID, 1, 3)}
 	groupRegion := &diagnosticParserCoreS3Region{children: make([]core.SubtreeID, 1, 4)}
 	key := diagnosticParserCorePhaseHead{head: head, versionState: &diagnosticParserCoreVersionState{
-		s3Region: keyRegion, relexSnapshot: keySnapshot,
+		relexSnapshot: keySnapshot, recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: keyRegion}),
 	}}
 	groupKey := diagnosticParserCorePhaseHead{head: head, versionState: &diagnosticParserCoreVersionState{
-		s3Region: groupRegion, relexSnapshot: groupSnapshot,
+		relexSnapshot: groupSnapshot, recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: groupRegion}),
 	}}
 	scheduler := &diagnosticParserCoreGenericScheduler{
 		compact: compact,

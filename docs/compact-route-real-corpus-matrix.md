@@ -1,10 +1,10 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-19 (UTC).
+Current evidence date: 2026-10-20 (UTC).
 Parent PR #1486 merged to main as `88dc1d9c3ff15cc2b8b5c53864455fc3a24a9d34`
 after all 78 checks passed. Branch integration `b876c5b5` preserves all 414
-ledger rows and passes focused TypeScript/TSX C checks. Combined engine gates
-remain in progress; historical receipts below retain their own source scope.
+ledger rows and passes focused TypeScript/TSX C checks. The final whole-PR matched-order audit passes all 414 rows and 480 timings;
+editor-latency CI remains in progress. Historical receipts below retain their own source scope.
 Release update, 2026-10-17 UTC: v0.56.0 was published on October 14. The
 release condition behind the merge hold is fulfilled; current reviews and CI
 still govern landing. Historical hold statements below retain their original
@@ -19,6 +19,38 @@ Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
+
+### Matched workload order and final PR audit
+
+The [order correction](compact-benchmark-order-receipt-20261020.md) rejects
+pairs with different workload orders and shuffles YAML's six mode/fixture pairs
+explicitly. The original failed allocation screen remains visible. Go's test
+registration had changed all twenty original paired orders; corrected smoke
+preserves order across the two different test lists.
+
+The [whole-PR audit](benchmarks/20261020-pr1487-net/README.md) compares
+`88dc1d9c` with `bdc45318` using twenty distinct matched orders per language.
+All **414 complete rows** stay exact and all **480 rows** pass the ratchets.
+Large Go time falls **5.92% (p=.001)** and allocated bytes **34.96%**.
+Ordinary YAML allocated bytes fall **11.46% / 13.33%**. Owned YAML objects
+fall **33.94% / 43.15%**, trading **1.24% / 2.74%** more allocated bytes.
+Other than no-edit time (−6.65%, p=.005), timing differences are inconclusive.
+This audit excludes the new wrapper and supplements prior correctness/RSS gates.
+
+### Qualified 32-byte immutable version state
+
+The [wrapper receipt](compact-version-state32-receipt-20261020.md) keeps rare
+recovery metadata in a shared immutable holder and preserves full-width IDs,
+rollback and closed-group identity. All **414 rows**, four canonical vectors,
+**206 × 72-step sessions**, owned YAML, **618 C checks**, memory/race and native
+guards pass. The final assembly also passes focused amd64/386 and API/R6 guards.
+
+The corrected **480-row** comparison passes all ratchets with every object
+median unchanged, including large Go **260→260**. Query Go allocated bytes fall
+**44.58%**, grammargen **4.34%**, owned YAML **9.09% / 9.84%**. All timings are
+inconclusive. All **126 RSS processes** pass; including initial samples, Go's
+maximum is **319.230 B/source byte**. Ordinary YAML still falls back, the same
+39 expanded Go failures remain, and no allowlist or work exception changes.
 
 ### Closed acceptance-group identity: qualified correctness repair
 

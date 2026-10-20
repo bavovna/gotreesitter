@@ -99,6 +99,7 @@ const (
 	diagnosticParserCoreFootprintState uint8 = iota + 1
 	diagnosticParserCoreFootprintRegion
 	diagnosticParserCoreFootprintSnapshot
+	diagnosticParserCoreFootprintRecoveryState
 )
 
 func appendDiagnosticParserCoreFootprintRef(
@@ -121,7 +122,8 @@ func appendDiagnosticParserCoreVersionFootprintRefs(
 		return refs
 	}
 	refs = appendDiagnosticParserCoreFootprintRef(refs, diagnosticParserCoreFootprintState, unsafe.Pointer(state))
-	refs = appendDiagnosticParserCoreFootprintRef(refs, diagnosticParserCoreFootprintRegion, unsafe.Pointer(state.s3Region))
+	refs = appendDiagnosticParserCoreFootprintRef(refs, diagnosticParserCoreFootprintRecoveryState, unsafe.Pointer(state.recovery))
+	refs = appendDiagnosticParserCoreFootprintRef(refs, diagnosticParserCoreFootprintRegion, unsafe.Pointer(state.recovery.Value().Region))
 	return appendDiagnosticParserCoreFootprintRef(refs, diagnosticParserCoreFootprintSnapshot, unsafe.Pointer(state.relexSnapshot))
 }
 
@@ -380,6 +382,8 @@ func diagnosticParserCoreSchedulerFootprintBytes(s *diagnosticParserCoreGenericS
 		switch ref.kind {
 		case diagnosticParserCoreFootprintState:
 			addBytes(uint64(unsafe.Sizeof(diagnosticParserCoreVersionState{})))
+		case diagnosticParserCoreFootprintRecoveryState:
+			addBytes(uint64(unsafe.Sizeof(core.FrozenValue[diagnosticParserCoreVersionRecoveryState]{})))
 		case diagnosticParserCoreFootprintRegion:
 			addBytes(diagnosticParserCoreVersionS3RegionFootprintBytes((*diagnosticParserCoreS3Region)(ref.pointer)))
 		case diagnosticParserCoreFootprintSnapshot:
