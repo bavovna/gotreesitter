@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Go election fill: compiler improvement, no measured throughput win
+
+The [direct-fill receipt](compact-go-election-fill-receipt-20261020.md) preserves all **414 ledger rows** and **four canonical Go vectors**. Twenty matched pairs per language pass all 480 timing/allocation rows and RSS limits, but all twelve timing differences are inconclusive. The **1,120→856-byte** election stack change stays held. A separately scoped capacity census identifies an unused **873,784-node prefix** in Go's full-width precedence storage; no performance claim is made for the proposed suffix representation.
+
 ### Ordinary YAML ownership: current-layout memory holds
 
 The [ownership and publication receipt](compact-yaml-ordinary-memory-receipt-20261020.md) records two private sources that pass correctness and work gates. Both preserve C output, pass 206 × 72-step invariant sessions and 618 C fixture checks, and reduce ordinary YAML node construction **288→232 / 1,156→925**. They remain held: twenty matched RSS pairs show ordinary YAML median ratios **1.337192 / 1.301437** against the existing fallback route. Every initial and matched probe is retained. No throughput timing, runtime promotion, allowlist change or counter reset is claimed.
