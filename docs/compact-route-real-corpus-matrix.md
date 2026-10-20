@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Ordinary YAML ownership: current-layout memory holds
+
+The [ownership and publication receipt](compact-yaml-ordinary-memory-receipt-20261020.md) records two private sources that pass correctness and work gates. Both preserve C output, pass 206 × 72-step invariant sessions and 618 C fixture checks, and reduce ordinary YAML node construction **288→232 / 1,156→925**. They remain held: twenty matched RSS pairs show ordinary YAML median ratios **1.337192 / 1.301437** against the existing fallback route. Every initial and matched probe is retained. No throughput timing, runtime promotion, allowlist change or counter reset is claimed.
+
 ### Matched workload order and final PR audit
 
 The [order correction](compact-benchmark-order-receipt-20261020.md) rejects
