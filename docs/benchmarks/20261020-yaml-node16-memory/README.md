@@ -1,20 +1,21 @@
 # Combined ordinary YAML memory screen, 2026-10-20
 
-Both candidates are **held**: ordinary YAML's matched median maximum RSS ratios
-are 1.16443 and 1.14617 against a 1.10 limit. No timing comparison or runtime
-promotion follows either failure. See the
+All three candidates are **held**: ordinary YAML's matched median maximum RSS
+ratios are 1.16443, 1.14617, and 1.16318 against a 1.10 limit. No timing comparison
+or runtime promotion follows these failures. See the
 [receipt](../../compact-yaml-node16-memory-screen-20261020.md) for the scope.
 
-`archives.json` pins all four archives; `archive-members.json` pins every
-extracted member by size and SHA-256. The archives were reopened and all 688
+`archives.json` pins all five archives; `archive-members.json` pins every
+extracted member by size and SHA-256. The archives were reopened and all 1,010
 members checked after construction.
 
 | Archive | Contents |
 | --- | --- |
 | `source-protocol.tar.gz` | Exact source manifests, 32-file candidate overlay, focused/counter/capacity/RSS protocols, helpers, and observational driver overlay |
 | `qualification.tar.gz` | Scoped Core, YAML C and invariant results; all 50 work comparisons; initial build failures |
-| `observations.tar.gz` | All six initial and 120 matched RSS logs/readings, audit and rows, capacity attribution, Go CPU and YAML allocation profiles and their protocols |
+| `observations.tar.gz` | All six initial and 120 matched RSS logs/readings, audit and rows, capacity attribution, Go CPU/YAML allocation profiles, and the separate paired Go graph-reachability census |
 | `projection-demand.tar.gz` | A two-file overlay over the first candidate, its 3,540-file manifest, separate scoped qualification/counter/capacity results, and all 126 additional RSS processes |
+| `publication-retirement.tar.gz` | A four-file overlay over the reserve follow-up, its 3,542-file manifest, separate scoped results, and all 126 additional RSS processes |
 
 Reconstruct the reference from commit
 `2264c231a57bb1f22c93e4929b0a5e73ed6441e5`, then verify all 3,527 Go hashes in
@@ -53,5 +54,19 @@ Use a separate empty experiment directory for that archive's `protocol/`
 contents. Keep the same node16 reference and mount layout; run the same focused,
 counter/capacity, and RSS sequence. The first counter attempt's missing-driver
 failure is retained; the included `census.sh` makes the normal replay complete.
-Its RSS command also intentionally fails the relative gate. The two screens
-retain 252 processes in total and use separate seeds; neither is a timing run.
+Its RSS command also intentionally fails the relative gate.
+
+For the graph-retirement follow-up, reconstruct the demand-covered reserve
+candidate, then apply the four-file overlay in `publication-retirement.tar.gz`
+and verify its 3,542 Go hashes. Use its own empty experiment directory and the
+same node16 reference and protocol sequence. Its RSS command likewise fails
+the relative gate. The three screens retain 378 processes in total and use
+separate seeds; none is a timing run.
+
+For the independent Go liveness census, mount the pinned node16 reference at
+`/candidate` and extracted `go-live-graph/` at `/evidence`, then run its `run.sh`
+in the same isolated environment. Verify `instrumentation-pins.json` first.
+Its two-file overlay adds only observational code; each of five fixtures
+compares work and deep trees with an unobserved parse. Header/boundary roots
+are sampled every 64 elections; other historical owners remain unexamined.
+These results support investigation, not reclamation or timing claims.

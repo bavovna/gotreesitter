@@ -1,4 +1,4 @@
-# Ordinary YAML with 16-byte graph nodes: memory screen
+# Ordinary YAML with 16-byte graph nodes: memory screens
 
 The combined candidate remains held. Smaller graph nodes, ordinary scanner
 ownership, streaming publication, observed-density reserves, and paged
@@ -107,6 +107,67 @@ bytes per source byte. These pairs compare to the public reference, not the
 first candidate, so the two screens do not establish a causal RSS improvement
 between candidates. No randomized timing, new fleet/ledger/C sweep, or race/386
 qualification follows the second memory rejection. Its complete evidence is
-in `projection-demand.tar.gz`. The next private composition adds authenticated
-fresh-graph retirement before public projection; that experiment's results
-are not part of this receipt.
+in `projection-demand.tar.gz`. The next composition adds authenticated
+fresh-graph retirement before public projection, as recorded below.
+
+## Completed-graph retirement follow-up
+
+The third candidate adds the previously qualified fresh-session graph
+retirement mechanism to the demand-covered reserve source. Its four-file
+overlay preserves the session/owner/generation checks and mutation seal, and
+also charges and releases the node16 sparse path-count arena's full capacity.
+It contains 3,542 Go files. Default/shadow Core, focused lifecycle/budget/API,
+ordinary/owned YAML invariant sessions, YAML C including the 1 MiB stream, and
+all 50 work comparisons pass on this combined source.
+
+Core capacity drops from 25,042,808 bytes before publication to 13,662,944 after
+graph retirement. All GSS nodes are released; the public result still has
+121,045 nodes. This capacity result does not establish a lower process peak.
+
+The third candidate also fails the ordinary YAML relative RSS gate. Its 20
+matched pairs use seeds `45001..45020` against the same node16 reference:
+
+| Case | Candidate/reference median maximum RSS | Gate |
+| --- | ---: | --- |
+| Go | 1.01945 | Pass |
+| Ordinary YAML | **1.16318** | **Fail: exceeds 1.10** |
+| Diagnostic-owned YAML | 0.86277 | Pass |
+
+All six initial and 120 matched processes remain in the bundle, and all
+candidate processes stay below the absolute ceiling; the maximum is 305.578
+RSS bytes per source byte. No timing comparison or runtime promotion follows.
+This source likewise has no new full fleet/ledger/C sweep or race/386 gate.
+`publication-retirement.tar.gz` contains its source delta, protocols and
+complete scoped results. Releasing a completed graph has not cleared the
+measured process-memory blocker; subsequent work must investigate storage
+lifetimes during parsing. No forced collection or budget override is added.
+
+## Go graph-lifetime attribution
+
+A separate read-only census runs the four canonical Go fixtures and the
+qualified 1 MiB Go source against the node16 reference. Each fixture runs with
+and without an observer. All five pairs retain identical Core and scheduler
+work vectors and deep trees; the four canonical digests also match their pins.
+The observer samples every 64 elections and once after acceptance, tracing
+current header heads and the current-generation boundary cache.
+
+| Fixture | GSS nodes allocated | Largest sampled header closure | Largest sampled header + boundary closure |
+| --- | ---: | ---: | ---: |
+| rewrite | 2,996 | 37 | 43 |
+| query_compile | 14,663 | 33 | 33 |
+| language | 15,074 | 47 | 50 |
+| grammargen_lr | 148,368 | 58 | 58 |
+| 1 MiB Go | 1,032,095 | 17 | 19 |
+
+The large fixture has 6,654 samples. This is a strong reason to investigate
+recycling GSS storage during parsing, but **not a reclamation safety proof**.
+The sampled closure excludes historical/certificate/callback owners, and
+sampling can miss a larger frontier between observations. It establishes
+neither that the remaining nodes can be freed nor that a new allocator would
+improve throughput. The next implementation step must trace every owner and
+preserve rollback and stale-handle rejection before recycling any storage.
+
+`observations.tar.gz` includes the census's two-file observational overlay,
+source/input hashes, replay command, all paired test results and summary.
+The qualified runtime source is unchanged; this census runs no timing
+comparison and makes no new C-oracle qualification claim.

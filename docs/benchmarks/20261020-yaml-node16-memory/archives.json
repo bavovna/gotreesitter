@@ -30,15 +30,21 @@
     },
     {
       "name": "observations.tar.gz",
-      "bytes": 137960,
-      "members": 288,
-      "sha256": "e8d77c1faa5bf44b48ff54c64f9ce59a76a7fa932e379ad9fdf7737509b6259d"
+      "bytes": 214086,
+      "members": 299,
+      "sha256": "51e2a6912afb1ecf9dbfe45da99b1d6ccfdd9a8fdfa59d73de68b130e1949ce6"
     },
     {
       "name": "projection-demand.tar.gz",
       "bytes": 433252,
       "members": 310,
       "sha256": "9dd60b64af47900c248d343ec430ac6824ce4ac8b78bcd476d1e4ce1bd3fcee6"
+    },
+    {
+      "name": "publication-retirement.tar.gz",
+      "bytes": 506560,
+      "members": 311,
+      "sha256": "19802c9ca926cd3542adc49bdf2f798cd34aa42326c969e9d38a9ccdd049536d"
     }
   ],
   "projection_demand_screen": {
@@ -56,5 +62,30 @@
     "safety_pass": false,
     "full_fleet_run": false,
     "randomized_timing_run": false
+  },
+  "publication_retirement_screen": {
+    "parent_go_files": 3540,
+    "candidate_go_files": 3542,
+    "overlay_files": 4,
+    "seeds": "45001..45020",
+    "initial_probes": 6,
+    "matched_probes": 120,
+    "ratios": {
+      "go": 1.0194483492787054,
+      "yaml_ordinary": 1.163176265270506,
+      "yaml_owned": 0.8627693925058195
+    },
+    "safety_pass": false,
+    "full_fleet_run": false,
+    "randomized_timing_run": false
+  },
+  "go_liveness_census": {
+    "source_commit": "2264c231a57bb1f22c93e4929b0a5e73ed6441e5",
+    "instrumented_overlay_files": 2,
+    "fixtures": 5,
+    "work_and_deep_trees_exact": true,
+    "historical_certificate_callback_owners_included": false,
+    "reclamation_safety_proof": false,
+    "timing_comparison": false
   }
 }

@@ -7677,4 +7677,4 @@ GTS_REAL_CORPUS_MANIFEST=corpus_real/manifest.json \
 The corpus directory is ignored by Git.
 Rebuild it from the exact profile before a new campaign.
 
-Ordinary YAML with 16-byte graph nodes remains held: [combined memory screen](compact-yaml-node16-memory-screen-20261020.md) records a 1.16443 ordinary RSS ratio across 20 matched pairs; all 50 focused work comparisons pass, but no timing or allowlist promotion follows the failed 1.10 memory ratchet.
+Ordinary YAML with 16-byte graph nodes remains held: [three memory screens and Go graph-lifetime attribution](compact-yaml-node16-memory-screen-20261020.md) retain all 378 RSS processes. Ordinary RSS ratios 1.16443, 1.14617, and 1.16318 each fail the 1.10 ratchet despite 50 passing work comparisons per source; no timing or allowlist promotion follows. A separate Go census identifies retained GSS history as an architectural target, with other ownership roots still unproven.
