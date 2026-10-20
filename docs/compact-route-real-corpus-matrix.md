@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### YAML storage growth: remaining relative RSS gap
+
+The [reserve and checkpoint screens](compact-yaml-storage-growth-screen-20261020.md) retain three private sources and all **378** RSS processes. Corrected complete-lexicon density and paged immutable checkpoint records preserve focused C output and all 50 work/reuse comparisons; their ordinary YAML median ratios are **1.239112 / 1.186330**, still above 1.10. The earlier activation-only screen misses the intended reserve branch and remains recorded separately. No runtime, full-fleet qualification, timing, pin or graduation change follows these failed early screens.
+
 ### YAML graph retirement: capacity falls, peak-memory gate still fails
 
 The [completed-graph screen](compact-yaml-graph-retirement-screen-20261020.md) releases Core graph storage before native publication while preserving all correctness/work gates and the 121,045-node large YAML tree. Core capacity falls **31,840,112→15,454,184 bytes** across publication. Ordinary YAML RSS still rises **29.24%** against the existing route (twenty matched pairs, all initial probes retained), exceeding the 10% relative gate. No timing, runtime promotion, pin, approval or graduation change follows. Storage growth before publication remains the next target.
