@@ -40,11 +40,11 @@ func (c *Core) CachedVisibleSubtreeCount(symbols []SelectedSymbolPolicy, id Subt
 // SoleDerivationVisibleNodeCount returns the visible payload count only when
 // head has one exact derivation. The certified path does not allocate payload storage.
 func (c *Core) SoleDerivationVisibleNodeCount(symbols []SelectedSymbolPolicy, head Head) (uint32, bool, error) {
-	n, err := c.node(head.Node)
+	_, nPaths, err := c.nodeWithPathCount(head.Node)
 	if err != nil {
 		return 0, false, err
 	}
-	if n.pathCount == 1 {
+	if nPaths == 1 {
 		reverseLinks, exact, err := c.appendSingleDerivationLinks(head.Node, make([]LinkID, 0, 64))
 		if err != nil {
 			return 0, false, err

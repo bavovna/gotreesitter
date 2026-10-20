@@ -73,7 +73,7 @@ func TestRecoverySiblingMergeRejectsUnownedBoundaryAndUnequalCosts(t *testing.T)
 			checkpoint := CheckpointID(0)
 			switch reason {
 			case "boundary":
-				other, err := compact.appendNode(nodeRecord{state: 3, byteOffset: 1})
+				other, err := compact.appendNode(nodeInput{state: 3, byteOffset: 1})
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -137,7 +137,7 @@ func recoverySiblingMergeFixture(t *testing.T, distinctSymbol bool) (*Core, Head
 			firstPayload = payload
 		}
 		link := compact.appendGraphLink(linkRecord{prev: seed.Node, payload: payload})
-		node, err := compact.appendNode(nodeRecord{state: 3, byteOffset: 1, firstLink: uint32(link), linkCount: 1, pathCount: 1})
+		node, err := compact.appendNode(nodeInput{state: 3, byteOffset: 1, firstLink: uint32(link), linkCount: 1, pathCount: 1})
 		if err != nil {
 			t.Fatal(err)
 		}

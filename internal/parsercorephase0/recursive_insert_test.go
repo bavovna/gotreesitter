@@ -199,8 +199,8 @@ func TestRecursiveInsertAcceptsAuthenticatedNonzeroCheckpoint(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	top, err := fixture.core.node(merged.Node)
-	if err != nil || top.pathCount != 2 {
+	top, topPaths, err := fixture.core.nodeWithPathCount(merged.Node)
+	if err != nil || topPaths != 2 {
 		t.Fatalf("nonzero-checkpoint top=%+v err=%v", top, err)
 	}
 	canonical, ok := fixture.core.CanonicalBoundary(8, 11, false, fixture.checkpoint)
@@ -244,16 +244,16 @@ func TestRecursiveInsertTwoShallowClassesPreservesABCAndReplay(t *testing.T) {
 		workAfterMerge.PredecessorLinkUnionRejected != workBeforeMerge.PredecessorLinkUnionRejected {
 		t.Fatalf("recursive insertion outcome vector before=%+v after=%+v", workBeforeMerge, workAfterMerge)
 	}
-	top, err := core.node(merged.Node)
-	if err != nil || top.linkCount != 1 || top.pathCount != 2 {
+	top, topPaths, err := core.nodeWithPathCount(merged.Node)
+	if err != nil || top.linkCount != 1 || topPaths != 2 {
 		t.Fatalf("merged top=%+v err=%v, want one link/two paths", top, err)
 	}
 	topLinks, err := core.nodeLinks(*top)
 	if err != nil {
 		t.Fatal(err)
 	}
-	predecessor, err := core.node(topLinks[0].prev)
-	if err != nil || predecessor.linkCount != 2 || predecessor.pathCount != 2 {
+	predecessor, predecessorPaths, err := core.nodeWithPathCount(topLinks[0].prev)
+	if err != nil || predecessor.linkCount != 2 || predecessorPaths != 2 {
 		t.Fatalf("merged predecessor=%+v err=%v, want two links/two paths", predecessor, err)
 	}
 	lower, err := core.nodeLinks(*predecessor)
@@ -400,9 +400,9 @@ func TestRecursiveInsertSamePairPrecedenceAndDistinctClass(t *testing.T) {
 			}
 			top, _ := core.node(merged.Node)
 			topLinks, _ := core.nodeLinks(*top)
-			lowerNode, _ := core.node(topLinks[0].prev)
+			lowerNode, lowerNodePaths, _ := core.nodeWithPathCount(topLinks[0].prev)
 			lower, _ := core.nodeLinks(*lowerNode)
-			if lowerNode.linkCount != test.wantLinks || lowerNode.pathCount != uint64(test.wantLinks) {
+			if lowerNode.linkCount != test.wantLinks || lowerNodePaths != uint64(test.wantLinks) {
 				t.Fatalf("lower node=%+v links=%#v", lowerNode, lower)
 			}
 			wantFirst := incumbent
@@ -487,7 +487,7 @@ func TestRecursiveInsertDeclinesUnsupportedProvenanceAndDepth(t *testing.T) {
 	t.Run("external-top-leaf", func(t *testing.T) {
 		core := newTinyCoreWithLimits(t, Limits{})
 		left, _ := core.Seed(1, 0)
-		rightID, _ := core.appendNode(nodeRecord{state: 1, byteOffset: 0, pathCount: 1})
+		rightID, _ := core.appendNode(nodeInput{state: 1, byteOffset: 0, pathCount: 1})
 		top := appendShallowPayload(t, core, shallowPayloadSpec{symbol: 30, endByte: 1, external: true})
 		key := core.boundaryKey(8, 1)
 		old, err := core.condense(key, linkInput{prev: left.Node, payload: top})
@@ -531,7 +531,7 @@ func TestRecursiveInsertDeclinesUnsupportedProvenanceAndDepth(t *testing.T) {
 	t.Run("non-exact-nested-edge", func(t *testing.T) {
 		core := newTinyCoreWithLimits(t, Limits{})
 		rootA, _ := core.Seed(1, 0)
-		rootBID, _ := core.appendNode(nodeRecord{state: 1, byteOffset: 0, pathCount: 1})
+		rootBID, _ := core.appendNode(nodeInput{state: 1, byteOffset: 0, pathCount: 1})
 		lowerA := appendShallowPayload(t, core, shallowPayloadSpec{symbol: 20, productionID: 1, endByte: 10})
 		lowerB := appendShallowPayload(t, core, shallowPayloadSpec{symbol: 20, productionID: 2, endByte: 10})
 		leftLower, _ := core.appendAdjacencyNode(7, 10, []linkRecord{{prev: rootA.Node, payload: lowerA}})
@@ -556,7 +556,7 @@ func TestRecursiveInsertDeclinesUnsupportedProvenanceAndDepth(t *testing.T) {
 	t.Run("depth-limit", func(t *testing.T) {
 		core := newTinyCoreWithLimits(t, Limits{})
 		left, _ := core.Seed(1, 0)
-		rightID, _ := core.appendNode(nodeRecord{state: 1, byteOffset: 0, pathCount: 1})
+		rightID, _ := core.appendNode(nodeInput{state: 1, byteOffset: 0, pathCount: 1})
 		right := Head{Node: rightID}
 		for depth := 0; depth <= maxRecursiveInsertDepth; depth++ {
 			offset := uint32(depth + 1)
@@ -775,10 +775,10 @@ func TestRecursiveInsertKeepsScannerCheckpointMismatchSeparate(t *testing.T) {
 	if err := core.SetPhaseExternalTokenScannerCheckpoints(start, rightCheckpoint); err != nil {
 		t.Fatal(err)
 	}
-	leftRoot, _ := core.appendNodeAt(nodeRecord{
+	leftRoot, _ := core.appendNodeAt(nodeInput{
 		state: 1, byteOffset: 0, pathCount: 1,
 	}, leftCheckpoint)
-	rightRoot, _ := core.appendNodeAt(nodeRecord{
+	rightRoot, _ := core.appendNodeAt(nodeInput{
 		state: 1, byteOffset: 0, pathCount: 1,
 	}, rightCheckpoint)
 	lower := appendShallowPayload(t, core, shallowPayloadSpec{symbol: 20, endByte: 10})
@@ -999,7 +999,7 @@ func TestRecursiveInsertDeclinesSelfAndAncestry(t *testing.T) {
 		t.Fatalf("self merge error=%v", err)
 	}
 	payload := appendShallowPayload(t, core, shallowPayloadSpec{symbol: 20, endByte: 1})
-	rightID, _ := core.appendNode(nodeRecord{state: 7, byteOffset: 1, pathCount: 1})
+	rightID, _ := core.appendNode(nodeInput{state: 7, byteOffset: 1, pathCount: 1})
 	leftID, _ := core.appendAdjacencyNode(7, 1, []linkRecord{{prev: rightID, payload: payload}})
 	if _, _, err := core.mergePredecessorsBounded(leftID, rightID, 0, &precedenceMaximumWitness{}); err == nil || !strings.Contains(err.Error(), "ancestry-related") {
 		t.Fatalf("ancestry merge error=%v", err)

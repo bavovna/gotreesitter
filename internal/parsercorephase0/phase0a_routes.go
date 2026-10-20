@@ -899,12 +899,12 @@ func phase0AEnumeratePhysicalDerivations(core *Core, head Head) ([]phase0APhysic
 		if visiting[id] {
 			return nil, errors.New("parser-core phase zero A: accepted physical spine cycle")
 		}
-		node, err := core.node(id)
+		node, nodePaths, err := core.nodeWithPathCount(id)
 		if err != nil {
 			return nil, err
 		}
 		if node.linkCount == 0 {
-			if node.pathCount != 1 {
+			if nodePaths != 1 {
 				return nil, errors.New("parser-core phase zero A: accepted physical seed path count")
 			}
 			return []phase0APhysicalDerivation{{}}, nil
@@ -948,7 +948,7 @@ func phase0AEnumeratePhysicalDerivations(core *Core, head Head) ([]phase0APhysic
 				out = append(out, path)
 			}
 		}
-		if node.pathCount != math.MaxUint64 && uint64(len(out)) != node.pathCount {
+		if nodePaths != math.MaxUint64 && uint64(len(out)) != nodePaths {
 			return nil, errors.New("parser-core phase zero A: accepted physical path-count mismatch")
 		}
 		return out, nil

@@ -62,6 +62,7 @@ func (c *Core) StorageBytes() uint64 {
 	}
 	return uint64(len(c.nodes))*coreNodeRecordBytes +
 		uint64(len(c.nodePrecedenceWide))*coreInt64Bytes +
+		uint64(len(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(len(c.nodeLineageRefSets))*coreNodeLineageRefSetBytes +
 		uint64(len(c.links))*coreLinkRecordBytes +
 		uint64(len(c.dropCohortLinkRefIndexes))*coreUint32Bytes +
@@ -108,6 +109,7 @@ var (
 	coreReusedSubtreeBytes                  = uint64(unsafe.Sizeof(reusedSubtreeProvenance{}))
 	coreRecoveryDiscontinuityReductionBytes = uint64(unsafe.Sizeof(recoveryDiscontinuityReduction{}))
 	coreCheckpointRecordBytes               = uint64(unsafe.Sizeof(checkpointRecord{}))
+	coreNodePathCountRecordBytes            = uint64(unsafe.Sizeof(nodePathCountRecord{}))
 	coreCheckpointBucketBytes               = uint64(unsafe.Sizeof(uint64(0))) + uint64(unsafe.Sizeof(CheckpointID(0)))
 	coreBoundarySlotBytes                   = uint64(unsafe.Sizeof(boundarySlot{}))
 	coreBoundaryMutationBytes               = uint64(unsafe.Sizeof(boundaryMutation{}))
@@ -164,6 +166,7 @@ func (c *Core) FootprintBytes() uint64 {
 	}
 	total := uint64(cap(c.nodes))*coreNodeRecordBytes +
 		uint64(cap(c.nodePrecedenceWide))*coreInt64Bytes +
+		uint64(cap(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(cap(c.links))*coreLinkRecordBytes +
 		uint64(cap(c.subtrees))*coreSubtreeRecordBytes +
 		uint64(cap(c.recoveryVisibleCounts))*coreRecoveryVisibleCountBytes +
@@ -252,6 +255,7 @@ func (c *Core) DominantCapacityBytes() uint64 {
 		return 0
 	}
 	return uint64(cap(c.nodes))*coreNodeRecordBytes +
+		uint64(cap(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(cap(c.nodeLineages))*coreNodeLineageRecordBytes + uint64(cap(c.nodeLineageRecovery))*8 +
 		uint64(cap(c.alternativeSpillArena))*coreUint32Bytes +
 		uint64(cap(c.subtrees))*coreSubtreeRecordBytes +
@@ -368,6 +372,7 @@ func (c *Core) releaseRecordArenaReserve() {
 	}
 	c.nodes = nil
 	c.nodePrecedenceWide = nil
+	c.nodePathCountsWide = nil
 	c.nodePrecedenceWideBase = 0
 	c.nodeLineages = nil
 	c.nodeLineageRecovery = nil
@@ -408,6 +413,7 @@ func (c *Core) releaseOversizedRetention() {
 	}
 	c.nodes = nil
 	c.nodePrecedenceWide = nil
+	c.nodePathCountsWide = nil
 	c.nodePrecedenceWideBase = 0
 	c.nodeLineages = nil
 	c.nodeLineageRecovery = nil

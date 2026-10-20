@@ -5,11 +5,11 @@ import "errors"
 // SoleHeadPayload returns the payload on an exact single-link frontier.
 // It does not walk the stack or interpret the payload's public projection.
 func (c *Core) SoleHeadPayload(head Head) (SubtreeID, error) {
-	n, err := c.node(head.Node)
+	n, nPaths, err := c.nodeWithPathCount(head.Node)
 	if err != nil {
 		return 0, err
 	}
-	if n.linkCount != 1 || n.pathCount != 1 {
+	if n.linkCount != 1 || nPaths != 1 {
 		return 0, errors.New("parser-core phase zero: payload requires one exact frontier link")
 	}
 	if n.firstLink == 0 || uint64(n.firstLink) > uint64(len(c.links)) {

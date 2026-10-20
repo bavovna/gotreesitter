@@ -9,16 +9,16 @@ import (
 func TestNodePrecedenceOriginSkipsNarrowPrefix(t *testing.T) {
 	c := newTinyCoreWithLimits(t, Limits{MaxNodes: 20000})
 	for i := 0; i < 10000; i++ {
-		if _, err := c.appendNodeAtWithMaximum(nodeRecord{state: 1, pathCount: 1}, 0, int64(i%17)); err != nil {
+		if _, err := c.appendNodeAtWithMaximum(nodeInput{state: 1, pathCount: 1}, 0, int64(i%17)); err != nil {
 			t.Fatal(err)
 		}
 	}
 	before := c.FootprintBytes()
-	first, err := c.appendNodeAtWithMaximum(nodeRecord{state: 2, pathCount: 1}, 0, math.MinInt64)
+	first, err := c.appendNodeAtWithMaximum(nodeInput{state: 2, pathCount: 1}, 0, math.MinInt64)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := c.appendNodeAtWithMaximum(nodeRecord{state: 3, pathCount: 1}, 0, math.MaxInt64)
+	second, err := c.appendNodeAtWithMaximum(nodeInput{state: 3, pathCount: 1}, 0, math.MaxInt64)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestNodePrecedenceOriginFirstPublicationRollback(t *testing.T) {
 	var abandoned NodeID
 	err := c.ApplySchedulerAtomic(func(SchedulerTransactionToken) error {
 		var e error
-		abandoned, e = c.appendNodeAtWithMaximum(nodeRecord{state: 2, pathCount: 1}, 0, math.MinInt64)
+		abandoned, e = c.appendNodeAtWithMaximum(nodeInput{state: 2, pathCount: 1}, 0, math.MinInt64)
 		if e != nil {
 			return e
 		}
@@ -64,7 +64,7 @@ func TestNodePrecedenceOriginFirstPublicationRollback(t *testing.T) {
 	if !errors.Is(err, abort) || c.nodePrecedenceWideBase != 0 || len(c.nodePrecedenceWide) != 0 {
 		t.Fatalf("rollback origin=%d len=%d err=%v", c.nodePrecedenceWideBase, len(c.nodePrecedenceWide), err)
 	}
-	replacement, err := c.appendNodeAtWithMaximum(nodeRecord{state: 3, pathCount: 1}, 0, math.MaxInt64)
+	replacement, err := c.appendNodeAtWithMaximum(nodeInput{state: 3, pathCount: 1}, 0, math.MaxInt64)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func TestNodePrecedenceOriginFirstPublicationRollback(t *testing.T) {
 	if _, err := c.Seed(1, 0); err != nil {
 		t.Fatal(err)
 	}
-	first, err := c.appendNodeAtWithMaximum(nodeRecord{state: 4, pathCount: 1}, 0, math.MinInt64)
+	first, err := c.appendNodeAtWithMaximum(nodeInput{state: 4, pathCount: 1}, 0, math.MinInt64)
 	if err != nil {
 		t.Fatal(err)
 	}

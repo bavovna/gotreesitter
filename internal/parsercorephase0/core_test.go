@@ -2720,8 +2720,8 @@ func TestCompactArenaRecordsRemainPointerFree(t *testing.T) {
 	if got := unsafe.Sizeof(materializationPostorderFrame{}); got != 24 {
 		t.Fatalf("materializationPostorderFrame size = %d, want 24", got)
 	}
-	if got := unsafe.Sizeof(nodeRecord{}); got != 24 {
-		t.Fatalf("nodeRecord size = %d, want 24", got)
+	if got := unsafe.Sizeof(nodeRecord{}); got != 16 {
+		t.Fatalf("nodeRecord size = %d, want 16", got)
 	}
 	// Store optional reference sets separately; every graph node pays this
 	// record width, even when no certificates are recorded.
@@ -3080,8 +3080,7 @@ func TestCycleAndOverflowDeclineFailClosed(t *testing.T) {
 		if _, err := core.condense(key, linkInput{prev: seedA.Node, payload: payload}); err != nil {
 			t.Fatal(err)
 		}
-		b, _ := core.node(seedB.Node)
-		b.pathCount = math.MaxUint64
+		setNodePathCountForTest(core, seedB.Node, math.MaxUint64)
 		head, err := core.condense(key, linkInput{prev: seedB.Node, payload: payload})
 		if err != nil {
 			t.Fatalf("path-count overflow changed execution: %v", err)
@@ -3137,14 +3136,14 @@ func TestDerivationsDeepSinglePath(t *testing.T) {
 	core.links = make([]linkRecord, depth)
 	core.subtrees = make([]subtreeRecord, depth)
 	core.nodes = append(core.nodes, make([]nodeRecord, depth)...)
+	core.nodeLineages = append(core.nodeLineages, make([]nodeLineageHot, depth)...)
 	for index := 0; index < depth; index++ {
 		linkID := LinkID(index + 1)
 		core.links[index] = linkRecord{
 			prev: NodeID(index + 1), payload: SubtreeID(index + 1),
 		}
-		core.nodes[index+1] = nodeRecord{
-			firstLink: uint32(linkID), linkCount: 1, pathCount: 1,
-		}
+		core.nodes[index+1] = nodeRecord{firstLink: uint32(linkID), linkCount: 1}
+		core.nodeLineages[index+1].flags = 1 << nodePathCountShift
 	}
 	core.links[0].scoreDelta = 2
 	core.links[depth/2].scoreDelta = -3

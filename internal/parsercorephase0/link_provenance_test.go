@@ -28,11 +28,11 @@ func newLinkProvenanceFixture(t *testing.T, maxLinksPerBoundary uint32) linkProv
 	if err != nil {
 		t.Fatal(err)
 	}
-	firstNode, err := core.appendNode(nodeRecord{state: 3, byteOffset: 0, pathCount: 1})
+	firstNode, err := core.appendNode(nodeInput{state: 3, byteOffset: 0, pathCount: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
-	secondNode, err := core.appendNode(nodeRecord{state: 3, byteOffset: 1, pathCount: 1})
+	secondNode, err := core.appendNode(nodeInput{state: 3, byteOffset: 1, pathCount: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -308,7 +308,7 @@ func TestReductionLinkChainHandoffPreservesNoncontiguousIDs(t *testing.T) {
 	chainLink := fixture.core.appendGraphLink(linkRecord{
 		prev: fixture.nodes[0], payload: fixture.payload, next: fixture.rangeValue.First - 1,
 	})
-	nodeID, err := fixture.core.appendNode(nodeRecord{
+	nodeID, err := fixture.core.appendNode(nodeInput{
 		state: 3, byteOffset: 2, firstLink: uint32(chainLink), linkCount: 2, pathCount: 1,
 	})
 	if err != nil {
@@ -344,7 +344,7 @@ func TestReductionLinkChainHandoffRejectsMalformedMetadata(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			fixture := newLinkProvenanceFixture(t, 8)
-			nodeID, err := fixture.core.appendNode(nodeRecord{
+			nodeID, err := fixture.core.appendNode(nodeInput{
 				state: 3, byteOffset: 2, firstLink: uint32(fixture.rangeValue.First),
 				linkCount: fixture.rangeValue.Count, pathCount: 1,
 			})
@@ -366,7 +366,7 @@ func TestReductionLinkChainHandoffRollbackAndReset(t *testing.T) {
 	beforeNodes, beforeLinks := len(fixture.core.nodes), len(fixture.core.links)
 	var escaped Head
 	err := fixture.core.ApplySchedulerAtomic(func(_ SchedulerTransactionToken) error {
-		id, err := fixture.core.appendNode(nodeRecord{
+		id, err := fixture.core.appendNode(nodeInput{
 			state: 3, byteOffset: 2, firstLink: uint32(fixture.rangeValue.First),
 			linkCount: fixture.rangeValue.Count, pathCount: 1,
 		})
@@ -392,7 +392,7 @@ func TestReductionLinkChainHandoffRollbackAndReset(t *testing.T) {
 		t.Fatal("out-of-bounds reduction output head was accepted")
 	}
 
-	validID, err := fixture.core.appendNode(nodeRecord{
+	validID, err := fixture.core.appendNode(nodeInput{
 		state: 3, byteOffset: 2, firstLink: uint32(fixture.rangeValue.First),
 		linkCount: fixture.rangeValue.Count, pathCount: 1,
 	})

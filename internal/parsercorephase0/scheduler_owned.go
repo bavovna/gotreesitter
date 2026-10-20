@@ -1777,14 +1777,14 @@ func (c *Core) reduceOutputsClassifiedIntoActive(owner SchedulerTransactionToken
 	// acceptance. Diagnostic owned-lexer sessions start immediately to avoid
 	// repeated acceptance materialization; ordinary small sessions keep their
 	// established work. Recovery and borrowed histories remain unsupported.
-	sourceNode, sourceErr := c.node(boundary.head.Node)
+	_, sourceNodePaths, sourceErr := c.nodeWithPathCount(boundary.head.Node)
 	if sourceErr != nil {
 		return nil, sourceErr
 	}
 	// Reduction metadata callbacks may publish a recovery cost on a source
 	// created in the active speculation. Read it after those callbacks.
 	cleanSource := c.schedulerFrame.fresh && cost == nil && c.nodeLineageRecoveryAt(boundary.head.Node).storedErrorCost == 0
-	if cleanSource && sourceNode.pathCount > uint64(c.limits.MaxLinksPerBoundary) {
+	if cleanSource && sourceNodePaths > uint64(c.limits.MaxLinksPerBoundary) {
 		scratch.pressureSeen = true
 	}
 	scratch.selectCleanChildren = len(paths) > 1 && cleanSource && (scratch.pressureSeen || ExternalLexerOwnershipProbeEnabled())
