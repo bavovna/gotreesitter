@@ -148,6 +148,17 @@ targets, **not measured allocation, RSS or throughput wins**. No production
 source, counter pin, route, exception or graduation setting changes.
 
 
+### Borrowed dispatch cells: no measured throughput win
+
+The [six-file private screen](compact-borrowed-dispatch-cell-screen-20261020.md)
+preserves **414 complete rows**, four canonical vectors, **206 × 72-step**
+sessions, **618 C fixtures**, unchanged strict/expanded C behavior and all safety
+guards. All **480 matched rows** complete, but all twelve timings are inconclusive
+and all six Go medians rise **1.00–3.13%**. The runtime stays held. All **126 RSS
+probes** pass, maximum **297.293 B/source byte**. The independent public fix only
+pins the existing scheduler-size test to measured amd64 and 386 layouts; no
+runtime record, budget, counter, route or graduation change.
+
 ### Native 16-byte actions: safe, throughput win unproven
 
 The [two-file direct-layout screen](compact-action16-native-layout-screen-20261019.md)
