@@ -1,12 +1,12 @@
 # Combined ordinary YAML memory screen, 2026-10-20
 
-The candidate is **held**: ordinary YAML's matched median maximum RSS ratio is
-1.16443 against a 1.10 limit. No timing comparison or runtime promotion follows
-this failure. See the [receipt](../../compact-yaml-node16-memory-screen-20261020.md)
-for the scope and the next hypothesis.
+Both candidates are **held**: ordinary YAML's matched median maximum RSS ratios
+are 1.16443 and 1.14617 against a 1.10 limit. No timing comparison or runtime
+promotion follows either failure. See the
+[receipt](../../compact-yaml-node16-memory-screen-20261020.md) for the scope.
 
-`archives.json` pins all three archives; `archive-members.json` pins every
-extracted member by size and SHA-256. The archives were reopened and all 378
+`archives.json` pins all four archives; `archive-members.json` pins every
+extracted member by size and SHA-256. The archives were reopened and all 688
 members checked after construction.
 
 | Archive | Contents |
@@ -14,6 +14,7 @@ members checked after construction.
 | `source-protocol.tar.gz` | Exact source manifests, 32-file candidate overlay, focused/counter/capacity/RSS protocols, helpers, and observational driver overlay |
 | `qualification.tar.gz` | Scoped Core, YAML C and invariant results; all 50 work comparisons; initial build failures |
 | `observations.tar.gz` | All six initial and 120 matched RSS logs/readings, audit and rows, capacity attribution, Go CPU and YAML allocation profiles and their protocols |
+| `projection-demand.tar.gz` | A two-file overlay over the first candidate, its 3,540-file manifest, separate scoped qualification/counter/capacity results, and all 126 additional RSS processes |
 
 Reconstruct the reference from commit
 `2264c231a57bb1f22c93e4929b0a5e73ed6441e5`, then verify all 3,527 Go hashes in
@@ -45,3 +46,12 @@ The candidate passed the focused checks stated in the receipt. A full fleet,
 ledger/C sweep, race/386 validation, and randomized timing remain unperformed
 on this combined source. The profiling runs are attribution, not comparison
 evidence.
+
+For the demand-covered reserve follow-up, reconstruct the first candidate,
+apply the second archive's `candidate-overlay/`, and verify its 3,540 Go hashes.
+Use a separate empty experiment directory for that archive's `protocol/`
+contents. Keep the same node16 reference and mount layout; run the same focused,
+counter/capacity, and RSS sequence. The first counter attempt's missing-driver
+failure is retained; the included `census.sh` makes the normal replay complete.
+Its RSS command also intentionally fails the relative gate. The two screens
+retain 252 processes in total and use separate seeds; neither is a timing run.

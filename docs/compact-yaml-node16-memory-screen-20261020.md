@@ -76,3 +76,37 @@ query fixture. These profiles select targets; they establish no speedup.
 The [replay bundle](benchmarks/20261020-yaml-node16-memory/README.md) includes
 source overlays, manifests, all RSS probes, counter rows, scoped qualification
 logs, profiling inputs/results, and the initial build/mount diagnostics.
+
+## Demand-covered reserve follow-up
+
+A second candidate skips late arena copies when current capacity covers the
+projected record demand. It keeps the existing 6.25% growth slack whenever an
+arena actually needs growth, handles node and lineage capacities independently,
+and preserves the complete-growth budget check. It changes no records or work.
+The two-file overlay extends the combined candidate to 3,540 Go files.
+
+Focused default/shadow Core, scanner/publication lifecycle, budget/pool,
+API/layout, YAML C including the 1 MiB stream, and ordinary/owned 72-step
+invariant checks pass again on that source. All 50 counter comparisons pass
+with the same values above. The accepted-storage probe records 25,042,808 Core
+capacity bytes before publication and 25,151,256 after it; graph/public node
+counts remain 159,821 and 121,045.
+
+This candidate also remains held. Its 20 matched pairs use seeds
+`44901..44920` against the same qualified node16 reference, with all six initial
+and 120 matched processes retained:
+
+| Case | Candidate/reference median maximum RSS | Gate |
+| --- | ---: | --- |
+| Go | 0.96653 | Pass |
+| Ordinary YAML | **1.14617** | **Fail: exceeds 1.10** |
+| Diagnostic-owned YAML | 0.90787 | Pass |
+
+Every candidate stays below the absolute ceiling; the maximum is 301.601 RSS
+bytes per source byte. These pairs compare to the public reference, not the
+first candidate, so the two screens do not establish a causal RSS improvement
+between candidates. No randomized timing, new fleet/ledger/C sweep, or race/386
+qualification follows the second memory rejection. Its complete evidence is
+in `projection-demand.tar.gz`. The next private composition adds authenticated
+fresh-graph retirement before public projection; that experiment's results
+are not part of this receipt.

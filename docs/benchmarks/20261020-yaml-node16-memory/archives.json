@@ -33,6 +33,28 @@
       "bytes": 137960,
       "members": 288,
       "sha256": "e8d77c1faa5bf44b48ff54c64f9ce59a76a7fa932e379ad9fdf7737509b6259d"
+    },
+    {
+      "name": "projection-demand.tar.gz",
+      "bytes": 433252,
+      "members": 310,
+      "sha256": "9dd60b64af47900c248d343ec430ac6824ce4ac8b78bcd476d1e4ce1bd3fcee6"
     }
-  ]
+  ],
+  "projection_demand_screen": {
+    "parent_go_files": 3539,
+    "candidate_go_files": 3540,
+    "overlay_files": 2,
+    "seeds": "44901..44920",
+    "initial_probes": 6,
+    "matched_probes": 120,
+    "ratios": {
+      "go": 0.9665253617892121,
+      "yaml_ordinary": 1.1461697011336314,
+      "yaml_owned": 0.9078674948240167
+    },
+    "safety_pass": false,
+    "full_fleet_run": false,
+    "randomized_timing_run": false
+  }
 }
