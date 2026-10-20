@@ -688,7 +688,7 @@ func TestDiagnosticParserCoreCanonicalScratchPreservesLexerSnapshotOwners(t *tes
 					relexSnapshot: snapshot.clone(), lexerRequest: 2,
 				}
 				if changed {
-					rightState.recoveryGroup = 1
+					rightState.recovery = core.ReuseVersionRecoveryState(rightState.recovery, diagnosticParserCoreVersionRecoveryState{RecoveryGroup: 1})
 				}
 				scratch := diagnosticParserCoreCanonicalScratch{
 					versionStateOwner: scheduler,
@@ -782,7 +782,7 @@ func TestDiagnosticParserCoreCanonicalScratchDistinctKeysPreserveMetadata(t *tes
 					lastPersistedHead: head, acceptOrdinal: uint32(index + 1),
 					altSet:              core.NewAlternativeSetMember(uint16(index+1), 2),
 					lastPersistedAltSet: core.NewAlternativeSetMember(uint16(index+1), 1),
-					versionState:        &diagnosticParserCoreVersionState{lexerRequest: uint32(index + 1), recoveryGroup: uint64(index + 2), missingGroup: uint64(index + 3)},
+					versionState:        &diagnosticParserCoreVersionState{lexerRequest: uint32(index + 1), recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{RecoveryGroup: uint64(index + 2), MissingGroup: uint64(index + 3)})},
 				}
 				h.markRecoveryLineage()
 				h.markRecoveryCosted()

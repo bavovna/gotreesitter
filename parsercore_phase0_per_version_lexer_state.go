@@ -176,21 +176,22 @@ func (s *diagnosticParserCoreGenericScheduler) versionLexerStateEqual(
 	if left == nil || right == nil {
 		return left == right
 	}
-	if left.s3Region != right.s3Region ||
-		left.relexSnapshot != right.relexSnapshot ||
-		left.recoveryGroup != right.recoveryGroup ||
-		left.missingGroup != right.missingGroup ||
-		left.recoveryNodeBaseline != right.recoveryNodeBaseline ||
-		left.recoveryNodeBaselineSet != right.recoveryNodeBaselineSet {
+	if left.relexSnapshot != right.relexSnapshot ||
+		left.recoveryNodeBaseline != right.recoveryNodeBaseline || left.recoveryNodeBaselineSet != right.recoveryNodeBaselineSet {
 		return false
 	}
-	// A closed acceptance group still controls the final recovery election.
-	// Keep effective group identity even after the live recovery keys clear.
-	if left.acceptanceGroup != right.acceptanceGroup &&
-		recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: left}) !=
-			recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: right}) {
-		return false
+	if left.recovery != right.recovery {
+		a, b := left.recovery.Value(), right.recovery.Value()
+		if a.Region != b.Region || a.RecoveryGroup != b.RecoveryGroup || a.MissingGroup != b.MissingGroup {
+			return false
+		}
+		// Preserve effective closed-group identity and the active-key fallback.
+		if a.AcceptanceGroup != b.AcceptanceGroup &&
+			recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: left}) != recoveredRootGroupOf(diagnosticParserCoreHeader{versionState: right}) {
+			return false
+		}
 	}
+
 	if left.lexerRequest == 0 || right.lexerRequest == 0 {
 		return left.lexerRequest == right.lexerRequest
 	}
@@ -652,7 +653,10 @@ func diagnosticParserCoreVersionStateFootprintBytes(state *diagnosticParserCoreV
 		return 0
 	}
 	total := uint64(unsafe.Sizeof(*state))
-	regionBytes := diagnosticParserCoreVersionS3RegionFootprintBytes(state.s3Region)
+	if state.recovery != nil {
+		total += uint64(unsafe.Sizeof(*state.recovery))
+	}
+	regionBytes := diagnosticParserCoreVersionS3RegionFootprintBytes(state.recovery.Value().Region)
 	snapshotBytes := diagnosticParserCoreVersionLexerSnapshotFootprintBytes(state.relexSnapshot)
 	if math.MaxUint64-total < regionBytes {
 		return math.MaxUint64

@@ -49,15 +49,13 @@ func newStage2RecoveryHeadPair(t *testing.T) (*core.Core, core.Head, core.Head, 
 
 func TestStage2PhysicalHeadMergePreservesDistinctErrorRegions(t *testing.T) {
 	compact, left, right, leftChild, rightChild := newStage2RecoveryHeadPair(t)
-	leftState := &diagnosticParserCoreVersionState{
-		s3Region: &diagnosticParserCoreS3Region{
-			state: 2, startByte: 0, endByte: 1, children: []core.SubtreeID{leftChild},
-		},
+	leftState := &diagnosticParserCoreVersionState{recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: &diagnosticParserCoreS3Region{
+		state: 2, startByte: 0, endByte: 1, children: []core.SubtreeID{leftChild},
+	}}),
 	}
-	rightState := &diagnosticParserCoreVersionState{
-		s3Region: &diagnosticParserCoreS3Region{
-			state: 2, startByte: 0, endByte: 1, children: []core.SubtreeID{rightChild},
-		},
+	rightState := &diagnosticParserCoreVersionState{recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: &diagnosticParserCoreS3Region{
+		state: 2, startByte: 0, endByte: 1, children: []core.SubtreeID{rightChild},
+	}}),
 	}
 	headers := []diagnosticParserCoreHeader{
 		{head: left, shifted: true, versionState: leftState, recoveryFlags: diagnosticParserCoreRecoveryCompetitorFlag},

@@ -316,10 +316,8 @@ func TestDiagnosticParserCoreOwnedLexerActivationRejectsOpenRecoveryRegion(t *te
 		tokenSource: newDFATokenSourceDirect(NewLexer(nil, nil), language, nil, nil, nil, nil),
 		headers: []diagnosticParserCoreHeader{
 			{
-				head: recoveryHead,
-				versionState: &diagnosticParserCoreVersionState{
-					s3Region: &diagnosticParserCoreS3Region{state: 1},
-				},
+				head:         recoveryHead,
+				versionState: &diagnosticParserCoreVersionState{recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: &diagnosticParserCoreS3Region{state: 1}})},
 			},
 			{head: ordinaryHead},
 		},
@@ -900,16 +898,16 @@ func TestVersionLexerInterningPreservesClosedAcceptanceGroup(t *testing.T) {
 	for _, want := range []recoveredRootGroup{{recovery: 17}, {missing: 19}, {recovery: 17, missing: 19}, {}} {
 		t.Run(fmt.Sprintf("recovery=%d/missing=%d", want.recovery, want.missing), func(t *testing.T) {
 			other := recoveredRootGroup{recovery: 31, missing: 37}
-			prior := &diagnosticParserCoreVersionState{acceptanceGroup: want}
+			prior := &diagnosticParserCoreVersionState{recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{AcceptanceGroup: want})}
 			header := diagnosticParserCoreHeader{versionState: prior}
-			scheduler := &diagnosticParserCoreGenericScheduler{headers: []diagnosticParserCoreHeader{{versionState: &diagnosticParserCoreVersionState{acceptanceGroup: other}}}}
+			scheduler := &diagnosticParserCoreGenericScheduler{headers: []diagnosticParserCoreHeader{{versionState: &diagnosticParserCoreVersionState{recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{AcceptanceGroup: other})}}}}
 			if err := scheduler.installEquivalentVersionLexerState(&header, nil, 0, nil); err != nil {
 				t.Fatal(err)
 			}
 			if got := recoveredRootGroupOf(header); got != want {
 				t.Fatalf("interning changed closed acceptance group: got %+v want %+v", got, want)
 			}
-			if prior.acceptanceGroup != want || recoveredRootGroupOf(scheduler.headers[0]) != other {
+			if prior.recovery.Value().AcceptanceGroup != want || recoveredRootGroupOf(scheduler.headers[0]) != other {
 				t.Fatal("publication mutated an immutable sibling")
 			}
 		})
@@ -918,17 +916,20 @@ func TestVersionLexerInterningPreservesClosedAcceptanceGroup(t *testing.T) {
 
 func TestVersionLexerOwnershipPreservesEffectiveAcceptanceGroup(t *testing.T) {
 	scheduler := &diagnosticParserCoreGenericScheduler{}
-	left := &diagnosticParserCoreVersionState{acceptanceGroup: recoveredRootGroup{recovery: 17}}
-	right := &diagnosticParserCoreVersionState{acceptanceGroup: recoveredRootGroup{missing: 19}}
+	left := &diagnosticParserCoreVersionState{recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{AcceptanceGroup: recoveredRootGroup{recovery: 17}})}
+	right := &diagnosticParserCoreVersionState{recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{AcceptanceGroup: recoveredRootGroup{missing: 19}})}
 	if scheduler.versionLexerStateEqual(left, right) {
 		t.Fatal("distinct closed recovery elections became one lexer owner")
 	}
-	right.acceptanceGroup = left.acceptanceGroup
+	right.recovery = core.ReuseVersionRecoveryState(right.recovery, left.recovery.Value())
 	if !scheduler.versionLexerStateEqual(left, right) {
 		t.Fatal("equal closed recovery elections became different owners")
 	}
-	left.recoveryGroup, right.recoveryGroup = 17, 17
-	right.acceptanceGroup = recoveredRootGroup{}
+	leftRecovery, rightRecovery := left.recovery.Value(), right.recovery.Value()
+	leftRecovery.RecoveryGroup, rightRecovery.RecoveryGroup = 17, 17
+	rightRecovery.AcceptanceGroup = recoveredRootGroup{}
+	left.recovery = core.ReuseVersionRecoveryState(left.recovery, leftRecovery)
+	right.recovery = core.ReuseVersionRecoveryState(right.recovery, rightRecovery)
 	if !scheduler.versionLexerStateEqual(left, right) {
 		t.Fatal("equivalent active fallback identity became a different owner")
 	}

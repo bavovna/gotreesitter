@@ -1312,26 +1312,16 @@ type diagnosticParserCoreHeader struct {
 	versionState *diagnosticParserCoreVersionState
 }
 
-// diagnosticParserCoreVersionState holds immutable state for one header.
-// Keep it separate from the fixed-size header so lexer ownership can grow
-// without changing the header layout. Region updates publish a new wrapper
-// while preserving the lexer snapshot, and snapshot updates do the reverse.
+// Keep rare recovery ownership in one immutable shared holder. The node
+// baseline remains inline because clean Go reductions publish it as well.
+// The fixed-size header still points to one immutable version-state wrapper.
+type diagnosticParserCoreVersionRecoveryState = core.VersionRecoveryState[*diagnosticParserCoreS3Region, recoveredRootGroup]
+
 type diagnosticParserCoreVersionState struct {
-	s3Region      *diagnosticParserCoreS3Region
 	relexSnapshot *diagnosticParserCoreVersionLexerSnapshot
-	// lexerRequest is a one-based scheduler sidecar reference. Reductions
-	// preserve it because they do not consume lookahead. Shifts clear it when
-	// they publish the request's after snapshot.
-	lexerRequest uint32
-	// recoveryGroup identifies one live C error-state group. missingGroup ties
-	// a missing-token version to that group for C's S5 ordering rule.
-	recoveryGroup uint64
-	missingGroup  uint64
-	// acceptanceGroup survives a closed error region without changing the
-	// live group key used by recovery condensation.
-	acceptanceGroup recoveredRootGroup
-	// recoveryNodeBaseline is C's cumulative visible-node count at the last
-	// error entry. Current counts come from the live graph during condensation.
+	recovery      *core.FrozenValue[diagnosticParserCoreVersionRecoveryState]
+	lexerRequest  uint32
+	// Keep the C visible-node baseline inline: clean Go paths use it too.
 	recoveryNodeBaseline    uint32
 	recoveryNodeBaselineSet bool
 }
@@ -1364,7 +1354,7 @@ func (h *diagnosticParserCoreHeader) recoveryRegion() *diagnosticParserCoreS3Reg
 	if h.versionState == nil {
 		return nil
 	}
-	return h.versionState.s3Region
+	return h.versionState.recovery.Value().Region
 }
 
 // versionLexerSnapshot returns the immutable DFA/scanner state owned by this
@@ -1387,14 +1377,14 @@ func (h *diagnosticParserCoreHeader) recoveryGroupIdentity() uint64 {
 	if h.versionState == nil {
 		return 0
 	}
-	return h.versionState.recoveryGroup
+	return h.versionState.recovery.Value().RecoveryGroup
 }
 
 func (h *diagnosticParserCoreHeader) recoveryMissingGroupIdentity() uint64 {
 	if h.versionState == nil {
 		return 0
 	}
-	return h.versionState.missingGroup
+	return h.versionState.recovery.Value().MissingGroup
 }
 
 func (h *diagnosticParserCoreHeader) recoveryNodeBaseline() (uint32, bool) {
@@ -1424,11 +1414,21 @@ func (h *diagnosticParserCoreHeader) publishVersionState(
 		h.versionState = nil
 		return
 	}
+	var previousRecovery *core.FrozenValue[diagnosticParserCoreVersionRecoveryState]
+	if h.versionState != nil {
+		previousRecovery = h.versionState.recovery
+	}
 	h.versionState = &diagnosticParserCoreVersionState{
-		s3Region: region, relexSnapshot: snapshot, lexerRequest: request,
-		recoveryGroup: recoveryGroup, missingGroup: missingGroup,
-		acceptanceGroup:      acceptanceGroup,
-		recoveryNodeBaseline: nodeBaseline, recoveryNodeBaselineSet: nodeBaselineSet,
+		relexSnapshot:           snapshot,
+		lexerRequest:            request,
+		recoveryNodeBaseline:    nodeBaseline,
+		recoveryNodeBaselineSet: nodeBaselineSet,
+		recovery: core.ReuseVersionRecoveryState(previousRecovery, diagnosticParserCoreVersionRecoveryState{
+			Region:          region,
+			RecoveryGroup:   recoveryGroup,
+			MissingGroup:    missingGroup,
+			AcceptanceGroup: acceptanceGroup,
+		}),
 	}
 }
 
@@ -1447,16 +1447,16 @@ func (h *diagnosticParserCoreHeader) publishRecoveryCondenseState(
 }
 
 func (h *diagnosticParserCoreHeader) clearAcceptanceGroup() {
-	if h == nil || h.versionState == nil || !h.versionState.acceptanceGroup.valid() {
+	if h == nil || h.versionState == nil || !h.versionState.recovery.Value().AcceptanceGroup.valid() {
 		return
 	}
 	state := *h.versionState
-	state.acceptanceGroup = recoveredRootGroup{}
-	if state.s3Region == nil && state.relexSnapshot == nil &&
-		state.lexerRequest == 0 && state.recoveryGroup == 0 &&
-		state.missingGroup == 0 && !state.recoveryNodeBaselineSet {
+	recovery := state.recovery.Value()
+	recovery.AcceptanceGroup = recoveredRootGroup{}
+	if recovery.Region == nil && state.relexSnapshot == nil && state.lexerRequest == 0 && recovery.RecoveryGroup == 0 && recovery.MissingGroup == 0 && !state.recoveryNodeBaselineSet {
 		h.versionState = nil
 	} else {
+		state.recovery = core.ReuseVersionRecoveryState(state.recovery, recovery)
 		h.versionState = &state
 	}
 }
@@ -5861,14 +5861,14 @@ func (s *diagnosticParserCoreGenericScheduler) installEquivalentVersionLexerStat
 	if recoveryGroup != 0 || missingGroup != 0 {
 		acceptanceGroup = recoveredRootGroup{recovery: recoveryGroup, missing: missingGroup}
 	}
+	desiredRecovery := diagnosticParserCoreVersionRecoveryState{Region: region, RecoveryGroup: recoveryGroup, MissingGroup: missingGroup, AcceptanceGroup: acceptanceGroup}
 	matches := func(state *diagnosticParserCoreVersionState) bool {
-		return state != nil && state.s3Region == region &&
+		return state != nil && state.recovery.Value() == desiredRecovery &&
 			diagnosticParserCoreVersionLexerSnapshotEqual(state.relexSnapshot, snapshot) &&
-			state.lexerRequest == requestReference && state.recoveryGroup == recoveryGroup &&
-			state.missingGroup == missingGroup && state.acceptanceGroup == acceptanceGroup &&
-			state.recoveryNodeBaseline == baseline &&
+			state.lexerRequest == requestReference && state.recoveryNodeBaseline == baseline &&
 			state.recoveryNodeBaselineSet == baselineSet
 	}
+
 	for index := range s.headers {
 		state := s.headers[index].versionState
 		if matches(state) {

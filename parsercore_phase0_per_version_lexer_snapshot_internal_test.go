@@ -586,7 +586,7 @@ func TestDiagnosticParserCoreVersionLexerSnapshotRequiresOwnedCheckpointAccess(t
 func TestDiagnosticParserCoreVersionLexerSnapshotFootprintDeduplicatesHeaderCopies(t *testing.T) {
 	compact, snapshot := newDiagnosticParserCoreVersionLexerTestSnapshot(t)
 	region := &diagnosticParserCoreS3Region{children: make([]core.SubtreeID, 1, 3)}
-	state := &diagnosticParserCoreVersionState{s3Region: region, relexSnapshot: snapshot}
+	state := &diagnosticParserCoreVersionState{relexSnapshot: snapshot, recovery: core.ReuseVersionRecoveryState(nil, diagnosticParserCoreVersionRecoveryState{Region: region})}
 	baseScheduler := diagnosticParserCoreGenericScheduler{compact: compact}
 	base := diagnosticParserCoreSchedulerFootprintBytes(&baseScheduler)
 	headers := make([]diagnosticParserCoreHeader, 2, 2)

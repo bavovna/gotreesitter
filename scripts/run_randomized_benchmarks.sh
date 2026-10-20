@@ -8,6 +8,8 @@ Usage: scripts/run_randomized_benchmarks.sh --output PATH [options]
 
 Run the combined performance set once for each shuffle seed.
 Pair a baseline with the current directory to alternate execution order.
+Paired samples must emit workloads in identical order. Suite benchmarks use
+GTS_BENCHMARK_SEED to shuffle independently of Go's registered test list.
 
 Options:
   --output PATH       Write raw output for the current directory to PATH.
@@ -344,6 +346,8 @@ initialize_output() {
 		printf '# benchtime: %s\n' "$benchtime"
 		printf '# GOMAXPROCS: 1\n'
 		printf '# count per process: 1\n'
+		printf '# suite seed environment: GTS_BENCHMARK_SEED\n'
+		printf '# paired workload order: must match\n'
 	} >>"$path"
 }
 
@@ -354,7 +358,7 @@ run_seed() {
 	sample_start=$(wc -c <"$path")
 	(
 		cd -- "$root"
-		GOMAXPROCS=1 go test -tags "$build_tags" "$package_path" \
+		GOMAXPROCS=1 GTS_BENCHMARK_SEED="$seed" go test -tags "$build_tags" "$package_path" \
 			-run '^$' \
 			-bench "$benchmark_re" \
 			-benchmem \
@@ -401,6 +405,17 @@ run_seed() {
 		printf '%s seed %d produced no valid benchmark timing row or an incomplete required set\n' "$role" "$seed" >&2
 		return 1
 	fi
+	last_benchmark_order=$(tail -c "+$((sample_start + 1))" "$path" | GTS_BENCH_REQUIRED_NAMES="$required_benchmarks" awk '
+		BEGIN { n = split(ENVIRON["GTS_BENCH_REQUIRED_NAMES"], names, ","); for (i = 1; i <= n; i++) wanted[names[i]] = 1 }
+		/^Benchmark[^[:space:]]+[[:space:]]/ && $2 ~ /^[1-9][0-9]*$/ {
+			name = $1
+			if (!(name in wanted)) sub(/-[0-9]+$/, "", name)
+			printf "%s%s", separator, name
+			separator = ","
+		}
+		END { printf "\n" }
+	')
+	printf '# workload order: %s\n' "$last_benchmark_order" >>"$path"
 }
 
 printf 'randomized benchmark output: %s\n' "$output_path" >&2
@@ -418,10 +433,19 @@ for ((offset = 0; offset < runs; offset++)); do
 		run_seed "$head_root" head "$output_path" "$seed" 1
 	elif ((seed % 2 == 1)); then
 		run_seed "$baseline_root" baseline "$baseline_output" "$seed" 1
+		baseline_order=$last_benchmark_order
 		run_seed "$head_root" head "$output_path" "$seed" 2
+		head_order=$last_benchmark_order
 	else
 		run_seed "$head_root" head "$output_path" "$seed" 1
+		head_order=$last_benchmark_order
 		run_seed "$baseline_root" baseline "$baseline_output" "$seed" 2
+		baseline_order=$last_benchmark_order
+	fi
+	if ((baseline_root_set)) && [[ "$head_order" != "$baseline_order" ]]; then
+		printf 'seed %d workload order differs between revisions; use a suite with explicit GTS_BENCHMARK_SEED ordering\n' "$seed" >&2
+		printf 'baseline: %s\nhead: %s\n' "$baseline_order" "$head_order" >&2
+		exit 1
 	fi
 	seed_completed=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 	for path in "${created_outputs[@]}"; do

@@ -8,16 +8,19 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
 	gotreesitter "github.com/odvcencio/gotreesitter"
 	"github.com/odvcencio/gotreesitter/grammars"
 	"github.com/odvcencio/gotreesitter/internal/benchfixtures"
+	"github.com/odvcencio/gotreesitter/internal/benchorder"
 	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
 
@@ -395,4 +398,113 @@ func BenchmarkAdmissionDeclineOverhead(b *testing.B) {
 			})
 		}
 	}
+}
+
+// BenchmarkCompactThroughputGo keeps the six Go qualification workloads in
+// the same seeded order across revisions, including revisions that add tests.
+// Run through scripts/run_randomized_benchmarks.sh with GTS_ADMISSION_CANDIDATE=1.
+func BenchmarkCompactThroughputGo(b *testing.B) {
+	if os.Getenv("GTS_ADMISSION_CANDIDATE") != "1" {
+		b.Fatal("Go compact throughput suite requires GTS_ADMISSION_CANDIDATE=1")
+	}
+	cases := []benchorder.Case{
+		{Label: "full_dfa", Run: BenchmarkGoParseFullDFA},
+		{Label: "single_byte_edit_dfa", Run: BenchmarkGoParseIncrementalSingleByteEditDFA},
+		{Label: "no_edit_dfa", Run: BenchmarkGoParseIncrementalNoEditDFA},
+		{Label: "fresh_one_mib", Run: BenchmarkGoParseCompactFreshOneMiB},
+	}
+	for _, fixture := range benchfixtures.GoFullParseFixtures() {
+		if fixture.ID != "query_compile" && fixture.ID != "grammargen_lr" {
+			continue
+		}
+		cases = append(cases, benchorder.Case{Label: fixture.ID, Run: func(b *testing.B) {
+			source, err := fixture.Load()
+			if err != nil {
+				b.Fatal(err)
+			}
+			benchmarkCompactThroughputSource(b, grammars.GoLanguage(), source, true)
+		}})
+	}
+	benchorder.Run(b, cases, compactThroughputSeed(b))
+}
+
+// BenchmarkCompactThroughputYAML shuffles all six workload/mode pairs within
+// each process. Diagnostic ownership stays separate in names and route counts.
+func BenchmarkCompactThroughputYAML(b *testing.B) {
+	sample := admissionYAMLDocumentStreamSample(b)
+	document := append([]byte("---\n"), sample...)
+	document = append(document, '\n')
+	var cases []benchorder.Case
+	for _, mode := range []struct {
+		name             string
+		candidate, owned bool
+	}{{"legacy", false, false}, {"ordinary", true, false}, {"owned", true, true}} {
+		for _, fixture := range []struct {
+			name   string
+			source []byte
+		}{{"r4", sample}, {"eof8k", bytes.Repeat(document, 4)}} {
+			cases = append(cases, benchorder.Case{Label: fixture.name + "_" + mode.name, Run: func(b *testing.B) {
+				b.Cleanup(core.SetExternalLexerOwnershipProbeForTest(mode.owned))
+				benchmarkCompactThroughputSource(b, grammars.YamlLanguage(), fixture.source, mode.candidate)
+			}})
+		}
+	}
+	benchorder.Run(b, cases, compactThroughputSeed(b))
+}
+
+func benchmarkCompactThroughputSource(b *testing.B, language *gotreesitter.Language, source []byte, candidate bool) {
+	parser := gotreesitter.NewParser(language)
+	parser.SetAdmissionCandidateRoute(candidate)
+	parse := func() (gotreesitter.ParseRuntime, error) {
+		tree, err := parser.Parse(source)
+		if err != nil || tree == nil {
+			return gotreesitter.ParseRuntime{}, fmt.Errorf("parse tree=%t: %w", tree != nil, err)
+		}
+		defer tree.Release()
+		if tree.RootNode() == nil || tree.RootNode().HasError() || tree.RootNode().EndByte() != uint32(len(source)) {
+			return gotreesitter.ParseRuntime{}, fmt.Errorf("incomplete or erroneous parse")
+		}
+		return tree.ParseRuntime(), nil
+	}
+	warm, err := parse()
+	if err != nil {
+		b.Fatal(err)
+	}
+	beforeRoute, beforeFallback := gotreesitter.AdmissionCandidateCounters()
+	b.ReportAllocs()
+	b.SetBytes(int64(len(source)))
+	b.ResetTimer()
+	for range b.N {
+		runtime, err := parse()
+		if err != nil {
+			b.Fatal(err)
+		}
+		if runtime.NodesAllocated != warm.NodesAllocated || runtime.TokensConsumed != warm.TokensConsumed {
+			b.Fatal("per-parse work changed")
+		}
+	}
+	b.StopTimer()
+	routed, fallback := gotreesitter.AdmissionCandidateCounters()
+	routed -= beforeRoute
+	fallback -= beforeFallback
+	if candidate && routed+fallback != uint64(b.N) {
+		b.Fatal("inconsistent route totals")
+	}
+	if !candidate && routed+fallback != 0 {
+		b.Fatal("legacy control entered candidate routing")
+	}
+	b.ReportMetric(float64(routed)/float64(b.N), "compact-routes/op")
+	b.ReportMetric(float64(fallback)/float64(b.N), "compact-fallbacks/op")
+	b.ReportMetric(float64(warm.NodesAllocated), "public-nodes/op")
+	b.ReportMetric(float64(warm.TokensConsumed), "tokens/op")
+}
+
+// Read the campaign setting only in test code, outside every child timer.
+func compactThroughputSeed(b *testing.B) int64 {
+	b.Helper()
+	seed, err := strconv.ParseInt(os.Getenv(benchorder.SeedEnv), 10, 64)
+	if err != nil {
+		b.Fatalf("%s must contain an explicit integer seed: %v", benchorder.SeedEnv, err)
+	}
+	return seed
 }

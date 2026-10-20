@@ -89,6 +89,9 @@ set -euo pipefail
 
 : "${MOCK_GO_LOG:?MOCK_GO_LOG is required}"
 printf 'pid=%s args=%s\n' "$$" "$*" >>"$MOCK_GO_LOG"
+if [[ -n "${MOCK_GO_SEED_LOG:-}" ]]; then
+	printf '%s\n' "${GTS_BENCHMARK_SEED:-missing}" >>"$MOCK_GO_SEED_LOG"
+fi
 if [[ -n "${MOCK_GO_SEQUENCE_LOG:-}" ]]; then
 	printf '%s\t%s\t%s\n' "$PWD" "${GOMAXPROCS:-}" "$*" >>"$MOCK_GO_SEQUENCE_LOG"
 fi
@@ -103,6 +106,19 @@ if [[ -n "${MOCK_GO_WAIT_FILE:-}" ]]; then
 	while [[ ! -e "$MOCK_GO_WAIT_FILE" ]]; do
 		sleep 0.01
 	done
+fi
+if [[ "${MOCK_GO_OUTPUT_KIND:-}" == order-mismatch ]]; then
+	rows=(
+		'BenchmarkGoParseFullDFA-1 5 100 ns/op 16 B/op 1 allocs/op'
+		'BenchmarkGoParseIncrementalSingleByteEditDFA-1 5 20 ns/op 0 B/op 0 allocs/op'
+		'BenchmarkGoParseIncrementalNoEditDFA-1 5 1 ns/op 0 B/op 0 allocs/op'
+	)
+	if [[ "$(wc -l <"$MOCK_GO_LOG")" -eq 2 ]]; then
+		printf '%s\n' "${rows[2]}" "${rows[0]}" "${rows[1]}"
+	else
+		printf '%s\n' "${rows[@]}"
+	fi
+	exit 0
 fi
 case "${MOCK_GO_OUTPUT_KIND:-valid}" in
 	none) printf '%s\n' 'PASS' ;;
@@ -477,6 +493,37 @@ done
 assert_contains '# completed seed: 17;' "$test_root/partial-trio-head.txt"
 assert_not_contains '# completed seed: 18;' "$test_root/partial-trio-head.txt"
 pass 'required names need one complete metric row in every seed, including later seeds'
+
+order_status=0
+PATH="$mock_bin:$PATH" MOCK_GO_LOG="$test_root/order-go.log" MOCK_GO_OUTPUT_KIND=order-mismatch \
+bash "$runner" --output "$test_root/order-head.txt" --baseline-root "$baseline_root" \
+	--baseline-output "$test_root/order-base.txt" --runs 2 --seed-start 17 \
+	--require-benchmarks "$required_trio" --lock-path "$test_root/order.lock" \
+	>"$test_root/order.stdout" 2>"$test_root/order.stderr" || order_status=$?
+[[ "$order_status" -eq 1 ]] || fail "mismatched workload order returned $order_status, want 1"
+[[ "$(line_count "$test_root/order-go.log")" -eq 2 ]] || fail 'order mismatch did not stop after the first pair'
+for file in "$test_root/order-head.txt" "$test_root/order-base.txt"; do
+	assert_status incomplete "$file"
+	assert_contains '# workload order: BenchmarkGoParse' "$file"
+	assert_not_contains '# completed seed:' "$file"
+done
+assert_contains 'workload order differs between revisions' "$test_root/order.stderr"
+if ! flock -n "$test_root/order.lock" -c ':'; then
+	fail 'an order mismatch retained the host lock'
+fi
+pass 'complete metrics in different workload orders cannot complete a pair'
+
+PATH="$mock_bin:$PATH" MOCK_GO_LOG="$test_root/seed-go.log" MOCK_GO_SEED_LOG="$test_root/seed-values.log" \
+GTS_BENCHMARK_SEED=999 \
+bash "$runner" --output "$test_root/seed-head.txt" --baseline-root "$baseline_root" \
+	--baseline-output "$test_root/seed-base.txt" --runs 2 --seed-start 17 \
+	--lock-path "$test_root/seed.lock" >"$test_root/seed.stdout" 2>"$test_root/seed.stderr"
+printf '17\n17\n18\n18\n' >"$test_root/seed-values-expected.log"
+cmp -s "$test_root/seed-values.log" "$test_root/seed-values-expected.log" || fail 'paired processes did not receive the explicit suite seed'
+assert_status complete "$test_root/seed-head.txt"
+assert_status complete "$test_root/seed-base.txt"
+pass 'each process receives its campaign seed independently of inherited settings'
+
 
 PATH="$mock_bin:$PATH" MOCK_GO_LOG="$test_root/numeric-subbenchmark.log" MOCK_GO_OUTPUT_KIND=numeric-subbenchmark \
 bash "$runner" --output "$test_root/numeric-subbenchmark.txt" --runs 1 \
