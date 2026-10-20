@@ -19,11 +19,11 @@ func TestSoleHeadPayloadAuthenticatesBoundary(t *testing.T) {
 		t.Fatalf("payload=%d error=%v, want %d", got, err, payload)
 	}
 	n := &c.nodes[head.Node-1]
-	n.pathCount = 2
+	setNodePathCountForTest(c, head.Node, 2)
 	if _, err := c.SoleHeadPayload(head); err == nil {
 		t.Fatal("ambiguous frontier was authenticated")
 	}
-	n.pathCount = 1
+	setNodePathCountForTest(c, head.Node, 1)
 	c.links[n.firstLink-1].payload = 0
 	if _, err := c.SoleHeadPayload(head); err == nil {
 		t.Fatal("absent payload was authenticated")

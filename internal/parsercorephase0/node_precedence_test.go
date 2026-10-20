@@ -18,8 +18,8 @@ func storedNodeMaximumForTest(t *testing.T, c *Core, id NodeID) int64 {
 }
 
 func TestNodePrecedenceFullWidthAndInlineBoundaries(t *testing.T) {
-	if size := unsafe.Sizeof(nodeRecord{}); size != 24 {
-		t.Fatalf("node size=%d, want 24", size)
+	if size := unsafe.Sizeof(nodeRecord{}); size != 16 {
+		t.Fatalf("node size=%d, want 16", size)
 	}
 	for _, score := range []int64{0, -32767, 32767, -32768, 32768, math.MinInt64, math.MaxInt64} {
 		core := newTinyCoreWithLimits(t, Limits{})
@@ -60,7 +60,7 @@ func TestNodePrecedenceRollbackResetAndReusedIDs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	first, err := core.appendNodeAtWithMaximum(nodeRecord{state: 2, pathCount: 1}, 0, math.MinInt64)
+	first, err := core.appendNodeAtWithMaximum(nodeInput{state: 2, pathCount: 1}, 0, math.MinInt64)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestNodePrecedenceRollbackResetAndReusedIDs(t *testing.T) {
 	var abandoned NodeID
 	err = core.ApplySchedulerAtomic(func(SchedulerTransactionToken) error {
 		var err error
-		abandoned, err = core.appendNodeAtWithMaximum(nodeRecord{state: 3, pathCount: 1}, 0, math.MaxInt64)
+		abandoned, err = core.appendNodeAtWithMaximum(nodeInput{state: 3, pathCount: 1}, 0, math.MaxInt64)
 		if err != nil {
 			return err
 		}
@@ -84,7 +84,7 @@ func TestNodePrecedenceRollbackResetAndReusedIDs(t *testing.T) {
 	if got := storedNodeMaximumForTest(t, core, first); got != math.MinInt64 {
 		t.Fatal("rollback changed historical maximum")
 	}
-	next, err := core.appendNodeAtWithMaximum(nodeRecord{state: 3, pathCount: 1}, 0, -7)
+	next, err := core.appendNodeAtWithMaximum(nodeInput{state: 3, pathCount: 1}, 0, -7)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestNodePrecedencePreservesLineageUpdatesAndRollback(t *testing.T) {
 		if _, err := core.Seed(1, 0); err != nil {
 			t.Fatal(err)
 		}
-		id, err := core.appendNodeAtWithMaximum(nodeRecord{state: 2, pathCount: 1}, 0, score)
+		id, err := core.appendNodeAtWithMaximum(nodeInput{state: 2, pathCount: 1}, 0, score)
 		if err != nil {
 			t.Fatal(err)
 		}

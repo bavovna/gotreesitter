@@ -13,7 +13,7 @@ const s5RecoveryDiscontinuityFlag uint32 = 1 << 1
 func appendS5SyntheticNode(t *testing.T, core *Core, state StateID, byteOffset uint32, link linkRecord, pathCount uint64) (NodeID, LinkID) {
 	t.Helper()
 	linkID := core.appendGraphLink(link)
-	node, err := core.appendNodeRecord(nodeRecord{
+	node, err := core.appendNodeRecord(nodeInput{
 		state: state, byteOffset: byteOffset,
 		firstLink: uint32(linkID), linkCount: 1, pathCount: pathCount,
 	}, core.checkpoint, 0)
@@ -107,9 +107,9 @@ func TestS5RecoveryDiscontinuityLinkValidation(t *testing.T) {
 			link := test.makeLink(seed.Node, payload)
 			linkID := core.appendGraphLink(link)
 			next := NodeID(len(core.nodes) + 1)
-			err = core.validatePublishedNodeDAG(nodeRecord{
+			err = core.validatePublishedNodeDAG(nodeInput{
 				state: 0, byteOffset: 0, firstLink: uint32(linkID), linkCount: 1, pathCount: 1,
-			}, next)
+			}.record(), next)
 			if test.wantError && err == nil {
 				t.Fatalf("link=%+v was accepted", link)
 			}
@@ -117,7 +117,7 @@ func TestS5RecoveryDiscontinuityLinkValidation(t *testing.T) {
 				t.Fatalf("link=%+v was rejected: %v", link, err)
 			}
 			before := len(core.nodes)
-			published, publishErr := core.appendNodeAtWithMaximum(nodeRecord{
+			published, publishErr := core.appendNodeAtWithMaximum(nodeInput{
 				state: 0, byteOffset: 0, firstLink: uint32(linkID), linkCount: 1, pathCount: 1,
 			}, 0, 0)
 			if test.wantError {

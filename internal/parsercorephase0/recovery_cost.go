@@ -699,9 +699,13 @@ func (c *Core) RecoveryGraphAggregateForHead(
 	supported = true
 	for _, rawID := range reachableIDs {
 		node := c.nodes[rawID-1]
+		nodePaths, pathErr := c.nodePathCount(rawID)
+		if pathErr != nil {
+			return result, false, pathErr
+		}
 		current := recoveryGraphAggregateNode{supported: true}
 		if node.linkCount == 0 {
-			if node.firstLink != 0 || node.pathCount != 1 {
+			if node.firstLink != 0 || nodePaths != 1 {
 				return result, false, errors.New("parser-core phase zero: recovery graph aggregate malformed seed")
 			}
 			current.minimumCost = 0
@@ -777,8 +781,8 @@ func (c *Core) RecoveryGraphAggregateForHead(
 		if current.pathCount == 0 {
 			return result, false, errors.New("parser-core phase zero: recovery graph aggregate has no paths")
 		}
-		if node.pathCount != math.MaxUint64 && node.pathCount != current.pathCount {
-			return result, false, fmt.Errorf("parser-core phase zero: recovery graph aggregate path-count mismatch: computed %d, recorded %d", current.pathCount, node.pathCount)
+		if nodePaths != math.MaxUint64 && nodePaths != current.pathCount {
+			return result, false, fmt.Errorf("parser-core phase zero: recovery graph aggregate path-count mismatch: computed %d, recorded %d", current.pathCount, nodePaths)
 		}
 		current.supported = current.supported && current.minimumCost == current.maximumCost
 		dp[rawID] = current

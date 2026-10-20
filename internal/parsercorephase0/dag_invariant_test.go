@@ -43,7 +43,7 @@ func TestAppendNodeAuthenticatesCompleteAdjacency(t *testing.T) {
 	// that inject raw arena records cannot publish an upward/self edge.
 	compact.links = append(compact.links, linkRecord{prev: NodeID(len(compact.nodes) + 1), payload: payload})
 	beforeNodes := len(compact.nodes)
-	if _, err := compact.appendNode(nodeRecord{
+	if _, err := compact.appendNode(nodeInput{
 		state: 2, byteOffset: 1, firstLink: uint32(len(compact.links)), linkCount: 1, pathCount: 1,
 	}); err == nil || !strings.Contains(err.Error(), "invalid node id 2") {
 		t.Fatalf("raw publication error=%v", err)
@@ -51,7 +51,7 @@ func TestAppendNodeAuthenticatesCompleteAdjacency(t *testing.T) {
 	if len(compact.nodes) != beforeNodes {
 		t.Fatalf("rejected raw publication changed node arena: %d -> %d", beforeNodes, len(compact.nodes))
 	}
-	if _, err := compact.appendNode(nodeRecord{state: 2, byteOffset: 1, firstLink: 1, pathCount: 1}); err == nil || !strings.Contains(err.Error(), "empty adjacency") {
+	if _, err := compact.appendNode(nodeInput{state: 2, byteOffset: 1, firstLink: 1, pathCount: 1}); err == nil || !strings.Contains(err.Error(), "empty adjacency") {
 		t.Fatalf("empty adjacency error=%v", err)
 	}
 }

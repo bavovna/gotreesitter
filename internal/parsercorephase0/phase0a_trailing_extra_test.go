@@ -133,7 +133,7 @@ func TestPhase0ATrailingExtraRejectsWrongWidthOneTargetWithoutAccountingMovement
 		// This node has the right state, position, and width, but its sole link
 		// is the old extra-terminal publication rather than the newly published
 		// reduction parent expected for suffix ordinal zero.
-		wrong, appendErr := core.appendNode(nodeRecord{state: 4, byteOffset: 1, firstLink: uint32(sourceLinks[0]), linkCount: 1, pathCount: 1})
+		wrong, appendErr := core.appendNode(nodeInput{state: 4, byteOffset: 1, firstLink: uint32(sourceLinks[0]), linkCount: 1, pathCount: 1})
 		if appendErr != nil {
 			return appendErr
 		}

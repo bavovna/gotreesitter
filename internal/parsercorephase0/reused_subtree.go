@@ -144,11 +144,15 @@ func (c *Core) validateReusedHead(head Head, poll func() error) error {
 		}
 		id := NodeID(c.reuseProof.nodes + 1)
 		node := &c.nodes[id-1]
+		nodePaths, pathErr := c.nodePathCount(id)
+		if pathErr != nil {
+			return pathErr
+		}
 		lineage, err := c.lineageView(id)
 		if err != nil {
 			return err
 		}
-		if node.pathCount != 1 || node.linkCount > 1 || !reuseLineageClean(lineage) {
+		if nodePaths != 1 || node.linkCount > 1 || !reuseLineageClean(lineage) {
 			return errors.New("parser-core phase zero: reuse requires one clean exact corridor")
 		}
 		if node.linkCount == 0 {

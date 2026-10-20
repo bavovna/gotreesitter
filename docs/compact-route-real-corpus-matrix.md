@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Sixteen-byte graph nodes: qualified allocation and capacity reduction
+
+The [lossless count-storage receipt](compact-node16-path-count-receipt-20261020.md) preserves all **414 ledger rows**, four canonical vectors and full correctness gates. One-MiB Go allocated bytes fall **6.79%**, ordinary YAML **5.19% / 6.78%** (all p<.001), while the pinned Go node arena sheds **8 MiB**. All 480 timing/allocation ratchets and 126 RSS processes pass. All twelve timing differences are inconclusive; ordinary YAML routing, known Go C failures and graduation remain unchanged.
+
 ### YAML storage growth: remaining relative RSS gap
 
 The [reserve and checkpoint screens](compact-yaml-storage-growth-screen-20261020.md) retain three private sources and all **378** RSS processes. Corrected complete-lexicon density and paged immutable checkpoint records preserve focused C output and all 50 work/reuse comparisons; their ordinary YAML median ratios are **1.239112 / 1.186330**, still above 1.10. The earlier activation-only screen misses the intended reserve branch and remains recorded separately. No runtime, full-fleet qualification, timing, pin or graduation change follows these failed early screens.

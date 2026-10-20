@@ -318,7 +318,7 @@ func TestDiagnosticShallowFoldKeepsDistinctClasses(t *testing.T) {
 
 func TestDiagnosticShallowNonExactOuterEdgeUsesPrecedenceMaximum(t *testing.T) {
 	core, leftSeed := newDiagnosticShallowFoldCore(t, Limits{MaxDerivations: 4})
-	rightNode, err := core.appendNode(nodeRecord{state: 1, byteOffset: 10, pathCount: 1})
+	rightNode, err := core.appendNode(nodeInput{state: 1, byteOffset: 10, pathCount: 1})
 	if err != nil {
 		t.Fatal(err)
 	}

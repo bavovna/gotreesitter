@@ -49,7 +49,7 @@ func (c *Core) publishNodeLineage(id NodeID, value nodeLineageRecord) error {
 	if uint64(id)-1 >= uint64(len(c.nodeLineages)) {
 		return errInvalidNodeLineage
 	}
-	hot := nodeLineageHot{owner: value.owner, lineage: value.lineage, rank: value.rank, precedenceInline: c.nodeLineages[id-1].precedenceInline}
+	hot := nodeLineageHot{owner: value.owner, lineage: value.lineage, rank: value.rank, precedenceInline: c.nodeLineages[id-1].precedenceInline, flags: c.nodeLineages[id-1].flags & nodePathCountMask}
 	hot.setAlternativeSet(value.set)
 	hot.setConverged(value.converged)
 	hot.setBlended(value.blended)

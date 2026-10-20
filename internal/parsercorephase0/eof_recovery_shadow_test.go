@@ -4,6 +4,7 @@ package parsercorephase0
 
 import (
 	"errors"
+	"math"
 	"strings"
 	"testing"
 	"unsafe"
@@ -372,7 +373,7 @@ func TestNodePrecedenceEOFShadowOwnsWideValues(t *testing.T) {
 	if _, err := live.Seed(1, 0); err != nil {
 		t.Fatal(err)
 	}
-	id, err := live.appendNodeAtWithMaximum(nodeRecord{state: 2, pathCount: 1}, 0, 1<<40)
+	id, err := live.appendNodeAtWithMaximum(nodeInput{state: 2, pathCount: 1}, 0, 1<<40)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -399,5 +400,21 @@ func TestNodePrecedenceEOFShadowOwnsWideValues(t *testing.T) {
 	shadow.nodePrecedenceWide = live.nodePrecedenceWide
 	if diagnosticEOFRecoveryStorageDisjoint(live, shadow) {
 		t.Fatal("wide alias passed disjointness")
+	}
+}
+
+func TestDiagnosticEOFRecoveryPathCountMetadataCloneIsolation(t *testing.T) {
+	live := &Core{nodePathCountsWide: []nodePathCountRecord{{node: 1, value: math.MaxUint64 - 1}}}
+	shadow := *live
+	if diagnosticEOFRecoveryStorageDisjoint(live, &shadow) {
+		t.Fatal("shared path-count metadata accepted")
+	}
+	shadow.nodePathCountsWide = cloneDiagnosticSlice(live.nodePathCountsWide, 0)
+	if !diagnosticEOFRecoveryStorageDisjoint(live, &shadow) || !diagnosticEOFRecoveryCopiedArenasEqual(live, &shadow) {
+		t.Fatal("exact detached counts rejected")
+	}
+	shadow.nodePathCountsWide[0].value--
+	if diagnosticEOFRecoveryCopiedArenasEqual(live, &shadow) {
+		t.Fatal("changed count was invisible")
 	}
 }

@@ -600,7 +600,7 @@ func TestRecoveryGraphAggregateIgnoresUnreachableMalformedNode(t *testing.T) {
 		t.Fatal(err)
 	}
 	unreachableLink := core.appendGraphLink(linkRecord{prev: seed.Node, payload: unreachablePayload})
-	if _, err := core.appendNode(nodeRecord{state: 7, byteOffset: 0, firstLink: uint32(unreachableLink), linkCount: 1, pathCount: 1}); err != nil {
+	if _, err := core.appendNode(nodeInput{state: 7, byteOffset: 0, firstLink: uint32(unreachableLink), linkCount: 1, pathCount: 1}); err != nil {
 		t.Fatal(err)
 	}
 	visiblePayload, err := core.appendSubtree(subtreeRecord{symbol: 1, startByte: 0, endByte: 0, terminal: true}, nil, nil, nil)

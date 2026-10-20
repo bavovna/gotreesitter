@@ -178,11 +178,11 @@ func (c *Core) VisitEOFAdmissionExactPath(
 	var reverse [EOFAdmissionMaxTopPayloads]LinkID
 	id := head.Node
 	for {
-		node, err := c.node(id)
+		node, nodePaths, err := c.nodeWithPathCount(id)
 		if err != nil {
 			return result, err
 		}
-		if node.pathCount != 1 {
+		if nodePaths != 1 {
 			return result, ErrEOFAdmissionInexactPath
 		}
 		if node.linkCount == 0 {

@@ -26,7 +26,7 @@ func TestSoleDerivationSharedPathsAndScoreExtrema(t *testing.T) {
 				linkRecord{prev: shared.Node, payload: math.MaxUint32, scoreDelta: 10})
 			if saturated {
 				for index := 1; index < len(c.nodes); index++ {
-					c.nodes[index].pathCount = math.MaxUint64
+					setNodePathCountForTest(c, NodeID((index)+1), math.MaxUint64)
 				}
 			}
 			paths, err := c.Derivations(head)

@@ -34,14 +34,14 @@ func newStage2PhysicalHeadPair(t *testing.T) (*Core, Head, Head, uint32, uint32)
 		t.Fatal(err)
 	}
 	leftLink := compact.appendGraphLink(linkRecord{prev: leftRoot.Node, payload: leftPayload})
-	leftNode, err := compact.appendNode(nodeRecord{
+	leftNode, err := compact.appendNode(nodeInput{
 		state: 3, byteOffset: 1, firstLink: uint32(leftLink), linkCount: 1, pathCount: 1,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	rightLink := compact.appendGraphLink(linkRecord{prev: rightRoot.Node, payload: rightPayload})
-	rightNode, err := compact.appendNode(nodeRecord{
+	rightNode, err := compact.appendNode(nodeInput{
 		state: 3, byteOffset: 1, firstLink: uint32(rightLink), linkCount: 1, pathCount: 1,
 	})
 	if err != nil {
@@ -127,7 +127,7 @@ func TestStage2PhysicalHeadMergeAtAndPastSixVersionBoundaryRetainsEveryPath(t *t
 					t.Fatal(err)
 				}
 				link := compact.appendGraphLink(linkRecord{prev: root.Node, payload: payload})
-				node, err := compact.appendNode(nodeRecord{
+				node, err := compact.appendNode(nodeInput{
 					state: 7, byteOffset: 1, firstLink: uint32(link), linkCount: 1, pathCount: 1,
 				})
 				if err != nil {
@@ -418,7 +418,7 @@ func TestRecursiveMergeUsesTargetCostForMixedLinkSplits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rightBase, err := compact.appendNode(nodeRecord{state: 1, byteOffset: 0, pathCount: 1})
+	rightBase, err := compact.appendNode(nodeInput{state: 1, byteOffset: 0, pathCount: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -428,14 +428,14 @@ func TestRecursiveMergeUsesTargetCostForMixedLinkSplits(t *testing.T) {
 		t.Fatal(err)
 	}
 	leftLink := compact.appendGraphLink(linkRecord{prev: leftBase.Node, payload: payload})
-	leftNode, err := compact.appendNode(nodeRecord{
+	leftNode, err := compact.appendNode(nodeInput{
 		state: 3, byteOffset: 1, firstLink: uint32(leftLink), linkCount: 1, pathCount: 1,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	rightLink := compact.appendGraphLink(linkRecord{prev: rightBase, payload: payload})
-	rightNode, err := compact.appendNode(nodeRecord{
+	rightNode, err := compact.appendNode(nodeInput{
 		state: 3, byteOffset: 1, firstLink: uint32(rightLink), linkCount: 1, pathCount: 1,
 	})
 	if err != nil {

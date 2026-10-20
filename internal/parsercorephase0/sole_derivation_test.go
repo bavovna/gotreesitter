@@ -10,8 +10,9 @@ import (
 
 func newSoleDerivationCore() *Core {
 	return &Core{
-		limits: Limits{MaxDerivations: 64},
-		nodes:  []nodeRecord{{pathCount: 1}},
+		limits:       Limits{MaxDerivations: 64},
+		nodes:        []nodeRecord{{}},
+		nodeLineages: []nodeLineageHot{{flags: 1 << nodePathCountShift}},
 	}
 }
 
@@ -23,9 +24,8 @@ func appendSoleDerivationNode(c *Core, count uint64, links ...linkRecord) Head {
 		c.links = append(c.links, link)
 		first = LinkID(len(c.links))
 	}
-	c.nodes = append(c.nodes, nodeRecord{
-		firstLink: uint32(first), linkCount: uint32(len(links)), pathCount: count,
-	})
+	c.nodes = append(c.nodes, nodeRecord{firstLink: uint32(first), linkCount: uint32(len(links))})
+	c.nodeLineages = append(c.nodeLineages, nodeLineageHot{flags: c.appendNodePathCount(NodeID(len(c.nodes)), count)})
 	return Head{Node: NodeID(len(c.nodes))}
 }
 
@@ -88,7 +88,7 @@ func TestSoleDerivationPreservesPayloadsScoresAndOrder(t *testing.T) {
 			head := appendSoleDerivationNode(c, 1,
 				linkRecord{prev: gap.Node, payload: 22, scoreDelta: -3, flags: linkFlagHasOrder, order: math.MaxUint64})
 			if saturated {
-				c.nodes[head.Node-1].pathCount = math.MaxUint64
+				setNodePathCountForTest(c, NodeID((head.Node-1)+1), math.MaxUint64)
 			}
 			got, sole, err := compareSoleDerivation(t, c, head)
 			want := Derivation{Payloads: []SubtreeID{11, 22}, Score: 4, HasBranchOrder: true, BranchOrder: math.MaxUint64}
@@ -207,7 +207,7 @@ func TestSoleDerivationValidControls(t *testing.T) {
 				c, head = newSoleDerivationBranches()
 				wantSole = false
 				if name == "saturated_ambiguous" {
-					c.nodes[head.Node-1].pathCount = math.MaxUint64
+					setNodePathCountForTest(c, NodeID((head.Node-1)+1), math.MaxUint64)
 				}
 				if name == "ambiguous_payload_id_is_not_dereferenced" {
 					c.links[c.nodes[head.Node-1].firstLink-1].payload = math.MaxUint32
@@ -266,15 +266,15 @@ func TestSoleDerivationPreservesValidationErrors(t *testing.T) {
 			return head
 		}, "recovery discontinuity has a payload"},
 		{"malformed_seed", func(c *Core, head Head) Head {
-			c.nodes[0].pathCount = 0
+			setNodePathCountForTest(c, NodeID((0)+1), 0)
 			return head
 		}, "malformed seed path count"},
 		{"child_count_mismatch", func(c *Core, head Head) Head {
-			c.nodes[1].pathCount = 2
+			setNodePathCountForTest(c, NodeID((1)+1), 2)
 			return head
 		}, "path-count mismatch: enumerated 1, recorded 2"},
 		{"head_count_mismatch", func(c *Core, head Head) Head {
-			c.nodes[head.Node-1].pathCount = 1
+			setNodePathCountForTest(c, NodeID((head.Node-1)+1), 1)
 			return head
 		}, "path-count mismatch: enumerated 2, recorded 1"},
 	} {
