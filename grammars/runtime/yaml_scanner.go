@@ -482,8 +482,15 @@ type yamlPayload struct {
 // hardcoded ID would silently emit the wrong (but still structurally valid)
 // node type instead of failing loudly.
 type YamlExternalScanner struct {
-	symbols         [yTokCount]gotreesitter.Symbol
-	externalToToken []int
+	binding *yamlExternalScannerBinding
+}
+
+// yamlExternalScannerBinding is immutable after language binding. Value
+// receivers share this table; all per-parse state remains in yamlPayload.
+type yamlExternalScannerBinding struct {
+	symbols          [yTokCount]gotreesitter.Symbol
+	externalToToken  []int
+	identityValidity bool
 }
 
 // ExternalScannerForLanguage binds the scanner's token slots to the loaded
@@ -493,21 +500,60 @@ type YamlExternalScanner struct {
 // prior per-payload lazy loadEmbeddedLanguage("yaml.bin") lookup entirely:
 // the scanner now resolves its symbols once, at bind time.
 func (YamlExternalScanner) ExternalScannerForLanguage(lang *gotreesitter.Language) gotreesitter.ExternalScanner {
-	s := YamlExternalScanner{symbols: yamlDefaultSymTable}
-	s.externalToToken = bindExternalScannerSpec(lang, yamlExternalScannerSpec, func(tokenIdx int, sym gotreesitter.Symbol) {
-		s.symbols[tokenIdx] = sym
+	binding := &yamlExternalScannerBinding{symbols: yamlDefaultSymTable}
+	binding.externalToToken = bindExternalScannerSpec(lang, yamlExternalScannerSpec, func(tokenIdx int, sym gotreesitter.Symbol) {
+		binding.symbols[tokenIdx] = sym
 	})
+	binding.prepare()
+	s := YamlExternalScanner{binding: binding}
 	// The binding is immutable; per-parse state lives in Create's payload.
 	// Give it a stable instance identity so owned lexer snapshots do not copy
 	// or fingerprint the entire symbol mapping on each validation.
 	return &s
 }
 
+// prepare finishes the immutable binding before it becomes visible to any
+// scanner. A direct validity mask is sound only for a complete identity map.
+func (b *yamlExternalScannerBinding) prepare() {
+	if b.symbols == ([yTokCount]gotreesitter.Symbol{}) {
+		b.symbols = yamlDefaultSymTable
+	}
+	b.identityValidity = len(b.externalToToken) == yTokCount
+	for index, token := range b.externalToToken {
+		if index != token {
+			b.identityValidity = false
+			break
+		}
+	}
+}
+
+// semanticValidity keeps the public valid-symbol slice read-only. Nonidentity
+// mappings and every unusual mask length retain the general mapping semantics.
+func (s YamlExternalScanner) semanticValidity(valid []bool, scratch *[yTokCount]bool) []bool {
+	if s.binding == nil || len(s.binding.externalToToken) == 0 {
+		return valid
+	}
+	if s.binding.identityValidity && len(valid) == yTokCount {
+		return valid
+	}
+	clear(scratch[:])
+	for external, enabled := range valid {
+		if !enabled || external >= len(s.binding.externalToToken) {
+			continue
+		}
+		token := s.binding.externalToToken[external]
+		if token >= 0 && token < yTokCount {
+			scratch[token] = true
+		}
+	}
+	return scratch[:]
+}
+
 func (s YamlExternalScanner) symbolTable() *[yTokCount]gotreesitter.Symbol {
-	if s.symbols == ([yTokCount]gotreesitter.Symbol{}) {
+	if s.binding == nil {
 		return &yamlDefaultSymTable
 	}
-	return &s.symbols
+	return &s.binding.symbols
 }
 
 func (YamlExternalScanner) Create() any {
@@ -588,19 +634,9 @@ func (YamlExternalScanner) Deserialize(payload any, buf []byte) {
 func (s YamlExternalScanner) Scan(payload any, lexer *gotreesitter.ExternalLexer, validSymbols []bool) bool {
 	p := payload.(*yamlPayload)
 
-	if len(s.externalToToken) > 0 {
-		var semanticValid [yTokCount]bool
-		for externalIdx, valid := range validSymbols {
-			if !valid || externalIdx >= len(s.externalToToken) {
-				continue
-			}
-			tokenIdx := s.externalToToken[externalIdx]
-			if tokenIdx >= 0 && tokenIdx < yTokCount {
-				semanticValid[tokenIdx] = true
-			}
-		}
-		validSymbols = semanticValid[:]
-	}
+	var semanticValid [yTokCount]bool
+	validSymbols = s.semanticValidity(validSymbols, &semanticValid)
+
 	syms := s.symbolTable()
 
 	env := yamlEnv{

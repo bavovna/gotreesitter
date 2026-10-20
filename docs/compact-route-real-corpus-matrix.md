@@ -43,6 +43,10 @@ This audit excludes the new wrapper and supplements prior correctness/RSS gates.
 
 ### Qualified 32-byte immutable version state
 
+PR #1488 merged to main as `2769aea23c6c8621db5368b6d9c3257bcb3c9b25`
+after 74 successful checks and four skips, including editor latency. Every
+runtime and benchmark source hash matches the qualified assembly below.
+
 The [wrapper receipt](compact-version-state32-receipt-20261020.md) keeps rare
 recovery metadata in a shared immutable holder and preserves full-width IDs,
 rollback and closed-group identity. All **414 rows**, four canonical vectors,
@@ -55,6 +59,19 @@ median unchanged, including large Go **260→260**. Query Go allocated bytes fal
 inconclusive. All **126 RSS processes** pass; including initial samples, Go's
 maximum is **319.230 B/source byte**. Ordinary YAML still falls back, the same
 39 expanded Go failures remain, and no allowlist or work exception changes.
+
+### Prepared YAML scanner binding: measured R4 throughput win
+
+The [prepared-binding receipt](compact-yaml-prepared-binding-receipt-20261020.md)
+shares immutable scanner metadata and proves the complete identity mask at
+binding. Twenty matched alternating pairs measure ordinary R4 YAML **2.60%
+faster (p=.028)** and legacy R4 **2.07% faster (p=.017)**. The other four YAML
+and all six Go timings are inconclusive; every warm YAML byte/object median
+stays exact. All **414 ledger rows**, four canonical vectors, YAML correctness
+checks, **480 timings** and **126 RSS processes** pass. Supplemental C results
+retain 417/723 passes and the same 306 failures. No ordinary YAML ownership,
+allowlist or graduation change. An existing Kotlin test-order failure is fixed
+by isolating forced-profile language instances; every route/tree assertion stays.
 
 ### Closed acceptance-group identity: qualified correctness repair
 

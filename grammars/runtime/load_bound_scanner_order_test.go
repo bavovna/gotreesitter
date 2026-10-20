@@ -2022,10 +2022,10 @@ func TestYamlExternalScannerSpecMatchesBlob(t *testing.T) {
 	for i := range want {
 		want[i] = i
 	}
-	if got := scanner.externalToToken; !slices.Equal(got, want) {
+	if got := scanner.binding.externalToToken; !slices.Equal(got, want) {
 		t.Fatalf("yaml externalToToken = %v, want %v (all %d externals must bind)", got, want, yTokCount)
 	}
-	if got, want := scanner.symbols, yamlDefaultSymTable; got != want {
+	if got, want := scanner.binding.symbols, yamlDefaultSymTable; got != want {
 		t.Fatalf("yaml post-bind symbols = %v, want default table %v", got, want)
 	}
 

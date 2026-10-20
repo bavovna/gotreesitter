@@ -7,6 +7,9 @@ import (
 	"encoding/binary"
 	"reflect"
 	"testing"
+	"unsafe"
+
+	gotreesitter "github.com/odvcencio/gotreesitter"
 )
 
 func TestYAMLCheckpointRestorePreservesIndependentHistories(t *testing.T) {
@@ -53,5 +56,109 @@ func TestYAMLCheckpointRestoreReusesIndentStorage(t *testing.T) {
 		scanner.Deserialize(payload, deep)
 	}); got != 0 {
 		t.Fatalf("warmed checkpoint restores allocate %g times, want zero", got)
+	}
+}
+
+// The public value scanner must keep its interface while avoiding token-table
+// copies on every interface call. Rebinding must not change an existing value.
+func TestYAMLScannerSharesImmutableBindingAndKeepsPayloadsIndependent(t *testing.T) {
+	var _ gotreesitter.ExternalScanner = YamlExternalScanner{}
+	if got, want := unsafe.Sizeof(YamlExternalScanner{}), unsafe.Sizeof(uintptr(0)); got != want {
+		t.Fatalf("scanner value is %d bytes, want one %d-byte binding pointer", got, want)
+	}
+	lang := Language("yaml")
+	bound := YamlExternalScanner{}.ExternalScannerForLanguage(lang).(*YamlExternalScanner)
+	copied := *bound
+	before := *bound.symbolTable()
+	if bound.binding == nil || copied.binding != bound.binding {
+		t.Fatal("scanner value copy did not share its immutable binding")
+	}
+	const offset = 73
+	renumbered := &gotreesitter.Language{
+		SymbolNames:     make([]string, len(lang.SymbolNames)+offset),
+		ExternalSymbols: make([]gotreesitter.Symbol, len(lang.ExternalSymbols)),
+	}
+	copy(renumbered.SymbolNames[offset:], lang.SymbolNames)
+	for i, symbol := range lang.ExternalSymbols {
+		renumbered.ExternalSymbols[i] = symbol + offset
+	}
+	rebound := copied.ExternalScannerForLanguage(renumbered).(*YamlExternalScanner)
+	for i, symbol := range before {
+		if got := rebound.symbolTable()[i]; got != symbol+offset {
+			t.Fatalf("renumbered token %d: got %d want %d", i, got, symbol+offset)
+		}
+	}
+	reboundBefore := *rebound.symbolTable()
+	clear(renumbered.ExternalSymbols)
+	clear(renumbered.SymbolNames)
+	if *bound.symbolTable() != before || *copied.symbolTable() != before || *rebound.symbolTable() != reboundBefore || rebound.binding == bound.binding {
+		t.Fatal("rebinding or input mutation changed the original immutable table")
+	}
+	if got := *(YamlExternalScanner{}).symbolTable(); got != yamlDefaultSymTable {
+		t.Fatal("zero-value scanner lost its default symbol mapping")
+	}
+	a, b := bound.Create().(*yamlPayload), copied.Create().(*yamlPayload)
+	checkpoint := make([]byte, 10)
+	binary.LittleEndian.PutUint16(checkpoint, 513)
+	bound.Deserialize(a, checkpoint)
+	if a == b || reflect.DeepEqual(a.state, b.state) {
+		t.Fatal("shared immutable binding also shared mutable scanner state")
+	}
+}
+
+func TestYAMLPreparedValidityPreservesGeneralMapping(t *testing.T) {
+	identity := make([]int, yTokCount)
+	reversed := make([]int, yTokCount)
+	for i := range identity {
+		identity[i], reversed[i] = i, yTokCount-1-i
+	}
+	for _, tc := range []struct {
+		name          string
+		mapping       []int
+		maskLength    int
+		enabled, want []int
+		wantLength    int
+	}{
+		{"identity", identity, yTokCount, []int{0, 3, yTokCount - 1}, []int{0, 3, yTokCount - 1}, yTokCount},
+		{"empty", identity, 0, nil, nil, yTokCount},
+		{"identity-short", identity, 4, []int{0, 3}, []int{0, 3}, yTokCount},
+		{"identity-long", identity, yTokCount + 1, []int{0, yTokCount}, []int{0}, yTokCount},
+		{"reversed", reversed, yTokCount, []int{0, 3}, []int{yTokCount - 1, yTokCount - 4}, yTokCount},
+		{"reversed-short", reversed, 4, []int{0, 3}, []int{yTokCount - 1, yTokCount - 4}, yTokCount},
+		{"sparse-duplicates", []int{2, -1, 2, 0, yTokCount}, 6, []int{0, 1, 2, 3, 4, 5}, []int{0, 2}, yTokCount},
+		{"unbound", nil, 4, []int{0, 3}, []int{0, 3}, 4},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			binding := &yamlExternalScannerBinding{externalToToken: append([]int(nil), tc.mapping...)}
+			binding.prepare()
+			scanner := YamlExternalScanner{binding: binding}
+			mask := make([]bool, tc.maskLength)
+			for _, index := range tc.enabled {
+				mask[index] = true
+			}
+			before := make([]bool, len(mask))
+			copy(before, mask)
+			want := make([]bool, tc.wantLength)
+			for _, token := range tc.want {
+				want[token] = true
+			}
+			var scratch [yTokCount]bool
+			for i := range scratch {
+				scratch[i] = true
+			}
+			got := scanner.semanticValidity(mask, &scratch)
+			if !reflect.DeepEqual(got, want) || !reflect.DeepEqual(mask, before) {
+				t.Fatalf("mapped=%v want=%v; input changed=%t", got, want, !reflect.DeepEqual(mask, before))
+			}
+			clear(mask)
+			for _, enabled := range scanner.semanticValidity(mask, &scratch) {
+				if enabled {
+					t.Fatal("a later scan retained an earlier enabled token")
+				}
+			}
+			if n := testing.AllocsPerRun(100, func() { scanner.semanticValidity(mask, &scratch) }); n != 0 {
+				t.Fatalf("validity mapping allocated %g times", n)
+			}
+		})
 	}
 }
