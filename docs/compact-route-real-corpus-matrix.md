@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### YAML graph retirement: capacity falls, peak-memory gate still fails
+
+The [completed-graph screen](compact-yaml-graph-retirement-screen-20261020.md) releases Core graph storage before native publication while preserving all correctness/work gates and the 121,045-node large YAML tree. Core capacity falls **31,840,112→15,454,184 bytes** across publication. Ordinary YAML RSS still rises **29.24%** against the existing route (twenty matched pairs, all initial probes retained), exceeding the 10% relative gate. No timing, runtime promotion, pin, approval or graduation change follows. Storage growth before publication remains the next target.
+
 ### Full-width precedence: remove the unused array prefix
 
 The [suffix-storage receipt](compact-wide-precedence-suffix-receipt-20261020.md) confirms **8,388,608→1,398,336 capacity bytes** on the pinned 1 MiB Go witness, preserving full int64 scores, all **414 ledger rows** and **four canonical vectors**. All correctness, budget, RSS and 480 benchmark-row ratchets pass. Timing differences are inconclusive; the fresh-Go B/op median falls 1.35% with borderline p=.051. This is a capacity and memory-budget improvement, with no graduation or speed claim.
