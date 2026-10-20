@@ -17,6 +17,8 @@ type nodeRecordBlocks struct {
 	spare          [][]nodeRecord
 	length         int
 	retiredThrough int
+	slotCapacity   int
+	bufferBytes    uint64
 }
 
 func (s *nodeRecordBlocks) Len() int { return s.length }
@@ -44,23 +46,30 @@ func (s *nodeRecordBlocks) Append(record nodeRecord, limit uint32) (NodeID, bool
 		return 0, false
 	}
 	if len(s.first) < cap(s.first) || len(s.blocks) == 0 && cap(s.first) < nodeRecordBlockSize {
+		oldCapacity := cap(s.first)
 		s.first = append(s.first, record)
 		s.length++
+		if cap(s.first) != oldCapacity {
+			s.refreshGeometry()
+		}
 		return NodeID(s.length), true
 	}
 	suffix := s.length - cap(s.first)
 	block, offset := suffix>>nodeRecordBlockShift, suffix&(nodeRecordBlockSize-1)
+	oldMetadataCapacity := cap(s.blocks)
 	if block == len(s.blocks) {
 		s.blocks = append(s.blocks, nodeRecordBlock{})
 	}
 	records := s.blocks[block].records
-	if offset >= cap(records) {
+	changedCapacity := offset >= cap(records)
+	if changedCapacity {
 		// A retired page behind the append frontier must never be resurrected.
 		// A partial tail can grow when a caller raises its configured limit.
 		if offset > 0 && records == nil {
 			return 0, false
 		}
-		capacity := min(nodeRecordBlockSize, int(uint64(limit)-uint64(cap(s.first))-uint64(block)*nodeRecordBlockSize))
+		remaining := min(uint64(limit), uint64(^uint(0)>>1)) - uint64(cap(s.first)) - uint64(block)*nodeRecordBlockSize
+		capacity := int(min(uint64(nodeRecordBlockSize), remaining))
 		var next []nodeRecord
 		spare := -1
 		if offset == 0 {
@@ -86,6 +95,9 @@ func (s *nodeRecordBlocks) Append(record nodeRecord, limit uint32) (NodeID, bool
 	records = records[:offset+1]
 	records[offset] = record
 	s.blocks[block].records = records
+	if changedCapacity || cap(s.blocks) != oldMetadataCapacity {
+		s.refreshGeometry()
+	}
 	s.length++
 	return NodeID(s.length), true
 }
@@ -97,13 +109,14 @@ func (s *nodeRecordBlocks) RetireBlock(index int) bool {
 	if index < 0 || index >= len(s.blocks) || len(s.blocks[index].records) == 0 {
 		return false
 	}
-	end := cap(s.first) + (index+1)*nodeRecordBlockSize
-	if end >= s.length {
+	start := cap(s.first) + index*nodeRecordBlockSize
+	if s.length-start <= nodeRecordBlockSize {
 		return false
 	}
 	s.spare = append(s.spare, s.blocks[index].records[:0])
 	s.blocks[index].records = nil
-	s.retiredThrough = max(s.retiredThrough, end)
+	s.retiredThrough = max(s.retiredThrough, start+nodeRecordBlockSize)
+	s.refreshGeometry()
 	return true
 }
 
@@ -143,6 +156,7 @@ func (s *nodeRecordBlocks) CloneActive() nodeRecordBlocks {
 			}
 		}
 	}
+	clone.refreshGeometry()
 	return clone
 }
 
@@ -177,17 +191,24 @@ func (s *nodeRecordBlocks) Reset() {
 	s.blocks = s.blocks[:0]
 	s.length = 0
 	s.retiredThrough = 0
+	s.refreshGeometry()
 }
 
-func (s *nodeRecordBlocks) FootprintBytes() uint64 {
-	total := uint64(cap(s.first))*uint64(unsafe.Sizeof(nodeRecord{})) +
+// Geometry is fixed between backing-buffer mutations. Budget polling reads
+// these cached scalars rather than scanning the arena's block table.
+func (s *nodeRecordBlocks) FootprintBytes() uint64 { return s.bufferBytes }
+
+func (s *nodeRecordBlocks) refreshGeometry() {
+	slots := cap(s.first)
+	total := uint64(slots)*uint64(unsafe.Sizeof(nodeRecord{})) +
 		uint64(cap(s.blocks))*uint64(unsafe.Sizeof(nodeRecordBlock{})) +
 		uint64(cap(s.spare))*uint64(unsafe.Sizeof([]nodeRecord{}))
-	for _, b := range s.blocks {
-		total += uint64(cap(b.records)) * uint64(unsafe.Sizeof(nodeRecord{}))
+	for _, block := range s.blocks {
+		slots += cap(block.records)
+		total += uint64(cap(block.records)) * uint64(unsafe.Sizeof(nodeRecord{}))
 	}
-	for _, b := range s.spare {
-		total += uint64(cap(b)) * uint64(unsafe.Sizeof(nodeRecord{}))
+	for _, records := range s.spare {
+		total += uint64(cap(records)) * uint64(unsafe.Sizeof(nodeRecord{}))
 	}
-	return total
+	s.slotCapacity, s.bufferBytes = slots, total
 }

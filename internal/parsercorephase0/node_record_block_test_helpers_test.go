@@ -3,7 +3,9 @@ package parsercorephase0
 import "testing"
 
 func nodeBlocksFromSliceForTest(records []nodeRecord) nodeRecordBlocks {
-	return nodeRecordBlocks{first: records, length: len(records)}
+	arena := nodeRecordBlocks{first: records, length: len(records)}
+	arena.refreshGeometry()
+	return arena
 }
 
 func (s *nodeRecordBlocks) snapshotForTest() []nodeRecord {

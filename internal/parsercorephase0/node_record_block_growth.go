@@ -4,13 +4,7 @@ import "unsafe"
 
 // Capacity counts slots available in the logical arena. Spare buffers are
 // charged by FootprintBytes, but do not make retired IDs addressable.
-func (s *nodeRecordBlocks) Capacity() int {
-	count := cap(s.first)
-	for _, b := range s.blocks {
-		count += cap(b.records)
-	}
-	return count
-}
+func (s *nodeRecordBlocks) Capacity() int { return s.slotCapacity }
 
 func nodeRecordBlockMetadataBytes(count int) uint64 {
 	if count <= nodeRecordBlockSize {
@@ -61,6 +55,7 @@ func (s *nodeRecordBlocks) Grow(want int) {
 		s.first = growArena(s.first, min(want, nodeRecordBlockSize))
 	}
 	if want <= cap(s.first) {
+		s.refreshGeometry()
 		return
 	}
 	count := (want - cap(s.first) + nodeRecordBlockSize - 1) >> nodeRecordBlockShift
@@ -96,4 +91,5 @@ func (s *nodeRecordBlocks) Grow(want int) {
 		copy(next, records)
 		s.blocks[index].records = next
 	}
+	s.refreshGeometry()
 }

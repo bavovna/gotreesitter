@@ -12,6 +12,7 @@ func TestNodeRecordBlocksStableIDsAndRecycledStorage(t *testing.T) {
 	// contiguous prefix. A real caller must freeze that span before blocking.
 	s.first = make([]nodeRecord, 8, nodeRecordBlockSize)
 	s.length = 8
+	s.refreshGeometry()
 	limit := uint32(5 * nodeRecordBlockSize)
 	for s.Len() < 3*nodeRecordBlockSize+1 {
 		index := s.Len()
@@ -160,6 +161,7 @@ func TestNodeRecordBlocksRollbackAndClonePreserveIdentity(t *testing.T) {
 
 func TestNodeRecordBlocksRetirementRejectsOldCheckpointAndClonesHoles(t *testing.T) {
 	s := nodeRecordBlocks{first: make([]nodeRecord, nodeRecordBlockSize), length: nodeRecordBlockSize}
+	s.refreshGeometry()
 	for s.Len() < 3*nodeRecordBlockSize+1 {
 		index := s.Len()
 		if _, ok := s.Append(nodeRecord{byteOffset: uint32(index)}, 4*nodeRecordBlockSize); !ok {
@@ -204,5 +206,35 @@ func TestNodeRecordBlocksSmallCloneCostIsExact(t *testing.T) {
 		if clone.FootprintBytes() != s.CloneActiveFootprintBytes() {
 			t.Fatalf("rounded clone capacity escaped plan at %d", count)
 		}
+	}
+}
+
+func TestNodeRecordBlocksMaximumLimitStartsSuffix(t *testing.T) {
+	s := nodeBlocksFromSliceForTest(make([]nodeRecord, nodeRecordBlockSize))
+	record := nodeRecord{byteOffset: 71, firstLink: 23}
+	id, ok := s.Append(record, ^uint32(0))
+	if !ok || id != nodeRecordBlockSize+1 || s.At(nodeRecordBlockSize) == nil || *s.At(nodeRecordBlockSize) != record {
+		t.Fatal("maximum uint32 limit failed at the first blocked record")
+	}
+	if cap(s.blocks[0].records) != nodeRecordBlockSize {
+		t.Fatal("maximum limit did not reserve one bounded suffix block")
+	}
+}
+
+func TestNodeRecordBlocksRetirementRejectsMaximumInt32Tail(t *testing.T) {
+	// Retired holes keep this boundary check small on both native and 386.
+	const logicalLength = int(^uint32(0) >> 1)
+	const last = (logicalLength - nodeRecordBlockSize) >> nodeRecordBlockShift
+	s := nodeRecordBlocks{
+		first:          make([]nodeRecord, nodeRecordBlockSize),
+		blocks:         make([]nodeRecordBlock, last+1),
+		length:         logicalLength,
+		retiredThrough: nodeRecordBlockSize + last*nodeRecordBlockSize,
+	}
+	s.blocks[last].records = make([]nodeRecord, logicalLength-s.retiredThrough)
+	s.refreshGeometry()
+	before := s.FootprintBytes()
+	if s.RetireBlock(last) || s.blocks[last].records == nil || len(s.spare) != 0 || s.FootprintBytes() != before {
+		t.Fatal("retirement accepted the append tail at the int32 boundary")
 	}
 }
