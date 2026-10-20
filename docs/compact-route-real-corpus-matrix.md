@@ -279,6 +279,19 @@ file source remains private; no pin, routing or graduation change follows.
 The allocation profile instead identifies immutable scanner snapshots as the
 next target (**75.32% of allocated bytes**); this share is not a speed estimate.
 
+### Go correctness repair: requalified on current storage
+
+The [current-layout receipt](compact-go-correctness-rebase-receipt-20261020.md)
+passes **306/306 identical C cases**, repairing all 39 baseline failures. All
+300 expanded cases route compact; 24 six-step edits remain fresh=C. Current
+24-byte nodes / 32-byte version state also pass **206 × 72-step sessions**,
+**618 C fixtures**, unchanged strict outcomes, API/R6, root race and **126 RSS
+probes** (maximum **307.125 B/source byte**, Go median **+2.27%**). All 414
+numeric rows and four canonical trees stay exact. The same **65 work increases
+and 12 decreases** still require the pending R3 decision; the original guard
+rejects them. No timing comparison or runtime promotion. Historical receipts
+below retain their own source and measurement scope.
+
 ### Go correctness repair: memory gates pass; R3 owner review ready
 
 The [counter-exception review](compact-go-correctness-counter-review-20261019.md)
