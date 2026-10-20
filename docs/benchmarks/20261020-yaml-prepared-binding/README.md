@@ -16,8 +16,9 @@ binding holder adds cold construction storage; warm YAML heap medians are exact.
 
 Source: 3524 Go files, with three changed files in grammars/runtime (one
 implementation, two tests). All root/core Go source and benchmark inputs match
-f28. The stacked public branch inherits one changed CI-planner test from PR1488;
-public-source-composition.json pins that sole difference from qualified Go code.
+f28. The public branch inherits one changed CI-planner test from PR1488 and isolates
+two forced-profile Kotlin tests. public-source-composition.json pins both test-only
+differences from the qualified Go code. All runtime and benchmark hashes match.
 There is no API snapshot, work pin, owner exception or allowlist change.
 
 All 414 complete ledger rows and four canonical tree/work vectors are exact.
@@ -43,7 +44,9 @@ escape. Its diagnostic log is in the RSS archive. The Scan wrapper frame is
 56 bytes versus 560 previously; assembly-provenance.json states the different
 binary contexts. These compiler results are attribution, separate from timings.
 
-Four archives and every member hash/size are pinned in archive-manifest.json.
+Five archives and every member hash/size are pinned in archive-manifest.json.
+The separate kotlin-test-isolation.tar.gz contains the original failure controls,
+the test-only overlay and fixed repetitions; it does not change scanner evidence.
 Source-and-protocol contains full Go manifests, the three changed files,
 qualification helpers, overlays, assembly and fresh-run scripts. Other archives
 store observations under observed/, including known failures. No executable or

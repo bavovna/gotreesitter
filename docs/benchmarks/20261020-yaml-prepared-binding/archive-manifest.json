@@ -1366,5 +1366,119 @@
         "bytes": 1544
       }
     }
+  },
+  "kotlin-test-isolation.tar.gz": {
+    "sha256": "dffef062d1fb24970d0baa90304ed8cf92e5f297362b3a4cb7d23844594b7c18",
+    "bytes": 9592,
+    "members": {
+      "kotlin-candidate-status.txt": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "bytes": 2
+      },
+      "kotlin-candidate.log": {
+        "sha256": "b83dbc975e13f358b3c81955206f752163f01d1417db34f808e9b8513e09f1ad",
+        "bytes": 665
+      },
+      "kotlin-control-runner.log": {
+        "sha256": "ddaf08cb106d7088d30b733a710bc925035e1005d708be53591d7312a9671a0f",
+        "bytes": 256
+      },
+      "kotlin-control.sh": {
+        "sha256": "8d3da28f959e43e9c073d1978144ef5f3b186cb1037d7544e3afac729ca0b93d",
+        "bytes": 494
+      },
+      "kotlin-isolated-candidate.log": {
+        "sha256": "4c2d2f5388ada9fb9b0d8a5d670a1bf925cbf2ab180e8412af62ca20cb63cc7c",
+        "bytes": 26966
+      },
+      "kotlin-isolated-race.log": {
+        "sha256": "59155dbdf1a74c392432cc16c415904ad021477a8fe12f3c1b502722c93ce35b",
+        "bytes": 4476
+      },
+      "kotlin-isolated-reference.log": {
+        "sha256": "2fda175192f31dd4a352e6d6743e0ccb887830e483d3bf00c078e85b0154c20d",
+        "bytes": 26966
+      },
+      "kotlin-isolated-reference64.log": {
+        "sha256": "2176e868fa920f080437763a0e2dfe409afff7b7aee193d7479200fd82570fa2",
+        "bytes": 26966
+      },
+      "kotlin-isolated-shuffle.log": {
+        "sha256": "aa15d4a823a5b8408a4e4d2e125b64e13984a3919b977c281ad7480ddc2d4c15",
+        "bytes": 7446
+      },
+      "kotlin-isolated_test.go.txt": {
+        "sha256": "321b25cf98e108433bf6550fe539dcb76ff4a758af1782ec443dbd672ee88e6d",
+        "bytes": 9913
+      },
+      "kotlin-isolation-audit.json": {
+        "sha256": "cff47f82079e22eca72386c1a63ef36be0558029d3174ca707631d46179dd677",
+        "bytes": 3456
+      },
+      "kotlin-isolation-overlay.json": {
+        "sha256": "618187e07fb05de04d8a507c7a9f04c1c785ed8fbf370d53c7216148e880f232",
+        "bytes": 339
+      },
+      "kotlin-isolation-runner.log": {
+        "sha256": "84fdf3093700ea0b612459eba2fecda1a526d0c47d15a0c89b406b8b26249e71",
+        "bytes": 244
+      },
+      "kotlin-isolation.sh": {
+        "sha256": "bbe9c70df65b2db798d6433e27ae5accb9b9ffb72571e1c49ed351a8a630ca33",
+        "bytes": 666
+      },
+      "kotlin-order-candidate-status.txt": {
+        "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "bytes": 2
+      },
+      "kotlin-order-candidate.log": {
+        "sha256": "f00ef5849a03015bcd16c5b3eb23fac9e565300a7511ba2b498d0666b97387e2",
+        "bytes": 26801
+      },
+      "kotlin-order-control-audit.json": {
+        "sha256": "d0c7d65578065c1ff6f4965f779e47aca8b7c76fcbbdb094bc140ce5a5b7ae7a",
+        "bytes": 2379
+      },
+      "kotlin-order-reference-status.txt": {
+        "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "bytes": 2
+      },
+      "kotlin-order-reference.log": {
+        "sha256": "39d77ae28512f4d84832d35fdae61938c78dbb25e5f6e8040dfb594700dd855c",
+        "bytes": 26801
+      },
+      "kotlin-order-reference64-status.txt": {
+        "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "bytes": 2
+      },
+      "kotlin-order-reference64.log": {
+        "sha256": "8872cf574892554cee24365a49f5fb1188c26fc6752767fee77593da3723ad0a",
+        "bytes": 26801
+      },
+      "kotlin-order-runner.log": {
+        "sha256": "e2dbb102f6828b6ce4311a93ba87690836283753a586a5fea0338718f3e05735",
+        "bytes": 863
+      },
+      "kotlin-order.sh": {
+        "sha256": "2739a9a1ff5af07a64209b4334883917154eab7bd414989f260d912ee55d45ff",
+        "bytes": 403
+      },
+      "kotlin-reference-status.txt": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "bytes": 2
+      },
+      "kotlin-reference.log": {
+        "sha256": "6616b79e2abcafbcee71d7632e25b4274860487014d9714c13291564570c7c44",
+        "bytes": 665
+      },
+      "kotlin-reference64-status.txt": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "bytes": 2
+      },
+      "kotlin-reference64.log": {
+        "sha256": "120dc9212ceda4f8d49e7030b7603c5a260a8d740cd1b602e7f3425e2dc904ab",
+        "bytes": 665
+      }
+    }
   }
 }

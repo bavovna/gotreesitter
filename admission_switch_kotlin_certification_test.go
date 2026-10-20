@@ -113,7 +113,9 @@ func TestKotlinCompactCertificationObjectDeclarationDeclinesUnderShippedProfile(
 // cgo_harness/kotlin_a3_certification_object_declaration_regression_test.go.
 func TestKotlinCompactCertificationObjectDeclarationAcceptsProductionTreeWhenSplitDropsForced(t *testing.T) {
 	source := []byte("package demo\n\nobject Singleton {\n    fun work() = Unit\n}\n")
-	lang := grammars.KotlinLanguage()
+	// A runner keeps its artifact capabilities for the language lifetime.
+	// Give this forced profile its own language and runner pool.
+	lang := cloneAdmissionTestLanguage(grammars.KotlinLanguage())
 	if !lang.CompactPrimaryAcceptanceDerivationCertified {
 		t.Fatal("kotlin did not receive the A3 primary-acceptance-derivation certification")
 	}
@@ -134,7 +136,6 @@ func TestKotlinCompactCertificationObjectDeclarationAcceptsProductionTreeWhenSpl
 	}
 
 	lang.CompactConvergedReductionSplitDropsCertified = true
-	defer func() { lang.CompactConvergedReductionSplitDropsCertified = false }()
 
 	gts.ResetAdmissionCandidateCountersForTest()
 	candidate := gts.NewParser(lang)
@@ -173,7 +174,9 @@ func TestKotlinCompactCertificationObjectDeclarationAcceptsProductionTreeWhenSpl
 // everywhere.
 func TestKotlinCompactCertificationPlatformModifierSplitOnlyIsSafe(t *testing.T) {
 	source := []byte("internal actual fun f(): String = \"x\"\n")
-	lang := grammars.KotlinLanguage()
+	// A runner keeps its artifact capabilities for the language lifetime.
+	// Give this forced profile its own language and runner pool.
+	lang := cloneAdmissionTestLanguage(grammars.KotlinLanguage())
 	if !lang.CompactPrimaryAcceptanceDerivationCertified {
 		t.Fatal("kotlin did not receive the A3 primary-acceptance-derivation certification")
 	}
@@ -183,10 +186,6 @@ func TestKotlinCompactCertificationPlatformModifierSplitOnlyIsSafe(t *testing.T)
 
 	lang.CompactConvergedReductionSplitDropsCertified = true
 	lang.CompactPrimaryAcceptanceDerivationCertified = false
-	defer func() {
-		lang.CompactConvergedReductionSplitDropsCertified = false
-		lang.CompactPrimaryAcceptanceDerivationCertified = true
-	}()
 
 	gts.ResetAdmissionCandidateCountersForTest()
 	candidate := gts.NewParser(lang)
