@@ -541,14 +541,18 @@ func TestG18RefSetSchedulerMemoryBudgetAccounting(t *testing.T) {
 }
 
 func TestG18RefSetSchedulerRecordSizeRatchets(t *testing.T) {
-	if got := unsafe.Sizeof(diagnosticParserCoreHeader{}); got != 80 {
-		t.Fatalf("scheduler header size=%d, want 80", got)
+	wantHeader, wantGroup, wantOutput := uintptr(80), uintptr(40), uintptr(40)
+	if unsafe.Sizeof(uintptr(0)) == 4 {
+		wantHeader, wantGroup, wantOutput = 76, 36, 36
 	}
-	if got := unsafe.Sizeof(diagnosticParserCoreCanonicalGroup{}); got != 40 {
-		t.Fatalf("canonical group size=%d, want 40", got)
+	if got := unsafe.Sizeof(diagnosticParserCoreHeader{}); got != wantHeader {
+		t.Fatalf("scheduler header size=%d, want %d", got, wantHeader)
 	}
-	if got := unsafe.Sizeof(diagnosticParserCoreActionOutput{}); got != 40 {
-		t.Fatalf("action output size=%d, want 40", got)
+	if got := unsafe.Sizeof(diagnosticParserCoreCanonicalGroup{}); got != wantGroup {
+		t.Fatalf("canonical group size=%d, want %d", got, wantGroup)
+	}
+	if got := unsafe.Sizeof(diagnosticParserCoreActionOutput{}); got != wantOutput {
+		t.Fatalf("action output size=%d, want %d", got, wantOutput)
 	}
 	if got := unsafe.Sizeof(core.CondenseCandidate{}); got != 32 {
 		t.Fatalf("condense candidate size=%d, want 32", got)
