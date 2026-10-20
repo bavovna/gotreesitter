@@ -43,3 +43,9 @@ are unchanged. Public helper and final composition checks retain separate logs.
 This is a memory improvement. All twelve timing differences are inconclusive;
 ordinary YAML still falls back and graduation remains open. The private graph,
 action16, seed-group and Go correctness proposals are absent.
+
+The CI follow-up registers the new benchorder test package in the existing
+support race lane. `ci-lane-followup.json` pins the workflow and the single
+changed Go file, a CI-planner test. All runtime and benchmark Go hashes remain
+exact; Docker planner tests, the complete package inventory and benchorder
+races pass. The original runtime/performance qualification is unchanged.
