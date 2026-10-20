@@ -559,6 +559,7 @@ func diagnosticEOFRecoveryCopiedArenasEqual(live, shadow *Core) bool {
 		return false
 	}
 	return equalDiagnosticSlice(live.nodes, shadow.nodes) &&
+		live.nodePrecedenceWideBase == shadow.nodePrecedenceWideBase &&
 		equalDiagnosticSlice(live.nodePrecedenceWide, shadow.nodePrecedenceWide) &&
 		equalDiagnosticSlice(live.nodeLineages, shadow.nodeLineages) &&
 		equalDiagnosticSlice(live.nodeLineageRecovery, shadow.nodeLineageRecovery) &&

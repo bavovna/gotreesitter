@@ -27,19 +27,27 @@ func (c *Core) storedNodePrecedence(id NodeID) (int64, error) {
 	if inline != wideNodePrecedence {
 		return int64(inline), nil
 	}
-	if uint64(id)-1 >= uint64(len(c.nodePrecedenceWide)) {
+	if c.nodePrecedenceWideBase == 0 || id < c.nodePrecedenceWideBase {
 		return 0, errMissingWideNodePrecedence
 	}
-	return c.nodePrecedenceWide[id-1], nil
+	index := uint64(id) - uint64(c.nodePrecedenceWideBase)
+	if index >= uint64(len(c.nodePrecedenceWide)) {
+		return 0, errMissingWideNodePrecedence
+	}
+	return c.nodePrecedenceWide[index], nil
 }
 
-// Wide storage is allocated only when needed. Dense NodeID indexing keeps the
-// exceptional read constant-time and bounds its capacity by the node arena.
-// Published entries never change; transaction marks truncate the logical end.
+// Wide storage starts at the first NodeID that needs it. Earlier nodes keep
+// their exact inline values, so the unused prefix needs no allocation. Reads
+// remain constant-time and all stored values remain int64. Published entries
+// never change; transaction marks restore both the origin and logical end.
 func (c *Core) storeWideNodePrecedence(id NodeID, value int64) {
-	needed := int(id)
+	if c.nodePrecedenceWideBase == 0 {
+		c.nodePrecedenceWideBase = id
+	}
+	needed := int(id-c.nodePrecedenceWideBase) + 1
 	if cap(c.nodePrecedenceWide) < needed {
-		values := make([]int64, needed, cap(c.nodes))
+		values := make([]int64, needed, cap(c.nodes)-int(c.nodePrecedenceWideBase)+1)
 		copy(values, c.nodePrecedenceWide)
 		c.nodePrecedenceWide = values
 	} else if len(c.nodePrecedenceWide) < needed {
