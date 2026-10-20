@@ -368,6 +368,7 @@ func (c *Core) releaseRecordArenaReserve() {
 	}
 	c.nodes = nil
 	c.nodePrecedenceWide = nil
+	c.nodePrecedenceWideBase = 0
 	c.nodeLineages = nil
 	c.nodeLineageRecovery = nil
 	c.nodeLineageRefSets = nil
@@ -407,6 +408,7 @@ func (c *Core) releaseOversizedRetention() {
 	}
 	c.nodes = nil
 	c.nodePrecedenceWide = nil
+	c.nodePrecedenceWideBase = 0
 	c.nodeLineages = nil
 	c.nodeLineageRecovery = nil
 	c.nodeLineageRefSets = nil

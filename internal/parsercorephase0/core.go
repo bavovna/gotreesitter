@@ -1294,21 +1294,22 @@ type RawSelectedCensus struct {
 // Core is the compact, persistent diagnostic graph. All records are indexes
 // into pointer-free slices; the production parser is unaffected.
 type Core struct {
-	tables              TableView
-	tableIdentity       [32]byte
-	tableIdentityValid  bool
-	plans               ReductionPlanProvider
-	selectedProvider    SelectedStorePolicyProvider
-	selectedPolicy      *SelectedStorePolicy
-	limits              Limits
-	diagnostics         diagnosticOptions
-	nodes               []nodeRecord
-	nodePrecedenceWide  []int64
-	nodeLineages        []nodeLineageHot
-	nodeLineageRecovery []nodeLineageRecovery
-	nodeLineageRefSets  []DropCohortRefSet
-	nodeCheckpoints     []CheckpointID
-	links               []linkRecord
+	tables                 TableView
+	tableIdentity          [32]byte
+	tableIdentityValid     bool
+	plans                  ReductionPlanProvider
+	selectedProvider       SelectedStorePolicyProvider
+	selectedPolicy         *SelectedStorePolicy
+	limits                 Limits
+	diagnostics            diagnosticOptions
+	nodes                  []nodeRecord
+	nodePrecedenceWide     []int64
+	nodePrecedenceWideBase NodeID
+	nodeLineages           []nodeLineageHot
+	nodeLineageRecovery    []nodeLineageRecovery
+	nodeLineageRefSets     []DropCohortRefSet
+	nodeCheckpoints        []CheckpointID
+	links                  []linkRecord
 
 	// dropCohortLinkRefIndexes is an optional, LinkID-indexed sidecar. A zero
 	// entry means that no finalized drop-cohort reference is bound.
@@ -1526,6 +1527,7 @@ type diagnosticOptions struct {
 }
 
 type checkpoint struct {
+	nodePrecedenceWideBase                                                    NodeID
 	nodePrecedenceWide                                                        int
 	nodeLineageRecovery                                                       int
 	nodeLineageRefSets                                                        []DropCohortRefSet
@@ -1650,8 +1652,9 @@ func (c *Core) markInto(mark *checkpoint) {
 	}
 	c.nextTransaction++
 	*mark = checkpoint{
-		nodePrecedenceWide: len(c.nodePrecedenceWide),
-		nodes:              len(c.nodes), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
+		nodePrecedenceWide:     len(c.nodePrecedenceWide),
+		nodePrecedenceWideBase: c.nodePrecedenceWideBase,
+		nodes:                  len(c.nodes), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
 		nodeLineageRefSets: c.nodeLineageRefSets,
 		links:              len(c.links), subtrees: len(c.subtrees),
 		nodeCheckpoints:                 len(c.nodeCheckpoints),
@@ -1767,6 +1770,7 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 	c.classificationPhase++
 	c.nodes = c.nodes[:mark.nodes]
 	c.nodePrecedenceWide = c.nodePrecedenceWide[:mark.nodePrecedenceWide]
+	c.nodePrecedenceWideBase = mark.nodePrecedenceWideBase
 	c.nodeLineages = c.nodeLineages[:mark.nodeLineages]
 	c.nodeLineageRefSets = mark.nodeLineageRefSets
 	c.nodeLineageRecovery = c.nodeLineageRecovery[:mark.nodeLineageRecovery]
@@ -2392,6 +2396,7 @@ func (c *Core) Reset() error {
 	}
 	c.nodes = c.nodes[:0]
 	c.nodePrecedenceWide = c.nodePrecedenceWide[:0]
+	c.nodePrecedenceWideBase = 0
 	c.nodeLineages = c.nodeLineages[:0]
 	c.nodeLineageRecovery = c.nodeLineageRecovery[:0]
 	c.nodeLineageRefSets = c.nodeLineageRefSets[:0]

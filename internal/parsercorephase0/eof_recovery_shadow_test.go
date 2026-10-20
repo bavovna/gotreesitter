@@ -383,7 +383,13 @@ func TestNodePrecedenceEOFShadowOwnsWideValues(t *testing.T) {
 	if got := storedNodeMaximumForTest(t, shadow, id); got != 1<<40 {
 		t.Fatal("shadow lost full-width precedence")
 	}
-	shadow.nodePrecedenceWide[id-1] = 7
+	origin := shadow.nodePrecedenceWideBase
+	shadow.nodePrecedenceWideBase++
+	if diagnosticEOFRecoveryCopiedArenasEqual(live, shadow) {
+		t.Fatal("different wide origin passed arena equality")
+	}
+	shadow.nodePrecedenceWideBase = origin
+	shadow.nodePrecedenceWide[id-shadow.nodePrecedenceWideBase] = 7
 	if got := storedNodeMaximumForTest(t, live, id); got != 1<<40 {
 		t.Fatal("shadow changed live precedence")
 	}

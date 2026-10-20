@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Full-width precedence: remove the unused array prefix
+
+The [suffix-storage receipt](compact-wide-precedence-suffix-receipt-20261020.md) confirms **8,388,608→1,398,336 capacity bytes** on the pinned 1 MiB Go witness, preserving full int64 scores, all **414 ledger rows** and **four canonical vectors**. All correctness, budget, RSS and 480 benchmark-row ratchets pass. Timing differences are inconclusive; the fresh-Go B/op median falls 1.35% with borderline p=.051. This is a capacity and memory-budget improvement, with no graduation or speed claim.
+
 ### Go election fill: compiler improvement, no measured throughput win
 
 The [direct-fill receipt](compact-go-election-fill-receipt-20261020.md) preserves all **414 ledger rows** and **four canonical Go vectors**. Twenty matched pairs per language pass all 480 timing/allocation rows and RSS limits, but all twelve timing differences are inconclusive. The **1,120→856-byte** election stack change stays held. A separately scoped capacity census identifies an unused **873,784-node prefix** in Go's full-width precedence storage; no performance claim is made for the proposed suffix representation.
