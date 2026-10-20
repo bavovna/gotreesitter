@@ -168,6 +168,10 @@
       "bytes": 372,
       "sha256": "9c06568332715ce8872416552e79a924e4ebe573040394c243b26e2a9835f065"
     },
+    "protocol/census.sh": {
+      "bytes": 1172,
+      "sha256": "6a439972936498c3b04da40a257880c73451796f10fd3d6adde1bf1552b0d622"
+    },
     "protocol/cgo_probe_test.go.txt": {
       "bytes": 1843,
       "sha256": "b64321d16e8e74f7dba8fdfe5686610d536a869a084c27534727a2d14c6cb195"

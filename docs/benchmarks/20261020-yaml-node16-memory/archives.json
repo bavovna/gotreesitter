@@ -18,9 +18,9 @@
   "archives": [
     {
       "name": "source-protocol.tar.gz",
-      "bytes": 832434,
-      "members": 61,
-      "sha256": "8b08a5390fe6d0b3b967e24707c3bc3f127d634e05d2e2c494fdff9c25a7fe3f"
+      "bytes": 832720,
+      "members": 62,
+      "sha256": "8b7313673e506209180df8deb8cc93ad95b51d6666d9a15f0d4b8212679d4a38"
     },
     {
       "name": "qualification.tar.gz",

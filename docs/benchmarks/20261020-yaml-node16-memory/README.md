@@ -6,7 +6,7 @@ this failure. See the [receipt](../../compact-yaml-node16-memory-screen-20261020
 for the scope and the next hypothesis.
 
 `archives.json` pins all three archives; `archive-members.json` pins every
-extracted member by size and SHA-256. The archives were reopened and all 377
+extracted member by size and SHA-256. The archives were reopened and all 378
 members checked after construction.
 
 | Archive | Contents |
