@@ -1,0 +1,12 @@
+{
+  "parent": "0f2f90033c9eae668b8df3a309d5c8e530703e26",
+  "parent_pr": 1488,
+  "candidate_go_files": 3524,
+  "runtime_and_benchmark_go_hashes_exact": true,
+  "ci_test_only_delta": {
+    "cmd/citestplan/main_test.go": {
+      "qualified": "2458745de4667cbdcfdacd5629b4a4290afec2a4c2c303f1bfecc07f33989f44",
+      "published": "3333d08737120dd625a2a6c25cc68d70277231e91c9cef87980528861d4b93f0"
+    }
+  }
+}
