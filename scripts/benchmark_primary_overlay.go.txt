@@ -1,0 +1,204 @@
+// Copied to a temporary .go file by run_randomized_benchmarks.sh. This helper
+// uses only the standard library, including when comparing older revisions.
+package main
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"go/ast"
+	"go/format"
+	"go/parser"
+	"go/token"
+	"os"
+	"path"
+	"path/filepath"
+	"strconv"
+)
+
+func main() {
+	if err := prepare(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func prepare() error {
+	if len(os.Args) < 4 {
+		return fmt.Errorf("usage: prepare suite-source overlay-output root [root ...]")
+	}
+	source, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		return err
+	}
+	replace := make(map[string]string)
+	var hashes [][2][32]byte
+	for i, root := range os.Args[3:] {
+		root, err = filepath.EvalSymlinks(root)
+		if err != nil {
+			return err
+		}
+		root, err = filepath.Abs(root)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(root, "benchmark_test.go")
+		info, err := os.Lstat(target)
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("primary suite requires a regular benchmark_test.go: %s", target)
+		}
+		original, err := os.ReadFile(target)
+		if err != nil {
+			return err
+		}
+		prepared, err := appendSuite(original, source)
+		if err != nil {
+			return fmt.Errorf("%s: %w", target, err)
+		}
+		frozen, err := filepath.Abs(filepath.Join(filepath.Dir(os.Args[2]), fmt.Sprintf("prepared-%d.go.txt", i)))
+		if err != nil {
+			return err
+		}
+		if err := writeNew(frozen, prepared); err != nil {
+			return err
+		}
+		replace[target] = frozen
+		hashes = append(hashes, [2][32]byte{sha256.Sum256(original), sha256.Sum256(prepared)})
+	}
+	data, err := json.MarshalIndent(map[string]any{"Replace": replace}, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := writeNew(os.Args[2], append(data, '\n')); err != nil {
+		return err
+	}
+	fmt.Printf("%x\n", sha256.Sum256(source))
+	for _, pair := range hashes {
+		fmt.Printf("%x\n%x\n", pair[0], pair[1])
+	}
+	return nil
+}
+
+func writeNew(name string, data []byte) error {
+	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(data); err != nil {
+		f.Close()
+		return err
+	}
+	return f.Close()
+}
+
+func appendSuite(original, source []byte) ([]byte, error) {
+	originalSet, suiteSet := token.NewFileSet(), token.NewFileSet()
+	originalFile, err := parser.ParseFile(originalSet, "benchmark_test.go", original, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	suiteFile, err := parser.ParseFile(suiteSet, "suite.go", source, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	if originalFile.Name.Name != suiteFile.Name.Name {
+		return nil, fmt.Errorf("primary suite package %s differs from %s", suiteFile.Name.Name, originalFile.Name.Name)
+	}
+	var suite *ast.FuncDecl
+	for _, decl := range suiteFile.Decls {
+		if f, ok := decl.(*ast.FuncDecl); ok {
+			if suite != nil {
+				return nil, fmt.Errorf("suite must contain one benchmark")
+			}
+			suite = f
+		}
+	}
+	if suite == nil {
+		return nil, fmt.Errorf("suite benchmark missing")
+	}
+	for _, decl := range originalFile.Decls {
+		if f, ok := decl.(*ast.FuncDecl); ok && f.Name.Name == suite.Name.Name {
+			return nil, fmt.Errorf("primary suite benchmark already exists")
+		}
+	}
+	aliases := make(map[string]string)
+	used := make(map[string]bool)
+	for _, spec := range originalFile.Imports {
+		pkg, err := strconv.Unquote(spec.Path.Value)
+		if err != nil {
+			return nil, err
+		}
+		alias := path.Base(pkg)
+		if spec.Name != nil {
+			alias = spec.Name.Name
+		}
+		aliases[pkg] = alias
+		used[alias] = true
+	}
+	for name := range originalFile.Scope.Objects {
+		used[name] = true
+	}
+	renamed := make(map[string]string)
+	var extra bytes.Buffer
+	for _, spec := range suiteFile.Imports {
+		pkg, err := strconv.Unquote(spec.Path.Value)
+		if err != nil {
+			return nil, err
+		}
+		old := path.Base(pkg)
+		if spec.Name != nil {
+			old = spec.Name.Name
+		}
+		alias, ok := aliases[pkg]
+		if ok {
+			if alias == "." || alias == "_" {
+				return nil, fmt.Errorf("primary suite cannot use blank or dot import %s", pkg)
+			}
+		} else {
+			alias = "gtsSeeded" + old
+			for used[alias] {
+				alias += "_"
+			}
+			used[alias] = true
+			fmt.Fprintf(&extra, "import %s %q\n", alias, pkg)
+		}
+		renamed[old] = alias
+	}
+	ast.Inspect(suite, func(n ast.Node) bool {
+		if s, ok := n.(*ast.SelectorExpr); ok {
+			if x, ok := s.X.(*ast.Ident); ok {
+				if name, ok := renamed[x.Name]; ok {
+					x.Name = name
+				}
+			}
+		}
+		return true
+	})
+	var body bytes.Buffer
+	if err := format.Node(&body, suiteSet, suite); err != nil {
+		return nil, err
+	}
+	// Preserve every original benchmark byte. Only new import declarations and
+	// the wrapper are inserted; no existing function is rewritten or removed.
+	offset := originalSet.Position(originalFile.Name.End()).Offset
+	lineEnd := bytes.IndexByte(original[offset:], '\n')
+	if lineEnd < 0 {
+		return nil, fmt.Errorf("package declaration has no following newline")
+	}
+	offset += lineEnd + 1
+	result := make([]byte, 0, len(original)+extra.Len()+body.Len()+8)
+	result = append(result, original[:offset]...)
+	if extra.Len() != 0 {
+		result = append(result, '\n')
+		result = append(result, extra.Bytes()...)
+	}
+	result = append(result, original[offset:]...)
+	result = append(result, '\n', '\n')
+	result = append(result, body.Bytes()...)
+	result = append(result, '\n')
+	return result, nil
+}

@@ -25,6 +25,8 @@ Options:
   --require-benchmarks CSV
                       Require each exact benchmark name once per process, with all three standard metrics.
   --package PATH      Go package path. Default: .
+  --primary-go-suite  Run the unchanged Go DFA trio through an identical seeded test overlay.
+                      Root package only; cannot combine with --bench-regex or another Go overlay.
   --help              Show this help.
 EOF
 }
@@ -40,6 +42,12 @@ seed_start=1
 benchtime=750ms
 build_tags=gts_parsercorephase0
 package_path=.
+primary_go_suite=0
+benchmark_regex_set=0
+primary_suite_tmp=""
+primary_suite_sha256=""
+primary_input_hashes=()
+primary_overlay_args=()
 required_benchmarks=""
 benchmark_re='^(BenchmarkGoParse(FullDFA|CoreDFA|IncrementalSingleByteEditDFA|IncrementalNoEditDFA|IncrementalRandomSingleByteEdit)|Benchmark(KDLRecoveryGarbageSuffix|RecoveryCorpusFile)|BenchmarkExpectedRootCanFrameLongRepeat|BenchmarkDiagnosticParserCore(CorridorSchedulerOnly|WarmSchedulerOnlyQueryCompile|WarmMaterializationOnlyQueryCompile)|BenchmarkParserCoreFreshFull(Canonical|SelectedStoreCanonical)|Benchmark(TaggerTag(Tree)?Go|ExtractCodeUnderstanding(Tree)?Go|ExtractAllFactsTreeGo|FactProgram(All)?(Tree)?Go))$'
 
@@ -117,6 +125,7 @@ while (($# > 0)); do
 			exit 2
 		fi
 		benchmark_re=$2
+		benchmark_regex_set=1
 		shift 2
 		;;
 	--require-benchmarks)
@@ -126,6 +135,10 @@ while (($# > 0)); do
 		fi
 		required_benchmarks=$2
 		shift 2
+		;;
+	--primary-go-suite)
+		primary_go_suite=1
+		shift
 		;;
 	--package)
 		if (($# < 2)); then
@@ -166,6 +179,17 @@ fi
 if [[ -z "$lock_path" ]]; then
 	printf '%s\n' "--lock-path requires a path" >&2
 	exit 2
+fi
+
+if ((primary_go_suite)); then
+	primary_required='BenchmarkGoParseFullDFA,BenchmarkGoParseIncrementalSingleByteEditDFA,BenchmarkGoParseIncrementalNoEditDFA'
+	if ((benchmark_regex_set)) || [[ "$package_path" != . && "$package_path" != ./ ]] || \
+		[[ -n "$required_benchmarks" && "$required_benchmarks" != "$primary_required" ]]; then
+		printf '%s\n' '--primary-go-suite supplies the root-package benchmark selection and required Go trio' >&2
+		exit 2
+	fi
+	benchmark_re='^BenchmarkGTSSeededPrimary$'
+	required_benchmarks=$primary_required
 fi
 
 if [[ -n "$required_benchmarks" ]]; then
@@ -247,6 +271,13 @@ mark_incomplete() {
 	done
 }
 
+remove_primary_suite() {
+	if [[ -n "$primary_suite_tmp" ]]; then
+		rm -rf -- "$primary_suite_tmp" || true
+		primary_suite_tmp=""
+	fi
+}
+
 release_lock() {
 	if ((lock_held == 0)); then
 		return 0
@@ -261,6 +292,7 @@ exit_with_lock_status() {
 	if ((status != 0)); then
 		mark_incomplete
 	fi
+	remove_primary_suite
 	release_lock
 	exit "$status"
 }
@@ -268,6 +300,7 @@ exit_with_lock_status() {
 exit_after_signal() {
 	local signal=$1
 	mark_incomplete
+	remove_primary_suite
 	release_lock
 	trap - "$signal"
 	kill -s "$signal" "$$"
@@ -306,6 +339,38 @@ lock_cwd=$(pwd -P)
 		printf 'baseline_output=%s\n' "$baseline_output"
 	fi
 } >"$lock_path"
+
+# The same suite is added to each existing benchmark file. Existing source
+# bodies stay intact, vet stays enabled, and neither checkout is written.
+if ((primary_go_suite)); then
+	effective_go_flags=$(go env GOFLAGS)
+	if [[ "$effective_go_flags" == *-overlay* ]]; then
+		printf '%s\n' '--primary-go-suite cannot replace an existing Go overlay' >&2
+		exit 2
+	fi
+	script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+	primary_suite_tmp=$(mktemp -d "${TMPDIR:-/tmp}/gotreesitter-primary-suite.XXXXXX")
+	primary_suite_tmp=$(cd -- "$primary_suite_tmp" && pwd -P)
+	cp -- "$script_dir/benchmark_primary_go_suite.go.txt" "$primary_suite_tmp/suite.go.txt"
+	cp -- "$script_dir/benchmark_primary_overlay.go.txt" "$primary_suite_tmp/prepare.go"
+	primary_roots=("$head_root")
+	if ((baseline_root_set)); then primary_roots+=("$baseline_root"); fi
+	primary_suite_info=$(go run "$primary_suite_tmp/prepare.go" \
+		"$primary_suite_tmp/suite.go.txt" "$primary_suite_tmp/overlay.json" "${primary_roots[@]}")
+	mapfile -t primary_input_hashes <<<"$primary_suite_info"
+	if ((${#primary_input_hashes[@]} != 1+2*${#primary_roots[@]})); then
+		printf '%s\n' 'primary suite preparation did not return its source hashes' >&2
+		exit 2
+	fi
+	for digest in "${primary_input_hashes[@]}"; do
+		if [[ ! "$digest" =~ ^[0-9a-f]{64}$ ]]; then
+			printf '%s\n' 'invalid primary suite source hash' >&2
+			exit 2
+		fi
+	done
+	primary_suite_sha256=${primary_input_hashes[0]}
+	primary_overlay_args=(-overlay "$primary_suite_tmp/overlay.json")
+fi
 
 source_metadata() {
 	local root=$1 suffix=$2 repository revision dirty state
@@ -348,6 +413,17 @@ initialize_output() {
 		printf '# count per process: 1\n'
 		printf '# suite seed environment: GTS_BENCHMARK_SEED\n'
 		printf '# paired workload order: must match\n'
+		if ((primary_go_suite)); then
+			printf '# primary Go suite source SHA256: %s\n' "$primary_suite_sha256"
+			if [[ "$role" == baseline ]]; then
+				printf '# primary Go original benchmark SHA256: %s\n' "${primary_input_hashes[3]}"
+				printf '# primary Go prepared benchmark SHA256: %s\n' "${primary_input_hashes[4]}"
+			else
+				printf '# primary Go original benchmark SHA256: %s\n' "${primary_input_hashes[1]}"
+				printf '# primary Go prepared benchmark SHA256: %s\n' "${primary_input_hashes[2]}"
+			fi
+			printf '# primary Go suite: test-only overlay preserves original functions and vet; seeded child order; canonical names restored\n'
+		fi
 	} >>"$path"
 }
 
@@ -358,13 +434,19 @@ run_seed() {
 	sample_start=$(wc -c <"$path")
 	(
 		cd -- "$root"
-		GOMAXPROCS=1 GTS_BENCHMARK_SEED="$seed" go test -tags "$build_tags" "$package_path" \
-			-run '^$' \
-			-bench "$benchmark_re" \
-			-benchmem \
-			-count=1 \
-			-benchtime="$benchtime" \
-			-shuffle="$seed"
+		benchmark_args=(test "${primary_overlay_args[@]}" -tags "$build_tags" "$package_path"
+			-run '^$' -bench "$benchmark_re" -benchmem -count=1
+			-benchtime="$benchtime" -shuffle="$seed")
+		if ((primary_go_suite)); then
+			GOMAXPROCS=1 GTS_BENCHMARK_SEED="$seed" go "${benchmark_args[@]}" | awk '
+				/^BenchmarkGTSSeededPrimary\/BenchmarkGoParse(FullDFA|IncrementalSingleByteEditDFA|IncrementalNoEditDFA)(-[0-9]+)?[[:space:]]/ {
+					sub(/^BenchmarkGTSSeededPrimary\//, "")
+				}
+				{ print }
+			'
+		else
+			GOMAXPROCS=1 GTS_BENCHMARK_SEED="$seed" go "${benchmark_args[@]}"
+		fi
 	) >>"$path"
 	if ! tail -c "+$((sample_start + 1))" "$path" | GTS_BENCH_REQUIRED_NAMES="$required_benchmarks" awk '
 		BEGIN {
