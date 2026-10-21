@@ -61,7 +61,7 @@ func TestPhase0AReductionPopPathsAllocateImmediateOccurrences(t *testing.T) {
 func TestPhase0AReductionFailureRetainsTombstonesAndClearsGrouping(t *testing.T) {
 	core, head := newSharedReductionFixture(t, true)
 	run := phase0ABeginShiftProvenanceRun(t, core, phase0AReductionLimits())
-	core.limits.MaxNodes = uint32(len(core.nodes))
+	core.limits.MaxNodes = uint32(core.nodes.Len())
 	if _, err := core.Reduce(head, 9, 0, ForkOrder{}); err == nil {
 		t.Fatal("node-capped reduction succeeded")
 	}

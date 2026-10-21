@@ -138,12 +138,12 @@ func (c *Core) validateReusedHead(head Head, poll func() error) error {
 		c.reuseProof.subtrees++
 	}
 	// Graph topology is immutable. Mutation seams invalidate proofs of unsafe lineage changes.
-	for uint64(c.reuseProof.nodes) < uint64(len(c.nodes)) {
+	for uint64(c.reuseProof.nodes) < uint64(c.nodes.Len()) {
 		if err := step(); err != nil {
 			return err
 		}
 		id := NodeID(c.reuseProof.nodes + 1)
-		node := &c.nodes[id-1]
+		node := c.nodes.At(int(id - 1))
 		nodePaths, pathErr := c.nodePathCount(id)
 		if pathErr != nil {
 			return pathErr

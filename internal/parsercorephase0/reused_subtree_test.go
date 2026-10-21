@@ -84,7 +84,7 @@ func TestReusedSubtreeInvalidAdmission(t *testing.T) {
 		{"wrong state", func(_ *Core, _ Head, r *ReusedSubtree) { r.PreGotoState = 3 }},
 		{"wrong goto", func(_ *Core, _ Head, r *ReusedSubtree) { r.State = 3 }},
 		{"zero width", func(_ *Core, _ Head, r *ReusedSubtree) { r.EndByte = r.StartByte }},
-		{"before head", func(c *Core, h Head, _ *ReusedSubtree) { c.nodes[h.Node-1].byteOffset = 3 }},
+		{"before head", func(c *Core, h Head, _ *ReusedSubtree) { (*c.nodes.At(int(h.Node - 1))).byteOffset = 3 }},
 		{"ambiguous", func(c *Core, h Head, _ *ReusedSubtree) { setNodePathCountForTest(c, NodeID((h.Node-1)+1), 2) }},
 		{"recovery", func(c *Core, h Head, _ *ReusedSubtree) {
 			c.mutateTestLineage(int(h.Node-1), func(r *nodeLineageRecord) { r.storedErrorCost = 1 })

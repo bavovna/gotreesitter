@@ -626,7 +626,7 @@ func (c *Core) RecoveryGraphAggregateForHead(
 	if source == nil {
 		return result, false, errors.New("parser-core phase zero: recovery graph aggregate requires an exact cost source")
 	}
-	if head.Node == 0 || uint64(head.Node) > uint64(len(c.nodes)) {
+	if head.Node == 0 || uint64(head.Node) > uint64(c.nodes.Len()) {
 		return result, false, errors.New("parser-core phase zero: recovery graph aggregate head is unavailable")
 	}
 	// NodeIDs are dense and every graph edge points to a lower ID. First mark
@@ -659,7 +659,7 @@ func (c *Core) RecoveryGraphAggregateForHead(
 		if reachableNodes > uint64(c.limits.MaxNodes) {
 			return result, false, fmt.Errorf("%w: reachable node graph", ErrRecoveryGraphAggregateLimit)
 		}
-		node := c.nodes[id-1]
+		node := *c.nodes.At(int(id - 1))
 		if node.linkCount == 0 {
 			if node.firstLink != 0 {
 				return result, false, errors.New("parser-core phase zero: recovery graph aggregate empty node has a link")
@@ -698,7 +698,7 @@ func (c *Core) RecoveryGraphAggregateForHead(
 	defer memo.Reset()
 	supported = true
 	for _, rawID := range reachableIDs {
-		node := c.nodes[rawID-1]
+		node := *c.nodes.At(int(rawID - 1))
 		nodePaths, pathErr := c.nodePathCount(rawID)
 		if pathErr != nil {
 			return result, false, pathErr

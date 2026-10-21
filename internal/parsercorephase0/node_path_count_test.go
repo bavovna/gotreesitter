@@ -10,10 +10,10 @@ import (
 
 // Existing corruption probes continue to alter the same logical path count.
 func setNodePathCountForTest(c *Core, id NodeID, value uint64) {
-	if id == 0 || uint64(id) > uint64(len(c.nodes)) {
+	if id == 0 || uint64(id) > uint64(c.nodes.Len()) {
 		panic("invalid test node")
 	}
-	for len(c.nodeLineages) < len(c.nodes) {
+	for len(c.nodeLineages) < c.nodes.Len() {
 		c.nodeLineages = append(c.nodeLineages, nodeLineageHot{})
 	}
 	for i, r := range c.nodePathCountsWide {

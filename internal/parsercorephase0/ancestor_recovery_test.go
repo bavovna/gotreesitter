@@ -273,7 +273,7 @@ func TestAncestorStateWithActionExistsShortCircuitsBeforeDeeperCorruption(t *tes
 	if err != nil {
 		t.Fatal(err)
 	}
-	compact.nodes[brokenParent.Node-1].firstLink = math.MaxUint32
+	(*compact.nodes.At(int(brokenParent.Node - 1))).firstLink = math.MaxUint32
 
 	exists, err := compact.AncestorStateWithActionExists(head, lookahead, 2)
 	if err != nil || !exists {
@@ -291,7 +291,7 @@ func TestAncestorStateWithActionExistsPreservesSilentVisitedCap(t *testing.T) {
 		MaxLinks:            predecessorCount,
 		MaxLinksPerBoundary: predecessorCount,
 	})
-	compact.nodes = make([]nodeRecord, predecessorCount+1)
+	compact.nodes = nodeBlocksFromSliceForTest(make([]nodeRecord, predecessorCount+1))
 	compact.nodeLineages = make([]nodeLineageHot, predecessorCount+1)
 	compact.links = make([]linkRecord, predecessorCount)
 	compact.subtrees = []subtreeRecord{{terminal: true}}
@@ -303,7 +303,7 @@ func TestAncestorStateWithActionExistsPreservesSilentVisitedCap(t *testing.T) {
 		}
 	}
 	head := Head{Node: predecessorCount + 1}
-	compact.nodes[head.Node-1] = nodeRecord{firstLink: 1, linkCount: predecessorCount}
+	*compact.nodes.At(int(head.Node - 1)) = nodeRecord{firstLink: 1, linkCount: predecessorCount}
 
 	exists, err := compact.AncestorStateWithActionExists(head, 9, 1)
 	if err != nil || exists {
@@ -428,7 +428,7 @@ func TestRecoverToAncestorStateRejectsLimitsAndRollsBackPublication(t *testing.T
 		t.Fatalf("candidates=%+v err=%v, want one", candidates, err)
 	}
 
-	compact.limits.MaxNodes = uint32(len(compact.nodes))
+	compact.limits.MaxNodes = uint32(compact.nodes.Len())
 	before := captureSchedulerTransactionState(compact)
 	err = compact.ApplySchedulerAtomic(func(owner SchedulerTransactionToken) error {
 		if _, innerErr := compact.RecoverToAncestorStateOwned(owner, candidates[0]); innerErr == nil {

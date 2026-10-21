@@ -60,7 +60,7 @@ func (c *Core) StorageBytes() uint64 {
 	if c == nil {
 		return 0
 	}
-	return uint64(len(c.nodes))*coreNodeRecordBytes +
+	return uint64(c.nodes.Len())*coreNodeRecordBytes +
 		uint64(len(c.nodePrecedenceWide))*coreInt64Bytes +
 		uint64(len(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(len(c.nodeLineageRefSets))*coreNodeLineageRefSetBytes +
@@ -164,7 +164,7 @@ func (c *Core) FootprintBytes() uint64 {
 	if c == nil {
 		return 0
 	}
-	total := uint64(cap(c.nodes))*coreNodeRecordBytes +
+	total := c.nodes.FootprintBytes() +
 		uint64(cap(c.nodePrecedenceWide))*coreInt64Bytes +
 		uint64(cap(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(cap(c.links))*coreLinkRecordBytes +
@@ -254,7 +254,7 @@ func (c *Core) DominantCapacityBytes() uint64 {
 	if c == nil {
 		return 0
 	}
-	return uint64(cap(c.nodes))*coreNodeRecordBytes +
+	return c.nodes.FootprintBytes() +
 		uint64(cap(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(cap(c.nodeLineages))*coreNodeLineageRecordBytes + uint64(cap(c.nodeLineageRecovery))*8 +
 		uint64(cap(c.alternativeSpillArena))*coreUint32Bytes +
@@ -370,7 +370,7 @@ func (c *Core) releaseRecordArenaReserve() {
 	if c == nil {
 		return
 	}
-	c.nodes = nil
+	c.nodes = nodeRecordBlocks{}
 	c.nodePrecedenceWide = nil
 	c.nodePathCountsWide = nil
 	c.nodePrecedenceWideBase = 0
@@ -411,7 +411,7 @@ func (c *Core) releaseOversizedRetention() {
 	if c == nil || c.FootprintBytes() <= coreRetentionCapBytes {
 		return
 	}
-	c.nodes = nil
+	c.nodes = nodeRecordBlocks{}
 	c.nodePrecedenceWide = nil
 	c.nodePathCountsWide = nil
 	c.nodePrecedenceWideBase = 0

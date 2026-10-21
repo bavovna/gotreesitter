@@ -40,7 +40,7 @@ func TestShiftOwnerMatchesSeparateOperations(t *testing.T) {
 			}); err != nil {
 				t.Fatal(err)
 			}
-			if oldHead != newHead || !reflect.DeepEqual(before.nodes, after.nodes) || !reflect.DeepEqual(before.links, after.links) || !reflect.DeepEqual(before.subtrees, after.subtrees) || !reflect.DeepEqual(before.nodeLineages, after.nodeLineages) || !reflect.DeepEqual(captureSchedulerTransactionState(before), captureSchedulerTransactionState(after)) {
+			if oldHead != newHead || !reflect.DeepEqual(before.nodes.snapshotForTest(), after.nodes.snapshotForTest()) || !reflect.DeepEqual(before.links, after.links) || !reflect.DeepEqual(before.subtrees, after.subtrees) || !reflect.DeepEqual(before.nodeLineages, after.nodeLineages) || !reflect.DeepEqual(captureSchedulerTransactionState(before), captureSchedulerTransactionState(after)) {
 				t.Fatalf("fused shift changed state or work: old=%+v new=%+v oldwork=%+v newwork=%+v", oldHead, newHead, before.Work(), after.Work())
 			}
 			if after.nodeLineages[newHead.Node-1].owner != 7 {
@@ -148,7 +148,7 @@ func TestShiftOwnerRejectsForeignActiveToken(t *testing.T) {
 	}
 	// A poisoned fresh session intentionally clears its receiver. Compare that
 	// complete native state with the existing API, and preserve the other core.
-	if !reflect.DeepEqual(captureSchedulerTransactionState(c), captureSchedulerTransactionState(control)) || !reflect.DeepEqual(c.nodes, control.nodes) || !reflect.DeepEqual(c.nodeLineages, control.nodeLineages) {
+	if !reflect.DeepEqual(captureSchedulerTransactionState(c), captureSchedulerTransactionState(control)) || !reflect.DeepEqual(c.nodes.snapshotForTest(), control.nodes.snapshotForTest()) || !reflect.DeepEqual(c.nodeLineages, control.nodeLineages) {
 		t.Fatal("foreign-token cleanup differs from existing shift")
 	}
 	if !reflect.DeepEqual(otherBefore, captureSchedulerTransactionState(other)) {
@@ -197,7 +197,7 @@ func TestShiftOwnerScalarLineageMatchesSeparatePublication(t *testing.T) {
 				}
 				return err
 			})
-			if (oldErr == nil) != (newErr == nil) || oldHead != newHead || !reflect.DeepEqual(before.nodes, after.nodes) || !reflect.DeepEqual(before.links, after.links) || !reflect.DeepEqual(before.nodeLineages, after.nodeLineages) || !reflect.DeepEqual(before.nodeLineageRecovery, after.nodeLineageRecovery) || !reflect.DeepEqual(before.alternativeSpillArena, after.alternativeSpillArena) || !reflect.DeepEqual(captureSchedulerTransactionState(before), captureSchedulerTransactionState(after)) {
+			if (oldErr == nil) != (newErr == nil) || oldHead != newHead || !reflect.DeepEqual(before.nodes.snapshotForTest(), after.nodes.snapshotForTest()) || !reflect.DeepEqual(before.links, after.links) || !reflect.DeepEqual(before.nodeLineages, after.nodeLineages) || !reflect.DeepEqual(before.nodeLineageRecovery, after.nodeLineageRecovery) || !reflect.DeepEqual(before.alternativeSpillArena, after.alternativeSpillArena) || !reflect.DeepEqual(captureSchedulerTransactionState(before), captureSchedulerTransactionState(after)) {
 				t.Fatalf("case=%d fresh=%t olderr=%v newerr=%v oldwork=%+v newwork=%+v", i, fresh, oldErr, newErr, before.Work(), after.Work())
 			}
 		}

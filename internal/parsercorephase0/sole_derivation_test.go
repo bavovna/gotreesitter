@@ -11,7 +11,7 @@ import (
 func newSoleDerivationCore() *Core {
 	return &Core{
 		limits:       Limits{MaxDerivations: 64},
-		nodes:        []nodeRecord{{}},
+		nodes:        nodeBlocksFromSliceForTest([]nodeRecord{{}}),
 		nodeLineages: []nodeLineageHot{{flags: 1 << nodePathCountShift}},
 	}
 }
@@ -24,9 +24,9 @@ func appendSoleDerivationNode(c *Core, count uint64, links ...linkRecord) Head {
 		c.links = append(c.links, link)
 		first = LinkID(len(c.links))
 	}
-	c.nodes = append(c.nodes, nodeRecord{firstLink: uint32(first), linkCount: uint32(len(links))})
-	c.nodeLineages = append(c.nodeLineages, nodeLineageHot{flags: c.appendNodePathCount(NodeID(len(c.nodes)), count)})
-	return Head{Node: NodeID(len(c.nodes))}
+	c.nodes.Append(nodeRecord{firstLink: uint32(first), linkCount: uint32(len(links))}, math.MaxUint32)
+	c.nodeLineages = append(c.nodeLineages, nodeLineageHot{flags: c.appendNodePathCount(NodeID(c.nodes.Len()), count)})
+	return Head{Node: NodeID(c.nodes.Len())}
 }
 
 func newSoleDerivationBranches() (*Core, Head) {
@@ -196,7 +196,7 @@ func TestSoleDerivationValidControls(t *testing.T) {
 			case "seed":
 				c.limits.MaxDerivations = 0
 			case "seed_with_unused_adjacency":
-				c.nodes[0].firstLink = math.MaxUint32
+				(*c.nodes.At(int(0))).firstLink = math.MaxUint32
 			case "zero_cap_single_path":
 				head = appendSoleDerivationNode(c, 1, linkRecord{prev: 1, payload: 11})
 				c.limits.MaxDerivations = 0
@@ -210,7 +210,7 @@ func TestSoleDerivationValidControls(t *testing.T) {
 					setNodePathCountForTest(c, NodeID((head.Node-1)+1), math.MaxUint64)
 				}
 				if name == "ambiguous_payload_id_is_not_dereferenced" {
-					c.links[c.nodes[head.Node-1].firstLink-1].payload = math.MaxUint32
+					c.links[(*c.nodes.At(int(head.Node - 1))).firstLink-1].payload = math.MaxUint32
 				}
 			}
 			_, sole, err := compareSoleDerivation(t, c, head)
@@ -229,40 +229,40 @@ func TestSoleDerivationPreservesValidationErrors(t *testing.T) {
 	}{
 		{"invalid_head", func(c *Core, head Head) Head { return Head{} }, "invalid node id 0"},
 		{"invalid_predecessor", func(c *Core, head Head) Head {
-			c.links[c.nodes[head.Node-1].firstLink-1].prev = 999
+			c.links[(*c.nodes.At(int(head.Node - 1))).firstLink-1].prev = 999
 			return head
 		}, "invalid node id 999"},
 		{"graph_cycle", func(c *Core, head Head) Head {
-			c.links[c.nodes[2].firstLink-1].prev = 3
+			c.links[(*c.nodes.At(int(2))).firstLink-1].prev = 3
 			return head
 		}, "graph cycle"},
 		{"adjacency_cycle", func(c *Core, head Head) Head {
-			first := c.nodes[head.Node-1].firstLink
+			first := (*c.nodes.At(int(head.Node - 1))).firstLink
 			c.links[first-1].next = LinkID(first)
 			return head
 		}, "adjacency cycle"},
 		{"adjacency_out_of_range", func(c *Core, head Head) Head {
-			c.nodes[head.Node-1].firstLink = 999
+			(*c.nodes.At(int(head.Node - 1))).firstLink = 999
 			return head
 		}, "link adjacency out of range"},
 		{"adjacency_short", func(c *Core, head Head) Head {
-			c.nodes[head.Node-1].linkCount++
+			(*c.nodes.At(int(head.Node - 1))).linkCount++
 			return head
 		}, "adjacency shorter than recorded link count"},
 		{"adjacency_long", func(c *Core, head Head) Head {
-			c.nodes[head.Node-1].linkCount--
+			(*c.nodes.At(int(head.Node - 1))).linkCount--
 			return head
 		}, "adjacency exceeds recorded link count"},
 		{"unknown_flags", func(c *Core, head Head) Head {
-			c.links[c.nodes[head.Node-1].firstLink-1].flags = math.MaxUint32
+			c.links[(*c.nodes.At(int(head.Node - 1))).firstLink-1].flags = math.MaxUint32
 			return head
 		}, "link has unknown flags"},
 		{"ordinary_link_without_payload", func(c *Core, head Head) Head {
-			c.links[c.nodes[head.Node-1].firstLink-1].payload = 0
+			c.links[(*c.nodes.At(int(head.Node - 1))).firstLink-1].payload = 0
 			return head
 		}, "ordinary link has no payload"},
 		{"malformed_discontinuity", func(c *Core, head Head) Head {
-			c.links[c.nodes[head.Node-1].firstLink-1].flags = linkFlagRecoveryDiscontinuity
+			c.links[(*c.nodes.At(int(head.Node - 1))).firstLink-1].flags = linkFlagRecoveryDiscontinuity
 			return head
 		}, "recovery discontinuity has a payload"},
 		{"malformed_seed", func(c *Core, head Head) Head {
@@ -303,10 +303,10 @@ func TestSoleDerivationPreservesCapAndErrorOrder(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			c, head := newSoleDerivationBranches()
 			c.limits.MaxDerivations = tc.cap
-			c.links[c.nodes[2].firstLink-1].scoreDelta = math.MaxInt64
-			c.links[c.nodes[head.Node-1].firstLink-1].scoreDelta = 1
+			c.links[(*c.nodes.At(int(2))).firstLink-1].scoreDelta = math.MaxInt64
+			c.links[(*c.nodes.At(int(head.Node - 1))).firstLink-1].scoreDelta = 1
 			if tc.name == "later_child_cycle_before_parent_cap" {
-				c.links[c.nodes[2].firstLink-1].prev = 3
+				c.links[(*c.nodes.At(int(2))).firstLink-1].prev = 3
 			}
 			if tc.name == "nested_cap_before_parent_score" {
 				head = appendSoleDerivationNode(c, 2, linkRecord{prev: head.Node, payload: 55, scoreDelta: math.MaxInt64})

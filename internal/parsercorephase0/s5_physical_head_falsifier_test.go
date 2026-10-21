@@ -106,7 +106,7 @@ func TestS5RecoveryDiscontinuityLinkValidation(t *testing.T) {
 			}
 			link := test.makeLink(seed.Node, payload)
 			linkID := core.appendGraphLink(link)
-			next := NodeID(len(core.nodes) + 1)
+			next := NodeID(core.nodes.Len() + 1)
 			err = core.validatePublishedNodeDAG(nodeInput{
 				state: 0, byteOffset: 0, firstLink: uint32(linkID), linkCount: 1, pathCount: 1,
 			}.record(), next)
@@ -116,13 +116,13 @@ func TestS5RecoveryDiscontinuityLinkValidation(t *testing.T) {
 			if !test.wantError && err != nil {
 				t.Fatalf("link=%+v was rejected: %v", link, err)
 			}
-			before := len(core.nodes)
+			before := core.nodes.Len()
 			published, publishErr := core.appendNodeAtWithMaximum(nodeInput{
 				state: 0, byteOffset: 0, firstLink: uint32(linkID), linkCount: 1, pathCount: 1,
 			}, 0, 0)
 			if test.wantError {
-				if publishErr == nil || published != 0 || len(core.nodes) != before {
-					t.Fatalf("malformed link published node=%d nodes=%d/%d err=%v", published, len(core.nodes), before, publishErr)
+				if publishErr == nil || published != 0 || core.nodes.Len() != before {
+					t.Fatalf("malformed link published node=%d nodes=%d/%d err=%v", published, core.nodes.Len(), before, publishErr)
 				}
 			} else if publishErr != nil || published != next {
 				t.Fatalf("sanctioned link publication=%d want=%d err=%v", published, next, publishErr)

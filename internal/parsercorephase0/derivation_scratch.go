@@ -271,7 +271,7 @@ func (c *Core) DerivationsWithScratch(head Head, scratch *DerivationScratch, pol
 			return f.paths, nil
 		}
 	}
-	count := len(c.nodes) + 1
+	count := c.nodes.Len() + 1
 	if cap(scratch.colors) < count {
 		scratch.colors = make([]uint8, count)
 	} else {

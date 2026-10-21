@@ -76,7 +76,7 @@ func (c *Core) resolveDropCohortLinkRange(r LinkRange) ([]LinkID, error) {
 		if err := link.validateShape(); err != nil {
 			return nil, err
 		}
-		if link.prev == 0 || uint64(link.prev) > uint64(len(c.nodes)) {
+		if link.prev == 0 || uint64(link.prev) > uint64(c.nodes.Len()) {
 			return nil, errors.New("parser-core phase zero: link range has an invalid predecessor")
 		}
 		ids[index] = current

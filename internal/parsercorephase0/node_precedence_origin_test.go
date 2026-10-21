@@ -25,7 +25,7 @@ func TestNodePrecedenceOriginSkipsNarrowPrefix(t *testing.T) {
 	if c.nodePrecedenceWideBase != first || len(c.nodePrecedenceWide) != 2 {
 		t.Fatalf("origin=%d first=%d len=%d", c.nodePrecedenceWideBase, first, len(c.nodePrecedenceWide))
 	}
-	if cap(c.nodePrecedenceWide) > cap(c.nodes)-int(first)+1 {
+	if cap(c.nodePrecedenceWide) > c.nodes.Capacity()-int(first)+1 {
 		t.Fatal("wide buffer reserves skipped prefix")
 	}
 	if got := storedNodeMaximumForTest(t, c, first); got != math.MinInt64 {

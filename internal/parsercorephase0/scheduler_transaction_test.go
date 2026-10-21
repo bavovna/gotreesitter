@@ -17,7 +17,7 @@ type schedulerTransactionState struct {
 
 func captureSchedulerTransactionState(c *Core) schedulerTransactionState {
 	return schedulerTransactionState{
-		nodes: len(c.nodes), links: len(c.links), subtrees: len(c.subtrees),
+		nodes: c.nodes.Len(), links: len(c.links), subtrees: len(c.subtrees),
 		children: len(c.children), fields: len(c.fields), aliases: len(c.aliases),
 		boundaries: cloneBoundaryMap(c.boundaries), work: c.Work(),
 	}

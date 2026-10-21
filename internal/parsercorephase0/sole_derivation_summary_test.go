@@ -25,7 +25,7 @@ func TestSoleDerivationSharedPathsAndScoreExtrema(t *testing.T) {
 				linkRecord{prev: right.Node, payload: 66, scoreDelta: 4},
 				linkRecord{prev: shared.Node, payload: math.MaxUint32, scoreDelta: 10})
 			if saturated {
-				for index := 1; index < len(c.nodes); index++ {
+				for index := 1; index < c.nodes.Len(); index++ {
 					setNodePathCountForTest(c, NodeID((index)+1), math.MaxUint64)
 				}
 			}
@@ -98,7 +98,7 @@ func TestSoleDerivationSummaryPreservesErrorOrder(t *testing.T) {
 					linkRecord{prev: prefix.Node, payload: 44, scoreDelta: 1},
 					linkRecord{prev: cycle.Node, payload: 55})
 				if name == "parent_adjacency_before_child_overflow" {
-					c.links[c.nodes[head.Node-1].firstLink-1].flags = math.MaxUint32
+					c.links[(*c.nodes.At(int(head.Node - 1))).firstLink-1].flags = math.MaxUint32
 					want = "link has unknown flags"
 				}
 			}
@@ -118,7 +118,7 @@ func TestSoleDerivationSummaryPreservesPublishedGraphValidation(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			c := newSoleDerivationCore()
-			c.nodes[0].firstLink = math.MaxUint32
+			(*c.nodes.At(int(0))).firstLink = math.MaxUint32
 			var head Head
 			want := ""
 			switch name {
@@ -192,16 +192,16 @@ func TestSoleDerivationSummaryHasNoPersistentState(t *testing.T) {
 		previousHead = head
 		c.work = Work{Shifts: 7, Reductions: 11, Overflow: true}
 		beforeWork := c.Work()
-		beforeNodes := append([]nodeRecord(nil), c.nodes...)
+		beforeNodes := c.nodes.snapshotForTest()
 		beforeLinks := append([]linkRecord(nil), c.links...)
 		for repeat := 0; repeat < 2; repeat++ {
 			compareSoleDerivation(t, c, head)
 		}
-		if c.Work() != beforeWork || !reflect.DeepEqual(c.nodes, beforeNodes) || !reflect.DeepEqual(c.links, beforeLinks) {
+		if c.Work() != beforeWork || !reflect.DeepEqual(c.nodes.snapshotForTest(), beforeNodes) || !reflect.DeepEqual(c.links, beforeLinks) {
 			t.Fatal("derivation reads changed the graph or work counters")
 		}
 		// Reuse the same head after changing its graph and then repairing it.
-		last := c.nodes[head.Node-1].firstLink - 1
+		last := (*c.nodes.At(int(head.Node - 1))).firstLink - 1
 		saved := c.links[last]
 		c.links[last].prev = head.Node
 		_, _, err = compareSoleDerivation(t, c, head)

@@ -387,7 +387,7 @@ func (c *Core) enterLiveCondenseCandidatesWithCost(candidates []CondenseCandidat
 		return err
 	}
 	c.condenseCandidates = normalized
-	c.condenseNewNode = NodeID(len(c.nodes) + 1)
+	c.condenseNewNode = NodeID(c.nodes.Len() + 1)
 	c.condenseScopeActive = true
 	return nil
 }

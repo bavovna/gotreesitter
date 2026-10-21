@@ -3135,14 +3135,14 @@ func TestDerivationsDeepSinglePath(t *testing.T) {
 	}
 	core.links = make([]linkRecord, depth)
 	core.subtrees = make([]subtreeRecord, depth)
-	core.nodes = append(core.nodes, make([]nodeRecord, depth)...)
+	core.nodes.appendSliceForTest(make([]nodeRecord, depth))
 	core.nodeLineages = append(core.nodeLineages, make([]nodeLineageHot, depth)...)
 	for index := 0; index < depth; index++ {
 		linkID := LinkID(index + 1)
 		core.links[index] = linkRecord{
 			prev: NodeID(index + 1), payload: SubtreeID(index + 1),
 		}
-		core.nodes[index+1] = nodeRecord{firstLink: uint32(linkID), linkCount: 1}
+		*core.nodes.At(int(index + 1)) = nodeRecord{firstLink: uint32(linkID), linkCount: 1}
 		core.nodeLineages[index+1].flags = 1 << nodePathCountShift
 	}
 	core.links[0].scoreDelta = 2

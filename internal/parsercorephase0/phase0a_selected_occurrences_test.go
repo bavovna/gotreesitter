@@ -69,8 +69,8 @@ func TestPhase0ASelectedOccurrencesKeepRepeatedPayloadPositionsAndSharedEventSlo
 	firstOccurrence := observer.mutations[1]
 	secondOccurrence := observer.mutations[3]
 	accepted := []Phase0AAcceptedLinkRecord{
-		{Link: LinkID(core.nodes[first.Node-1].firstLink), Payload: payload, Occurrence: firstOccurrence.Occurrence, Edge: firstOccurrence.Edge},
-		{Link: LinkID(core.nodes[second.Node-1].firstLink), Payload: payload, ResolvedLowerLink: LinkID(core.nodes[first.Node-1].firstLink), Occurrence: secondOccurrence.Occurrence, Edge: secondOccurrence.Edge, BoundExpression: 1, ResolvedExpression: 2},
+		{Link: LinkID((*core.nodes.At(int(first.Node - 1))).firstLink), Payload: payload, Occurrence: firstOccurrence.Occurrence, Edge: firstOccurrence.Edge},
+		{Link: LinkID((*core.nodes.At(int(second.Node - 1))).firstLink), Payload: payload, ResolvedLowerLink: LinkID((*core.nodes.At(int(first.Node - 1))).firstLink), Occurrence: secondOccurrence.Occurrence, Edge: secondOccurrence.Edge, BoundExpression: 1, ResolvedExpression: 2},
 	}
 	selectedIndex := phase0ABuildSelectedIndex(observer)
 	tree, records, buildErr := phase0ABuildSelectedOccurrenceSnapshotLocked(core, observer, selectedIndex, 1, accepted)
@@ -212,7 +212,7 @@ func TestPhase0ASelectedOccurrencesIgnoreRolledBackRouteAndUseLiveRetry(t *testi
 	seed, _ := core.Seed(1, 0)
 	leaf, _ := core.appendSubtree(subtreeRecord{symbol: 10, endByte: 1, terminal: true}, nil, nil, nil)
 	head := phase0AObservedTerminalPrivate(t, core, leaf, seed.Node, 2, 1, false, 0, ForkOrder{})
-	core.limits.MaxNodes = uint32(len(core.nodes))
+	core.limits.MaxNodes = uint32(core.nodes.Len())
 	if _, err := core.Reduce(head, 1, 0, ForkOrder{}); err == nil {
 		t.Fatal("node-capped reduction succeeded")
 	}
@@ -533,10 +533,10 @@ func TestPhase0ASelectedMigrationRevalidatesTargetPhysicalCandidateNodeAndKinds(
 			core.links[row.TargetLink-1].flags ^= linkFlagHasOrder
 		}},
 		{name: "target-node-state", mutate: func(core *Core, _ *phase0AObserver, row Phase0ATrailingExtraMigrationRecord) {
-			core.nodes[row.Predecessor-1].state++
+			(*core.nodes.At(int(row.Predecessor - 1))).state++
 		}},
 		{name: "target-node-byte", mutate: func(core *Core, _ *phase0AObserver, row Phase0ATrailingExtraMigrationRecord) {
-			core.nodes[row.Predecessor-1].byteOffset++
+			(*core.nodes.At(int(row.Predecessor - 1))).byteOffset++
 		}},
 		{name: "candidate-boundary", mutate: func(_ *Core, observer *phase0AObserver, row Phase0ATrailingExtraMigrationRecord) {
 			phase0AMutateSelectedCandidate(observer, row.TargetOccurrence, row.TargetEdge, func(candidate *Phase0ACandidateRecord) { candidate.Boundary.ByteOffset++ })
@@ -666,7 +666,7 @@ func TestPhase0ASelectedSelectorRevalidatesMergedPredecessorAndRouteWindow(t *te
 	phase0AObservers.Lock()
 	defer phase0AObservers.Unlock()
 	observer := phase0AObservers.byCore[core]
-	link := LinkID(core.nodes[head.Node-1].firstLink)
+	link := LinkID((*core.nodes.At(int(head.Node - 1))).firstLink)
 	bound, err := phase0AExactBindingLocked(observer, link)
 	if err != nil {
 		t.Fatal(err)
@@ -705,7 +705,7 @@ func TestPhase0ASelectedSelectorResolutionDoesNotScanLargeWindow(t *testing.T) {
 	phase0AObservers.Lock()
 	defer phase0AObservers.Unlock()
 	observer := phase0AObservers.byCore[core]
-	link := LinkID(core.nodes[head.Node-1].firstLink)
+	link := LinkID((*core.nodes.At(int(head.Node - 1))).firstLink)
 	bound, err := phase0AExactBindingLocked(observer, link)
 	if err != nil {
 		t.Fatal(err)

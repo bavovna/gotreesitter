@@ -47,7 +47,7 @@ func (c *Core) storeWideNodePrecedence(id NodeID, value int64) {
 	}
 	needed := int(id-c.nodePrecedenceWideBase) + 1
 	if cap(c.nodePrecedenceWide) < needed {
-		values := make([]int64, needed, cap(c.nodes)-int(c.nodePrecedenceWideBase)+1)
+		values := make([]int64, needed, c.nodes.Capacity()-int(c.nodePrecedenceWideBase)+1)
 		copy(values, c.nodePrecedenceWide)
 		c.nodePrecedenceWide = values
 	} else if len(c.nodePrecedenceWide) < needed {

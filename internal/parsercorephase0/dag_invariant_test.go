@@ -19,7 +19,7 @@ func TestAppendAdjacencyNodeRejectsNonDecreasingPredecessorWithoutMutation(t *te
 		t.Fatal(err)
 	}
 	beforeWork := compact.Work()
-	next := NodeID(len(compact.nodes) + 1)
+	next := NodeID(compact.nodes.Len() + 1)
 	if _, err := compact.appendAdjacencyNode(2, 1, []linkRecord{{prev: next, payload: payload}}); err == nil || !strings.Contains(err.Error(), "must be lower than new node") {
 		t.Fatalf("non-decreasing predecessor error=%v", err)
 	}
@@ -41,15 +41,15 @@ func TestAppendNodeAuthenticatesCompleteAdjacency(t *testing.T) {
 
 	// appendNode is the single publication point, so even diagnostic callers
 	// that inject raw arena records cannot publish an upward/self edge.
-	compact.links = append(compact.links, linkRecord{prev: NodeID(len(compact.nodes) + 1), payload: payload})
-	beforeNodes := len(compact.nodes)
+	compact.links = append(compact.links, linkRecord{prev: NodeID(compact.nodes.Len() + 1), payload: payload})
+	beforeNodes := compact.nodes.Len()
 	if _, err := compact.appendNode(nodeInput{
 		state: 2, byteOffset: 1, firstLink: uint32(len(compact.links)), linkCount: 1, pathCount: 1,
 	}); err == nil || !strings.Contains(err.Error(), "invalid node id 2") {
 		t.Fatalf("raw publication error=%v", err)
 	}
-	if len(compact.nodes) != beforeNodes {
-		t.Fatalf("rejected raw publication changed node arena: %d -> %d", beforeNodes, len(compact.nodes))
+	if compact.nodes.Len() != beforeNodes {
+		t.Fatalf("rejected raw publication changed node arena: %d -> %d", beforeNodes, compact.nodes.Len())
 	}
 	if _, err := compact.appendNode(nodeInput{state: 2, byteOffset: 1, firstLink: 1, pathCount: 1}); err == nil || !strings.Contains(err.Error(), "empty adjacency") {
 		t.Fatalf("empty adjacency error=%v", err)
