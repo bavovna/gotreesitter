@@ -40,7 +40,7 @@ func TestShiftOwnerMatchesSeparateOperations(t *testing.T) {
 			}); err != nil {
 				t.Fatal(err)
 			}
-			if oldHead != newHead || !reflect.DeepEqual(before.nodes.snapshotForTest(), after.nodes.snapshotForTest()) || !reflect.DeepEqual(before.links, after.links) || !reflect.DeepEqual(before.subtrees, after.subtrees) || !reflect.DeepEqual(before.nodeLineages, after.nodeLineages) || !reflect.DeepEqual(captureSchedulerTransactionState(before), captureSchedulerTransactionState(after)) {
+			if oldHead != newHead || !reflect.DeepEqual(before.nodes.snapshotForTest(), after.nodes.snapshotForTest()) || !reflect.DeepEqual(before.links, after.links) || !reflect.DeepEqual(before.subtrees.snapshotForTest(), after.subtrees.snapshotForTest()) || !reflect.DeepEqual(before.nodeLineages, after.nodeLineages) || !reflect.DeepEqual(captureSchedulerTransactionState(before), captureSchedulerTransactionState(after)) {
 				t.Fatalf("fused shift changed state or work: old=%+v new=%+v oldwork=%+v newwork=%+v", oldHead, newHead, before.Work(), after.Work())
 			}
 			if after.nodeLineages[newHead.Node-1].owner != 7 {

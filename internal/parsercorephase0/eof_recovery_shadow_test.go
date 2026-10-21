@@ -42,7 +42,7 @@ func TestDiagnosticEOFRecoveryClonePlanAccountsEveryRequestedByte(t *testing.T) 
 		nodeLineages:                      make([]nodeLineageHot, 2),
 		nodeCheckpoints:                   make([]CheckpointID, 2),
 		links:                             make([]linkRecord, 3),
-		subtrees:                          make([]subtreeRecord, 4),
+		subtrees:                          subtreeBlocksFromSliceForTest(make([]subtreeRecord, 4)),
 		eofRecoveryRoots:                  []SubtreeID{2},
 		externalProvenance:                make([]externalPayloadProvenance, 1),
 		lexerSkippedPrefixes:              make([]lexerSkippedPrefixProvenance, 2),
@@ -56,8 +56,8 @@ func TestDiagnosticEOFRecoveryClonePlanAccountsEveryRequestedByte(t *testing.T) 
 		boundaries:            boundaryIndex{slots: make([]boundarySlot, 8)},
 		alternativeSpillArena: make([]uint32, 10),
 	}
-	for index := range live.subtrees {
-		live.subtrees[index].terminal = true
+	for index := range live.subtrees.Len() {
+		(*live.subtrees.At(int(index))).terminal = true
 	}
 	const (
 		providerWrapperBytes = 24
@@ -254,7 +254,7 @@ func TestDiagnosticEOFRecoveryForkReservesValidationScratchWithoutGrowth(t *test
 		limits:                            (Limits{}).withDefaults(),
 		metadataConstructionAuthenticated: true,
 		nodes:                             nodeBlocksFromSliceForTest([]nodeRecord{{}}),
-		subtrees: []subtreeRecord{
+		subtrees: subtreeBlocksFromSliceForTest([]subtreeRecord{
 			{terminal: true, startByte: 0, endByte: 1},
 			{terminal: true, extra: true, startByte: 1, endByte: 2},
 			{terminal: true, startByte: 2, endByte: 3},
@@ -264,7 +264,7 @@ func TestDiagnosticEOFRecoveryForkReservesValidationScratchWithoutGrowth(t *test
 				firstField: 0, fieldCount: 1,
 				firstAlias: 0, aliasCount: 3,
 			},
-		},
+		}),
 		children: []SubtreeID{1, 2, 3},
 		fields:   []FieldMapEntry{{FieldID: 1, ChildIndex: 2}},
 		aliases:  []Symbol{11, 0, 12},
@@ -291,10 +291,10 @@ func TestDiagnosticEOFRecoveryForkReservesValidationScratchWithoutGrowth(t *test
 		t.Fatal(err)
 	}
 	before := shadow.DiagnosticEOFRecoveryValidationScratch()
-	if err := shadow.validateGenericMaterializationMetadata(4, shadow.subtrees[3]); err != nil {
+	if err := shadow.validateGenericMaterializationMetadata(4, *shadow.subtrees.At(int(3))); err != nil {
 		t.Fatalf("validate copied parent: %v", err)
 	}
-	if err := shadow.validateGenericMaterializationMetadata(root, shadow.subtrees[root-1]); err != nil {
+	if err := shadow.validateGenericMaterializationMetadata(root, *shadow.subtrees.At(int(root - 1))); err != nil {
 		t.Fatalf("validate synthetic root: %v", err)
 	}
 	after := shadow.DiagnosticEOFRecoveryValidationScratch()

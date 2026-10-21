@@ -82,7 +82,7 @@ func (c *Core) ReserveRecordArenas(sourceLen int, maxBytes uint64) {
 		return
 	}
 	if c.nodes.Len() != 0 || len(c.nodeLineages) != 0 || len(c.links) != 0 ||
-		len(c.subtrees) != 0 || len(c.children) != 0 {
+		c.subtrees.Len() != 0 || len(c.children) != 0 {
 		return
 	}
 	nodes := reserveRecordCount(sourceLen, reserveNodesPerKiB, c.limits.MaxNodes)
@@ -97,7 +97,7 @@ func (c *Core) ReserveRecordArenas(sourceLen int, maxBytes uint64) {
 	c.nodes.Grow(nodes)
 	c.nodeLineages = reserveArena(c.nodeLineages, nodes)
 	c.links = reserveArena(c.links, links)
-	c.subtrees = reserveArena(c.subtrees, subtrees)
+	c.subtrees.Grow(subtrees)
 	c.children = reserveArena(c.children, children)
 }
 
@@ -124,7 +124,7 @@ func (c *Core) GrowRecordArenas(sourceLen int, maxBytes uint64) {
 	c.nodes.Grow(nodes)
 	c.nodeLineages = growArena(c.nodeLineages, nodes)
 	c.links = growArena(c.links, links)
-	c.subtrees = growArena(c.subtrees, subtrees)
+	c.subtrees.Grow(subtrees)
 	c.children = growArena(c.children, children)
 }
 
@@ -166,7 +166,7 @@ func (c *Core) ReserveRecordArenaBytes(sourceLen int, maxBytes uint64) uint64 {
 // reserveTotalBytes is the byte cost of one reserve. nodes counts twice
 // because nodes and nodeLineages are reserved to the same count.
 func reserveTotalBytes(nodes, links, subtrees, children int) uint64 {
-	return nodeRecordBlockMetadataBytes(nodes) + uint64(nodes)*coreNodeRecordBytes +
+	return nodeRecordBlockMetadataBytes(nodes) + subtreeRecordBlockMetadataBytes(subtrees) + uint64(nodes)*coreNodeRecordBytes +
 		uint64(nodes)*coreNodeLineageRecordBytes +
 		uint64(links)*coreLinkRecordBytes +
 		uint64(subtrees)*coreSubtreeRecordBytes +
@@ -225,14 +225,14 @@ func reserveArena[T any](arena []T, want int) []T {
 // size at which this core drops retained capacity.
 func RetentionCapBytesForTest() uint64 { return coreRetentionCapBytes }
 
-// Deduct the unscaled node-table cost before scaling record counts. The
-// scaled table cannot be larger, so rounding never exceeds the byte ceiling.
+// Deduct unscaled block-table costs before scaling record counts. Scaled
+// tables cannot be larger, so rounding never exceeds the byte ceiling.
 func boundedRecordReserveCounts(nodes, links, subtrees, children int, maxBytes uint64) (int, int, int, int) {
 	total := reserveTotalBytes(nodes, links, subtrees, children)
 	if maxBytes == 0 || total <= maxBytes {
 		return nodes, links, subtrees, children
 	}
-	metadata := nodeRecordBlockMetadataBytes(nodes)
+	metadata := nodeRecordBlockMetadataBytes(nodes) + subtreeRecordBlockMetadataBytes(subtrees)
 	allowed := uint64(0)
 	if maxBytes > metadata {
 		allowed = maxBytes - metadata

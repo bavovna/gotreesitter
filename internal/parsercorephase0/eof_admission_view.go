@@ -217,7 +217,7 @@ func (c *Core) VisitEOFAdmissionExactPath(
 		if link.isRecoveryDiscontinuity() {
 			return result, fmt.Errorf("%w: recovery discontinuity requires a recovery-aware visitor", ErrEOFAdmissionMalformed)
 		}
-		if link.payload != 0 && uint64(link.payload) > uint64(len(c.subtrees)) {
+		if link.payload != 0 && uint64(link.payload) > uint64(c.subtrees.Len()) {
 			return result, fmt.Errorf("%w: payload is outside its arena", ErrEOFAdmissionMalformed)
 		}
 		reverse[result.Links] = linkID

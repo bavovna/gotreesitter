@@ -62,8 +62,8 @@ func TestLexerSkippedPrefixProvenanceRollsBackWithFailedShift(t *testing.T) {
 	}, ForkOrder{}); err == nil {
 		t.Fatal("node-cap shift unexpectedly succeeded")
 	}
-	if len(compact.subtrees) != 0 || len(compact.lexerSkippedPrefixes) != 0 {
-		t.Fatalf("failed shift retained subtrees=%d skipped_prefixes=%d", len(compact.subtrees), len(compact.lexerSkippedPrefixes))
+	if compact.subtrees.Len() != 0 || len(compact.lexerSkippedPrefixes) != 0 {
+		t.Fatalf("failed shift retained subtrees=%d skipped_prefixes=%d", compact.subtrees.Len(), len(compact.lexerSkippedPrefixes))
 	}
 }
 
@@ -103,8 +103,8 @@ func TestLexerSkippedPrefixProvenanceRejectsInvalidProof(t *testing.T) {
 			if _, err := compact.Shift(seed, 9, 0, test.token, ForkOrder{}); err == nil {
 				t.Fatal("invalid skipped-prefix proof unexpectedly succeeded")
 			}
-			if len(compact.subtrees) != 0 || len(compact.lexerSkippedPrefixes) != 0 {
-				t.Fatalf("invalid proof retained subtrees=%d skipped_prefixes=%d", len(compact.subtrees), len(compact.lexerSkippedPrefixes))
+			if compact.subtrees.Len() != 0 || len(compact.lexerSkippedPrefixes) != 0 {
+				t.Fatalf("invalid proof retained subtrees=%d skipped_prefixes=%d", compact.subtrees.Len(), len(compact.lexerSkippedPrefixes))
 			}
 		})
 	}

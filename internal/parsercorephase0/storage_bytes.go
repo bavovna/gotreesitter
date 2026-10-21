@@ -66,7 +66,7 @@ func (c *Core) StorageBytes() uint64 {
 		uint64(len(c.nodeLineageRefSets))*coreNodeLineageRefSetBytes +
 		uint64(len(c.links))*coreLinkRecordBytes +
 		uint64(len(c.dropCohortLinkRefIndexes))*coreUint32Bytes +
-		uint64(len(c.subtrees))*coreSubtreeRecordBytes +
+		uint64(c.subtrees.Len())*coreSubtreeRecordBytes +
 		uint64(len(c.recoveryVisibleCounts))*coreRecoveryVisibleCountBytes +
 		uint64(len(c.recoveryVisibleSymbols))*coreBoolBytes +
 		uint64(len(c.reusedSubtrees))*coreReusedSubtreeBytes +
@@ -168,7 +168,7 @@ func (c *Core) FootprintBytes() uint64 {
 		uint64(cap(c.nodePrecedenceWide))*coreInt64Bytes +
 		uint64(cap(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(cap(c.links))*coreLinkRecordBytes +
-		uint64(cap(c.subtrees))*coreSubtreeRecordBytes +
+		c.subtrees.FootprintBytes() +
 		uint64(cap(c.recoveryVisibleCounts))*coreRecoveryVisibleCountBytes +
 		uint64(cap(c.recoveryVisibleSymbols))*coreBoolBytes +
 		uint64(cap(c.eofRecoveryRoots))*coreSubtreeIDBytes +
@@ -258,7 +258,7 @@ func (c *Core) DominantCapacityBytes() uint64 {
 		uint64(cap(c.nodePathCountsWide))*coreNodePathCountRecordBytes +
 		uint64(cap(c.nodeLineages))*coreNodeLineageRecordBytes + uint64(cap(c.nodeLineageRecovery))*8 +
 		uint64(cap(c.alternativeSpillArena))*coreUint32Bytes +
-		uint64(cap(c.subtrees))*coreSubtreeRecordBytes +
+		c.subtrees.FootprintBytes() +
 		uint64(cap(c.links))*coreLinkRecordBytes +
 		uint64(cap(c.children))*coreChildRecordBytes
 }
@@ -380,7 +380,7 @@ func (c *Core) releaseRecordArenaReserve() {
 	c.links = nil
 	c.dropCohortLinkRefIndexes = nil
 	c.dropCohortLinkRefJournal = nil
-	c.subtrees = nil
+	c.subtrees = subtreeRecordBlocks{}
 	c.recoveryVisibleCounts = nil
 	c.recoveryVisibleSymbols = nil
 	c.reusedSubtrees = nil
@@ -422,7 +422,7 @@ func (c *Core) releaseOversizedRetention() {
 	c.links = nil
 	c.dropCohortLinkRefIndexes = nil
 	c.dropCohortLinkRefJournal = nil
-	c.subtrees = nil
+	c.subtrees = subtreeRecordBlocks{}
 	c.recoveryVisibleCounts = nil
 	c.recoveryVisibleSymbols = nil
 	c.reusedSubtrees = nil

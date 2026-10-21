@@ -44,7 +44,7 @@ func TestRecordArenaReservePlanBoundsSpeculationAndReleasesDecline(t *testing.T)
 			if err := core.ResetReleasingRetention(); err != nil {
 				t.Fatal(err)
 			}
-			if core.nodes.Capacity()+cap(core.nodeLineages)+cap(core.links)+cap(core.subtrees)+cap(core.children) != 0 {
+			if core.nodes.Capacity()+cap(core.nodeLineages)+cap(core.links)+core.subtrees.Capacity()+cap(core.children) != 0 {
 				t.Fatal("decline retained speculative record arenas")
 			}
 		})
@@ -58,7 +58,7 @@ func TestReserveRecordArenasTakesCapacityNotLength(t *testing.T) {
 	const sourceLen = 235626
 	core.ReserveRecordArenas(sourceLen, 1<<30)
 
-	if got := core.nodes.Len() + len(core.nodeLineages) + len(core.links) + len(core.subtrees) + len(core.children); got != 0 {
+	if got := core.nodes.Len() + len(core.nodeLineages) + len(core.links) + core.subtrees.Len() + len(core.children); got != 0 {
 		t.Fatalf("reserve published %d records, want 0", got)
 	}
 	if got := core.StorageBytes(); got != 0 {
@@ -68,7 +68,7 @@ func TestReserveRecordArenasTakesCapacityNotLength(t *testing.T) {
 		"nodes":        core.nodes.Capacity(),
 		"nodeLineages": cap(core.nodeLineages),
 		"links":        cap(core.links),
-		"subtrees":     cap(core.subtrees),
+		"subtrees":     core.subtrees.Capacity(),
 		"children":     cap(core.children),
 	}
 	for name, got := range want {
@@ -119,9 +119,9 @@ func TestReserveRecordArenasHonorsMaxBytes(t *testing.T) {
 		t.Fatalf("clamped reserve lost its shape: nodes=%d lineages=%d links=%d",
 			core.nodes.Capacity(), cap(core.nodeLineages), cap(core.links))
 	}
-	if cap(core.subtrees) >= core.nodes.Capacity() || cap(core.children) >= core.nodes.Capacity() {
+	if core.subtrees.Capacity() >= core.nodes.Capacity() || cap(core.children) >= core.nodes.Capacity() {
 		t.Fatalf("clamped reserve lost its shape: nodes=%d subtrees=%d children=%d",
-			core.nodes.Capacity(), cap(core.subtrees), cap(core.children))
+			core.nodes.Capacity(), core.subtrees.Capacity(), cap(core.children))
 	}
 }
 
@@ -135,9 +135,9 @@ func TestReserveRecordArenasHonorsLimits(t *testing.T) {
 	if core.nodes.Capacity() > 100 || cap(core.nodeLineages) > 100 {
 		t.Fatalf("nodes cap=%d lineages cap=%d, want at most MaxNodes=100", core.nodes.Capacity(), cap(core.nodeLineages))
 	}
-	if cap(core.links) > 200 || cap(core.subtrees) > 300 || cap(core.children) > 400 {
+	if cap(core.links) > 200 || core.subtrees.Capacity() > 300 || cap(core.children) > 400 {
 		t.Fatalf("links=%d subtrees=%d children=%d, want at most 200/300/400",
-			cap(core.links), cap(core.subtrees), cap(core.children))
+			cap(core.links), core.subtrees.Capacity(), cap(core.children))
 	}
 }
 
@@ -196,7 +196,7 @@ func TestResetReleasingRetentionDropsTheReserve(t *testing.T) {
 	}
 	for name, got := range map[string]int{
 		"nodes": core.nodes.Capacity(), "nodeLineages": cap(core.nodeLineages),
-		"links": cap(core.links), "subtrees": cap(core.subtrees), "children": cap(core.children),
+		"links": cap(core.links), "subtrees": core.subtrees.Capacity(), "children": cap(core.children),
 	} {
 		if got != 0 {
 			t.Fatalf("decline kept %s capacity %d, want 0", name, got)
@@ -231,7 +231,7 @@ func TestGrowRecordArenasKeepsRecordsAndReachesFullReserve(t *testing.T) {
 	if _, err := core.Seed(0, 0); err != nil {
 		t.Fatal(err)
 	}
-	nodes, links, subtrees, children := core.nodes.Len(), len(core.links), len(core.subtrees), len(core.children)
+	nodes, links, subtrees, children := core.nodes.Len(), len(core.links), core.subtrees.Len(), len(core.children)
 	if nodes == 0 {
 		t.Fatal("seed published no node record")
 	}
@@ -239,7 +239,7 @@ func TestGrowRecordArenasKeepsRecordsAndReachesFullReserve(t *testing.T) {
 	storage := core.StorageBytes()
 
 	core.GrowRecordArenas(sourceLen, maxBytes)
-	if core.nodes.Len() != nodes || len(core.links) != links || len(core.subtrees) != subtrees || len(core.children) != children {
+	if core.nodes.Len() != nodes || len(core.links) != links || core.subtrees.Len() != subtrees || len(core.children) != children {
 		t.Fatal("grow changed an arena length")
 	}
 	if *core.nodes.At(int(0)) != firstNode || core.StorageBytes() != storage {
@@ -251,7 +251,7 @@ func TestGrowRecordArenasKeepsRecordsAndReachesFullReserve(t *testing.T) {
 		"nodes":        {core.nodes.Capacity(), full.nodes.Capacity()},
 		"nodeLineages": {cap(core.nodeLineages), cap(full.nodeLineages)},
 		"links":        {cap(core.links), cap(full.links)},
-		"subtrees":     {cap(core.subtrees), cap(full.subtrees)},
+		"subtrees":     {core.subtrees.Capacity(), full.subtrees.Capacity()},
 		"children":     {cap(core.children), cap(full.children)},
 	} {
 		if pair[0] < pair[1] {

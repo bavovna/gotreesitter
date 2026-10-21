@@ -30,7 +30,7 @@ func (c *Core) CachedVisibleSubtreeCount(symbols []SelectedSymbolPolicy, id Subt
 	if c == nil {
 		return 0, errors.New("parser-core phase zero: recovery visible-node count on nil core")
 	}
-	if uint64(id) > uint64(len(c.subtrees)) {
+	if uint64(id) > uint64(c.subtrees.Len()) {
 		return 0, fmt.Errorf("parser-core phase zero: invalid subtree id %d", id)
 	}
 	c.prepareRecoveryVisibleCounts(symbols)
@@ -100,9 +100,9 @@ func (c *Core) SoleDerivationVisibleNodeCount(symbols []SelectedSymbolPolicy, he
 
 func (c *Core) prepareRecoveryVisibleCounts(symbols []SelectedSymbolPolicy) {
 	c.bindRecoveryVisibleSymbols(symbols)
-	if len(c.recoveryVisibleCounts) < len(c.subtrees) {
+	if len(c.recoveryVisibleCounts) < c.subtrees.Len() {
 		c.recoveryVisibleCounts = append(c.recoveryVisibleCounts,
-			make([]recoveryVisibleCount, len(c.subtrees)-len(c.recoveryVisibleCounts))...)
+			make([]recoveryVisibleCount, c.subtrees.Len()-len(c.recoveryVisibleCounts))...)
 	}
 }
 
@@ -138,7 +138,7 @@ func (c *Core) recoveryVisibleSubtreeCount(id SubtreeID, hasAlias, countErrorRep
 	}
 	entry := c.recoveryVisibleCounts[id-1]
 	if entry.flags&recoveryVisibleCountValid == 0 {
-		record := c.subtrees[id-1]
+		record := *c.subtrees.At(int(id - 1))
 		childEnd := uint64(record.firstChild) + uint64(record.childCount)
 		aliasEnd := uint64(record.firstAlias) + uint64(record.aliasCount)
 		if childEnd > uint64(len(c.children)) || aliasEnd > uint64(len(c.aliases)) {

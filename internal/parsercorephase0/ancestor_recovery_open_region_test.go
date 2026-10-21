@@ -151,9 +151,9 @@ func TestRecoverToAncestorOpenRegionPriorErrorRollback(t *testing.T) {
 				}
 				candidate = ancestorRecoveryCandidateForState(t, candidates, 2)
 			case "childless":
-				c.subtrees[priorID-1].childCount = 0
+				(*c.subtrees.At(int(priorID - 1))).childCount = 0
 			case "bad-span":
-				c.subtrees[priorID-1].endByte = 2
+				(*c.subtrees.At(int(priorID - 1))).endByte = 2
 			case "cost":
 				cost = func(NodeID, SubtreeID) (uint32, error) { return 0, sentinel }
 			}
@@ -240,7 +240,7 @@ func TestRecoverToAncestorOpenRegionFailurePoisonsAndRollsBack(t *testing.T) {
 			case "span":
 				end = 1
 			case "invalid-id":
-				region = []SubtreeID{SubtreeID(len(c.subtrees) + 1)}
+				region = []SubtreeID{SubtreeID(c.subtrees.Len() + 1)}
 			case "overlap":
 				region = []SubtreeID{children[3], children[2]}
 			case "foreign":

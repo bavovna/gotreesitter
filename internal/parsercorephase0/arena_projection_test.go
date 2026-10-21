@@ -12,7 +12,7 @@ func projectionFixture(t *testing.T) *Core {
 	c.nodes = nodeBlocksFromSliceForTest(make([]nodeRecord, 100))
 	c.nodeLineages = make([]nodeLineageHot, 100)
 	c.links = make([]linkRecord, 90)
-	c.subtrees = make([]subtreeRecord, 80)
+	c.subtrees = subtreeBlocksFromSliceForTest(make([]subtreeRecord, 80))
 	c.children = make([]SubtreeID, 75)
 	for i := range c.nodes.Len() {
 		(*c.nodes.At(int(i))).byteOffset = uint32(i)
@@ -21,8 +21,8 @@ func projectionFixture(t *testing.T) *Core {
 	for i := range c.links {
 		c.links[i].prev = NodeID(i + 1)
 	}
-	for i := range c.subtrees {
-		c.subtrees[i].symbol = Symbol(i + 1)
+	for i := range c.subtrees.Len() {
+		(*c.subtrees.At(int(i))).symbol = Symbol(i + 1)
 	}
 	for i := range c.children {
 		c.children[i] = SubtreeID(i + 1)
@@ -35,14 +35,14 @@ func TestProjectRecordArenasPreservesPublishedRecordsAndWork(t *testing.T) {
 	nodes := c.nodes.snapshotForTest()
 	lineages := append([]nodeLineageHot(nil), c.nodeLineages...)
 	links := append([]linkRecord(nil), c.links...)
-	subtrees := append([]subtreeRecord(nil), c.subtrees...)
+	subtrees := c.subtrees.snapshotForTest()
 	children := append([]SubtreeID(nil), c.children...)
 	storage, work := c.StorageBytes(), c.Work()
 	before := c.FootprintBytes()
 	if !c.ProjectRecordArenas(10000, 5000, 1<<20) {
 		t.Fatal("projection did not grow")
 	}
-	if !reflect.DeepEqual(c.nodes.snapshotForTest(), nodes) || !reflect.DeepEqual(c.nodeLineages, lineages) || !reflect.DeepEqual(c.links, links) || !reflect.DeepEqual(c.subtrees, subtrees) || !reflect.DeepEqual(c.children, children) {
+	if !reflect.DeepEqual(c.nodes.snapshotForTest(), nodes) || !reflect.DeepEqual(c.nodeLineages, lineages) || !reflect.DeepEqual(c.links, links) || !reflect.DeepEqual(c.subtrees.snapshotForTest(), subtrees) || !reflect.DeepEqual(c.children, children) {
 		t.Fatal("projection changed published records")
 	}
 	if c.StorageBytes() != storage || c.Work() != work {
@@ -59,11 +59,11 @@ func TestProjectRecordArenasPreservesPublishedRecordsAndWork(t *testing.T) {
 func TestProjectRecordArenasRejectsWholeGrowthWithoutChangingCapacity(t *testing.T) {
 	c := projectionFixture(t)
 	before := c.FootprintBytes()
-	pointers := [5]any{c.nodes.At(int(0)), &c.nodeLineages[0], &c.links[0], &c.subtrees[0], &c.children[0]}
+	pointers := [5]any{c.nodes.At(int(0)), &c.nodeLineages[0], &c.links[0], c.subtrees.At(int(0)), &c.children[0]}
 	if c.ProjectRecordArenas(10000, 5000, 1) {
 		t.Fatal("projection exceeded caller ceiling")
 	}
-	afterPointers := [5]any{c.nodes.At(int(0)), &c.nodeLineages[0], &c.links[0], &c.subtrees[0], &c.children[0]}
+	afterPointers := [5]any{c.nodes.At(int(0)), &c.nodeLineages[0], &c.links[0], c.subtrees.At(int(0)), &c.children[0]}
 	if c.FootprintBytes() != before || pointers != afterPointers {
 		t.Fatal("rejected projection allocated partial capacity")
 	}
@@ -110,7 +110,7 @@ func TestProjectRecordArenasHonorsRecordLimitsAtLargestSource(t *testing.T) {
 	if !c.ProjectRecordArenas(source, progress, 0) {
 		t.Fatal("bounded large-source projection did not grow")
 	}
-	if c.nodes.Capacity() > 120 || cap(c.nodeLineages) > 120 || cap(c.links) > 110 || cap(c.subtrees) > 100 || cap(c.children) > 90 {
+	if c.nodes.Capacity() > 120 || cap(c.nodeLineages) > 120 || cap(c.links) > 110 || c.subtrees.Capacity() > 100 || cap(c.children) > 90 {
 		t.Fatal("projection exceeded record limits")
 	}
 }

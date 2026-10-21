@@ -15,7 +15,7 @@ func (c *Core) PushedFrontier(head Head) (payload SubtreeID, pre StateID, ok boo
 	}
 	link := &c.links[n.firstLink-1]
 	if link.next != 0 || link.prev == 0 || uint64(link.prev) > uint64(c.nodes.Len()) ||
-		link.payload == 0 || uint64(link.payload) > uint64(len(c.subtrees)) {
+		link.payload == 0 || uint64(link.payload) > uint64(c.subtrees.Len()) {
 		return 0, 0, false
 	}
 	return link.payload, (*c.nodes.At(int(link.prev - 1))).state, true

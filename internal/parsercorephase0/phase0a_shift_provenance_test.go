@@ -373,7 +373,7 @@ func TestPhase0ATerminalHookAuthenticationFailuresAreStickyAndNonSemantic(t *tes
 	t.Run("payload-does-not-exist", func(t *testing.T) {
 		core, run, seed, _ := newFixture(t, subtreeRecord{symbol: 9, endByte: 1, terminal: true})
 		before := captureSchedulerTransactionState(core)
-		phase0AObserveTerminalShift(core, SubtreeID(len(core.subtrees)+1), seed.Node, 2, 1, false, false, 0, ForkOrder{})
+		phase0AObserveTerminalShift(core, SubtreeID(core.subtrees.Len()+1), seed.Node, 2, 1, false, false, 0, ForkOrder{})
 		requireFailure(t, core, run, before)
 	})
 	t.Run("payload-is-not-terminal", func(t *testing.T) {

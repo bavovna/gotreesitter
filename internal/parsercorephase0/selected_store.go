@@ -1229,7 +1229,7 @@ func (s *SelectedStore) finishRoots(roots []SelectedNodeID, policy SelectedStore
 }
 
 func (c *Core) selectedRawOccurrences(roots []SubtreeID, poll func() error) ([]selectedRawOccurrence, []uint32, []uint32, error) {
-	rawCapacity := min(len(c.subtrees), int(c.limits.MaxSelectedOccurrences))
+	rawCapacity := min(c.subtrees.Len(), int(c.limits.MaxSelectedOccurrences))
 	raw := c.selectedBuild.raw[:0]
 	if cap(raw) < rawCapacity {
 		raw = make([]selectedRawOccurrence, 0, rawCapacity)

@@ -130,7 +130,7 @@ func TestSoleDerivationVisibleNodeCountWarmNoAllocation(t *testing.T) {
 	previous := Head{Node: 1}
 	for index := 0; index < 40; index++ {
 		symbols[index+1].Visible = true
-		c.subtrees = append(c.subtrees, subtreeRecord{symbol: Symbol(index + 1)})
+		c.subtrees.Append(subtreeRecord{symbol: Symbol(index + 1)}, ^uint32(0))
 		previous = appendSoleDerivationNode(c, 1, linkRecord{
 			prev: previous.Node, payload: SubtreeID(index + 1),
 		})
@@ -154,7 +154,7 @@ func TestSoleDerivationVisibleNodeCountWarmNoAllocation(t *testing.T) {
 func TestSoleDerivationVisibleNodeCountPreservesFallbacksAndErrorOrder(t *testing.T) {
 	t.Run("saturated sole path", func(t *testing.T) {
 		c := newSoleDerivationCore()
-		c.subtrees = []subtreeRecord{{symbol: 1}}
+		c.subtrees = subtreeBlocksFromSliceForTest([]subtreeRecord{{symbol: 1}})
 		head := appendSoleDerivationNode(c, math.MaxUint64, linkRecord{prev: 1, payload: 1})
 		count, sole, err := c.SoleDerivationVisibleNodeCount(
 			[]SelectedSymbolPolicy{{}, {Visible: true}}, head,
