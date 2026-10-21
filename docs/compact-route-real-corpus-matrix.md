@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Fused scanner checkpoint receipts: preliminary screen held
+
+The [Mac ARM64 screen](compact-fused-checkpoint-screen-20261021.md) retains all **480 rows / 80 processes** and exact route/node/token counters. All twelve timing differences are nonsignificant, and all median ratchets pass. Focused correctness checks preserve **414 ledger rows**, four Go vectors and actual C/race/386 checks; full-fleet and RSS qualification were not run. E stays held, the existing native-YAML net hold remains, and no runtime or graduation change follows.
+
 ### Sixteen-byte graph nodes: qualified allocation and capacity reduction
 
 The [lossless count-storage receipt](compact-node16-path-count-receipt-20261020.md) preserves all **414 ledger rows**, four canonical vectors and full correctness gates. One-MiB Go allocated bytes fall **6.79%**, ordinary YAML **5.19% / 6.78%** (all p<.001), while the pinned Go node arena sheds **8 MiB**. All 480 timing/allocation ratchets and 126 RSS processes pass. All twelve timing differences are inconclusive; ordinary YAML routing, known Go C failures and graduation remain unchanged.
