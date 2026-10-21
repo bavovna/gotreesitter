@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Primitive-edit DFA snapshots (qualification held)
+
+The isolated proof-state copy change lowers the standard Go edit benchmark by 6.85% on Linux amd64 and 36.40% on M1 Max Docker Linux arm64 (20 pairs each). All 412 ledger rows are unchanged. The [receipt](benchmarks/20261021-primitive-dfa-snapshots/README.md) retains full correctness gates and the unresolved large-process RSS ceiling in both baseline and candidate. Runtime promotion stays held; this does not graduate Go or ordinary YAML.
+
 ### Trusted small-source verification: measured Go edits, held counters
 
 The [qualification receipt](benchmarks/20261021-trusted-small-source-results/README.md) records 20 matched Mac Docker ARM64 pairs on Cogno’s exact Go fixture: plain insert **107.981→5.705 ms** and replace **95.971→5.697 ms** (both p<.001). Tree.Edit becomes slower; delete timing is inconclusive. The 178 adverse selected counter changes and 158 complete-operation event increases remain unapproved. Two YAML screens are rejected, and ordinary ownership/graduation stay unchanged. This receipt promotes no runtime or ledger baseline.
