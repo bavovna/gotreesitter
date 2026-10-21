@@ -136,15 +136,15 @@ func TestReconvergedReductionChildSelectionScope(t *testing.T) {
 			case "other predecessor":
 				right.prev = 2
 			case "other production":
-				c.subtrees[right.payload-1].productionID = 1
+				(*c.subtrees.At(int(right.payload - 1))).productionID = 1
 			case "other precedence":
-				c.subtrees[right.payload-1].dynamicPrecedence = 1
+				(*c.subtrees.At(int(right.payload - 1))).dynamicPrecedence = 1
 			case "other span":
-				c.subtrees[right.payload-1].endByte = 2
+				(*c.subtrees.At(int(right.payload - 1))).endByte = 2
 			case "missing":
-				c.subtrees[leaf-1].missing = true
+				(*c.subtrees.At(int(leaf - 1))).missing = true
 			case "error":
-				c.subtrees[leaf-1].symbol = ErrorRegionSymbol
+				(*c.subtrees.At(int(leaf - 1))).symbol = ErrorRegionSymbol
 			}
 			if _, selected, err := c.compareReconvergedReductionChildren(left, right); err != nil || selected {
 				t.Fatalf("unsupported history selected=%t err=%v", selected, err)
@@ -175,7 +175,7 @@ func TestReconvergedReductionChildSelectionScannerHistory(t *testing.T) {
 			case "invalid checkpoint":
 				c.externalProvenance[1].end = end + 100
 			case "opaque":
-				c.subtrees[b-1].externalProvenanceState = subtreeExternalProvenanceReusedOpaque
+				(*c.subtrees.At(int(b - 1))).externalProvenanceState = subtreeExternalProvenanceReusedOpaque
 			}
 			left, right := reductionSelectionPair(t, c, a, b)
 			_, selected, err := c.compareReconvergedReductionChildren(left, right)
@@ -190,8 +190,8 @@ func TestReconvergedReductionChildSelectionBoundsAndClearsScratch(t *testing.T) 
 	c := newCSelectionCompareTestCore(t)
 	leaf := reductionSelectionLeaf(t, c, subtreeRecord{symbol: 2})
 	left, right := reductionSelectionPair(t, c, leaf, leaf)
-	child := c.children[c.subtrees[left.payload-1].firstChild]
-	c.children[c.subtrees[child-1].firstChild] = child
+	child := c.children[(*c.subtrees.At(int(left.payload - 1))).firstChild]
+	c.children[(*c.subtrees.At(int(child - 1))).firstChild] = child
 	if _, selected, err := c.compareReconvergedReductionChildren(left, right); err == nil || selected {
 		t.Fatalf("corrupt child selected=%t err=%v", selected, err)
 	}

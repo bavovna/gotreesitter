@@ -121,7 +121,7 @@ func TestEOFAdmissionExactPathCursorAllocatesZero(t *testing.T) {
 func TestEOFAdmissionViewRejectsMalformedRangesAndGenerationChanges(t *testing.T) {
 	t.Run("alias-range", func(t *testing.T) {
 		compact, _, parent, _ := newEOFAdmissionViewFixture(t)
-		compact.subtrees[parent-1].firstAlias = uint32(len(compact.aliases) + 1)
+		(*compact.subtrees.At(int(parent - 1))).firstAlias = uint32(len(compact.aliases) + 1)
 		err := compact.VisitEOFAdmissionSubtree(
 			parent,
 			compact.AuthenticationGeneration(),

@@ -100,7 +100,7 @@ func TestReusedSubtreeInvalidAdmission(t *testing.T) {
 				_, _, err := c.PushReusedSubtreeOwned(owner, head, reused)
 				return err
 			})
-			if err == nil || len(c.reusedSubtrees) != 0 || len(c.subtrees) != 0 {
+			if err == nil || len(c.reusedSubtrees) != 0 || c.subtrees.Len() != 0 {
 				t.Fatalf("invalid admission committed: %v", err)
 			}
 		})
@@ -161,8 +161,8 @@ func TestReusedSubtreeOpaqueComparisonsAndAuthentication(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Corrupt publication to exercise duplicate public ownership independently of ordered-key admission.
-	same = SubtreeID(len(c.subtrees) + 1)
-	c.subtrees = append(c.subtrees, c.subtrees[first-1])
+	same = SubtreeID(c.subtrees.Len() + 1)
+	c.subtrees.Append(*c.subtrees.At(int(first - 1)), ^uint32(0))
 	descriptor, _ := c.reusedSubtree(first)
 	c.reusedSubtrees = append(c.reusedSubtrees, reusedSubtreeProvenance{payload: same, descriptor: descriptor})
 	if equal, err := c.subtreesStructurallyEqual(first, same); err != nil || !equal {
@@ -240,7 +240,7 @@ func TestReusedSubtreeForeignOwnerPoisonsTransaction(t *testing.T) {
 		_, _, _ = c.PushReusedSubtreeOwned(owner, head, reused)
 		return nil
 	})
-	if err == nil || len(c.subtrees) != 0 || len(c.reusedSubtrees) != 0 {
+	if err == nil || c.subtrees.Len() != 0 || len(c.reusedSubtrees) != 0 {
 		t.Fatal("foreign owner was accepted")
 	}
 }
@@ -269,7 +269,7 @@ func TestReusedSubtreeCleanExternalAncestorRequiresQuiescence(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			c.subtrees[0].fragile, c.subtrees[0].missing = test.fragile, test.missing
+			(*c.subtrees.At(int(0))).fragile, (*c.subtrees.At(int(0))).missing = test.fragile, test.missing
 			err = c.ApplySchedulerAtomic(func(owner SchedulerTransactionToken) error {
 				_, _, err := c.PushReusedSubtreeOwned(owner, head, reused)
 				return err
@@ -342,7 +342,7 @@ func TestReusedSubtreeDoesNotCertifyHiddenScannerProvenance(t *testing.T) {
 	if _, exact, err := c.subtreeExternalProvenance(payload); err != nil || !exact {
 		t.Fatalf("language quiescence certificate was ignored: %v", err)
 	}
-	if _, exact, _ := c.subtrees[payload-1].externalProvenanceState.result(); exact {
+	if _, exact, _ := (*c.subtrees.At(int(payload - 1))).externalProvenanceState.result(); exact {
 		t.Fatal("language certificate rewrote opaque checkpoint provenance")
 	}
 }

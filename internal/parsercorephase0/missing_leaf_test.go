@@ -153,8 +153,8 @@ func TestMissingLeafDependencyRollsBackWithTransaction(t *testing.T) {
 	if !errors.Is(err, sentinel) {
 		t.Fatalf("rollback error=%v, want %v", err, sentinel)
 	}
-	if len(compact.subtrees) != 0 || len(compact.missingLeafProvenance) != 0 {
-		t.Fatalf("rollback retained subtrees=%d dependencies=%d", len(compact.subtrees), len(compact.missingLeafProvenance))
+	if compact.subtrees.Len() != 0 || len(compact.missingLeafProvenance) != 0 {
+		t.Fatalf("rollback retained subtrees=%d dependencies=%d", compact.subtrees.Len(), len(compact.missingLeafProvenance))
 	}
 	if compact.FootprintBytes() < before {
 		t.Fatalf("rollback footprint=%d, want retained capacity at least %d", compact.FootprintBytes(), before)
@@ -255,7 +255,7 @@ func TestMissingLeafIsExplicit(t *testing.T) {
 	if _, err := compact.ErrorRegionResume(seed, StateID(1), 2, 4, []SubtreeID{regionChild}); err != nil {
 		t.Fatalf("ErrorRegionResume: %v", err)
 	}
-	for id := SubtreeID(1); uint64(id) <= uint64(len(compact.subtrees)); id++ {
+	for id := SubtreeID(1); uint64(id) <= uint64(compact.subtrees.Len()); id++ {
 		view, err := compact.Subtree(id)
 		if err != nil {
 			t.Fatalf("Subtree(%d): %v", id, err)

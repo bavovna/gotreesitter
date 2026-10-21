@@ -17,7 +17,7 @@ func (c *Core) SoleHeadPayload(head Head) (SubtreeID, error) {
 	}
 	link := c.links[n.firstLink-1]
 	if link.next != 0 || link.prev == 0 || uint64(link.prev) > uint64(c.nodes.Len()) ||
-		link.payload == 0 || uint64(link.payload) > uint64(len(c.subtrees)) {
+		link.payload == 0 || uint64(link.payload) > uint64(c.subtrees.Len()) {
 		return 0, errors.New("parser-core phase zero: frontier payload is invalid")
 	}
 	return link.payload, nil

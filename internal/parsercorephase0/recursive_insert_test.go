@@ -659,7 +659,7 @@ func TestSubtreeExternalProvenanceUsesPackedCache(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := core.subtrees[ordinary-1].externalProvenanceState; got != subtreeExternalProvenanceExactNoExternal {
+	if got := (*core.subtrees.At(int(ordinary - 1))).externalProvenanceState; got != subtreeExternalProvenanceExactNoExternal {
 		t.Fatalf("ordinary provenance state = %d", got)
 	}
 
@@ -674,14 +674,14 @@ func TestSubtreeExternalProvenanceUsesPackedCache(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := core.subtrees[external-1].externalProvenanceState; got != subtreeExternalProvenanceExactHasExternal {
+	if got := (*core.subtrees.At(int(external - 1))).externalProvenanceState; got != subtreeExternalProvenanceExactHasExternal {
 		t.Fatalf("external provenance state = %d", got)
 	}
 	parent, err := core.appendSubtree(subtreeRecord{symbol: 12}, []SubtreeID{ordinary, external}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := core.subtrees[parent-1].externalProvenanceState; got != subtreeExternalProvenanceExactHasExternal {
+	if got := (*core.subtrees.At(int(parent - 1))).externalProvenanceState; got != subtreeExternalProvenanceExactHasExternal {
 		t.Fatalf("parent provenance state = %d", got)
 	}
 
@@ -732,7 +732,7 @@ func TestAuthenticatedTerminalScannerProvenanceCoversOrdinaryLeaf(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := compact.subtrees[ordinary-1].externalProvenanceState; got != subtreeExternalProvenanceExactNoExternal {
+	if got := (*compact.subtrees.At(int(ordinary - 1))).externalProvenanceState; got != subtreeExternalProvenanceExactNoExternal {
 		t.Fatalf("ordinary terminal changed external provenance state: %d", got)
 	}
 	provenance, ok := compact.externalPayloadScannerProvenance(ordinary)
@@ -915,7 +915,7 @@ func TestRecursiveInsertCertifiedExternalIdentityAndValidation(t *testing.T) {
 	if equal {
 		t.Fatal("certified external payload matched a non-external shallow class")
 	}
-	if _, _, err := core.subtreeExternalProvenance(SubtreeID(len(core.subtrees) + 1)); err == nil {
+	if _, _, err := core.subtreeExternalProvenance(SubtreeID(core.subtrees.Len() + 1)); err == nil {
 		t.Fatal("certified external fast path accepted an invalid subtree identifier")
 	}
 	if err := core.Reset(); err != nil {

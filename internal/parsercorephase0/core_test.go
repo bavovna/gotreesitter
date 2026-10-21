@@ -3134,7 +3134,7 @@ func TestDerivationsDeepSinglePath(t *testing.T) {
 		t.Fatal(err)
 	}
 	core.links = make([]linkRecord, depth)
-	core.subtrees = make([]subtreeRecord, depth)
+	core.subtrees = subtreeBlocksFromSliceForTest(make([]subtreeRecord, depth))
 	core.nodes.appendSliceForTest(make([]nodeRecord, depth))
 	core.nodeLineages = append(core.nodeLineages, make([]nodeLineageHot, depth)...)
 	for index := 0; index < depth; index++ {

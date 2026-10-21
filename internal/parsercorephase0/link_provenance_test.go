@@ -92,7 +92,7 @@ func TestLinkProvenanceDefaultOffAndAccounting(t *testing.T) {
 		t.Fatal("new core allocated link provenance sidecar")
 	}
 	want := uint64(core.nodes.Len())*coreNodeRecordBytes + uint64(len(core.links))*coreLinkRecordBytes +
-		uint64(len(core.subtrees))*coreSubtreeRecordBytes + uint64(len(core.children))*coreChildRecordBytes +
+		uint64(core.subtrees.Len())*coreSubtreeRecordBytes + uint64(len(core.children))*coreChildRecordBytes +
 		uint64(len(core.dropCohortRecords))*coreDropCohortRecordBytes +
 		uint64(len(core.dropCohortMembers))*coreDropCohortMemberBytes +
 		uint64(len(core.dropCohortCertificateRefs))*coreDropCohortRefBytes

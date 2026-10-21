@@ -49,10 +49,10 @@ func TestSharedTerminalValidationRequiresEverySharedProof(t *testing.T) {
 			tail := sharedTerminalValidationLeaf(t, c, a, b, mode != "ordinary")
 			sharedTerminalValidationCorrupt(c, tail, mode)
 			if mode == "opaque" {
-				c.subtrees[tail-1].externalProvenanceState = subtreeExternalProvenanceReusedOpaque
+				(*c.subtrees.At(int(tail - 1))).externalProvenanceState = subtreeExternalProvenanceReusedOpaque
 			}
 			if mode == "missing leaf" {
-				c.subtrees[tail-1].missing = true
+				(*c.subtrees.At(int(tail - 1))).missing = true
 			}
 			left := sharedTerminalValidationParent(t, c, first, tail)
 			right := sharedTerminalValidationParent(t, c, first, tail)
@@ -114,7 +114,7 @@ func TestSharedTerminalValidationPreservesLeftRejectionOrder(t *testing.T) {
 			sharedTerminalValidationCorrupt(c, leftLeaf, mode)
 			left := sharedTerminalValidationParent(t, c, leftLeaf)
 			right := sharedTerminalValidationParent(t, c, rightLeaf)
-			c.children[c.subtrees[right-1].firstChild] = right
+			c.children[(*c.subtrees.At(int(right - 1))).firstChild] = right
 			equal, err := c.reductionTerminalHistoriesEqual(left, right)
 			switch mode {
 			case "ordinary", "missing":
@@ -147,7 +147,7 @@ func TestSharedTerminalValidationBudgetUsesBothCursors(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		sharedTerminalValidationParent(t, c)
 	}
-	if budget := len(c.subtrees) + len(c.children); budget != 13 {
+	if budget := c.subtrees.Len() + len(c.children); budget != 13 {
 		t.Fatalf("fixture budget=%d", budget)
 	}
 	equal, err := c.reductionTerminalHistoriesEqual(left, right)

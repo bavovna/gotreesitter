@@ -15,7 +15,7 @@ func (c *Core) ProjectRecordArenas(sourceBytes int, progress uint32, maxAddition
 	}
 	nodes := project(c.nodes.Len(), c.limits.MaxNodes)
 	links := project(len(c.links), c.limits.MaxLinks)
-	subtrees := project(len(c.subtrees), c.limits.MaxSubtrees)
+	subtrees := project(c.subtrees.Len(), c.limits.MaxSubtrees)
 	children := project(len(c.children), c.limits.MaxChildren)
 	delta := func(want, capacity int, size uint64) uint64 {
 		if want <= capacity {
@@ -23,14 +23,14 @@ func (c *Core) ProjectRecordArenas(sourceBytes int, progress uint32, maxAddition
 		}
 		return uint64(want-capacity) * size
 	}
-	additional := c.nodes.GrowthFootprintBytes(nodes) + delta(nodes, cap(c.nodeLineages), coreNodeLineageRecordBytes) + delta(links, cap(c.links), coreLinkRecordBytes) + delta(subtrees, cap(c.subtrees), coreSubtreeRecordBytes) + delta(children, cap(c.children), coreChildRecordBytes)
+	additional := c.nodes.GrowthFootprintBytes(nodes) + delta(nodes, cap(c.nodeLineages), coreNodeLineageRecordBytes) + delta(links, cap(c.links), coreLinkRecordBytes) + c.subtrees.GrowthFootprintBytes(subtrees) + delta(children, cap(c.children), coreChildRecordBytes)
 	if additional == 0 || (maxAdditionalBytes > 0 && additional > maxAdditionalBytes) {
 		return false
 	}
 	c.nodes.Grow(nodes)
 	c.nodeLineages = growArena(c.nodeLineages, nodes)
 	c.links = growArena(c.links, links)
-	c.subtrees = growArena(c.subtrees, subtrees)
+	c.subtrees.Grow(subtrees)
 	c.children = growArena(c.children, children)
 	return true
 }

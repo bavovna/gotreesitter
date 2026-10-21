@@ -87,7 +87,7 @@ func TestRecoverEOFAcceptOpenRegionFailuresRollBack(t *testing.T) {
 			case "span":
 				end = 1
 			case "unknown-child":
-				children[0] = SubtreeID(len(c.subtrees) + 1)
+				children[0] = SubtreeID(c.subtrees.Len() + 1)
 			case "overlap":
 				start = 0
 				children[0] = fixture.payload[0]
@@ -98,13 +98,13 @@ func TestRecoverEOFAcceptOpenRegionFailuresRollBack(t *testing.T) {
 			case "limit":
 				c.limits.MaxChildren = 1
 			case "missing":
-				c.subtrees[child-1].missing = true
+				(*c.subtrees.At(int(child - 1))).missing = true
 			case "extra":
-				c.subtrees[child-1].extra = true
+				(*c.subtrees.At(int(child - 1))).extra = true
 			case "unknown-scanner":
 				c.externalPayloadsQuiescent = false
-				c.subtrees[child-1].external = true
-				c.subtrees[child-1].externalProvenanceState = subtreeExternalProvenanceInexactHasExternal
+				(*c.subtrees.At(int(child - 1))).external = true
+				(*c.subtrees.At(int(child - 1))).externalProvenanceState = subtreeExternalProvenanceInexactHasExternal
 			}
 			before := captureSchedulerTransactionState(c)
 			var gotErr error

@@ -1330,7 +1330,7 @@ type Core struct {
 	dropCohortLinkRefIndexes []uint32
 	dropCohortLinkRefJournal []dropCohortLinkRefMutation
 
-	subtrees []subtreeRecord
+	subtrees subtreeRecordBlocks
 	// Visible counts depend on immutable symbols, children, aliases, and extra bits.
 	// Fragility and scanner provenance updates do not change these counts.
 	recoveryVisibleCounts  []recoveryVisibleCount
@@ -1670,7 +1670,7 @@ func (c *Core) markInto(mark *checkpoint) {
 		nodePrecedenceWideBase: c.nodePrecedenceWideBase,
 		nodes:                  c.nodes.Len(), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
 		nodeLineageRefSets: c.nodeLineageRefSets,
-		links:              len(c.links), subtrees: len(c.subtrees),
+		links:              len(c.links), subtrees: c.subtrees.Len(),
 		nodeCheckpoints:                 len(c.nodeCheckpoints),
 		externalProvenance:              len(c.externalProvenance),
 		missingLeafProvenance:           len(c.missingLeafProvenance),
@@ -1793,7 +1793,9 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 	c.nodeLineageRecovery = c.nodeLineageRecovery[:mark.nodeLineageRecovery]
 	c.nodeCheckpoints = c.nodeCheckpoints[:mark.nodeCheckpoints]
 	c.links = c.links[:mark.links]
-	c.subtrees = c.subtrees[:mark.subtrees]
+	if !c.subtrees.Truncate(mark.subtrees) {
+		panic("parser-core phase zero: invalid subtree checkpoint")
+	}
 	c.truncateRecoveryVisibleCounts(mark.subtrees)
 	c.eofRecoveryRoots = c.eofRecoveryRoots[:mark.eofRecoveryRoots]
 	c.externalProvenance = c.externalProvenance[:mark.externalProvenance]
@@ -2422,7 +2424,7 @@ func (c *Core) Reset() error {
 	c.links = c.links[:0]
 	clear(c.dropCohortLinkRefIndexes)
 	c.dropCohortLinkRefIndexes = c.dropCohortLinkRefIndexes[:0]
-	c.subtrees = c.subtrees[:0]
+	c.subtrees.Reset()
 	c.truncateRecoveryVisibleCounts(0)
 	c.recoveryVisibleSymbols = c.recoveryVisibleSymbols[:0]
 	c.eofRecoveryRoots = c.eofRecoveryRoots[:0]
@@ -4998,12 +5000,12 @@ func (c *Core) deriveSubtreeExternalProvenanceState(r subtreeRecord, children []
 		return subtreeExternalProvenanceInexactHasExternal
 	}
 	state := subtreeExternalProvenanceExactNoExternal
-	next := SubtreeID(uint64(len(c.subtrees)) + 1)
+	next := SubtreeID(uint64(c.subtrees.Len()) + 1)
 	for _, child := range children {
 		if child == 0 || child >= next {
 			return subtreeExternalProvenanceUnknown
 		}
-		hasExternal, exact, cached := c.subtrees[child-1].externalProvenanceState.result()
+		hasExternal, exact, cached := (*c.subtrees.At(int(child - 1))).externalProvenanceState.result()
 		if !cached {
 			return subtreeExternalProvenanceUnknown
 		}
@@ -6452,8 +6454,8 @@ func (c *Core) MaterializationOrder(roots []SubtreeID, poll func() error) ([]Sub
 	}
 
 	// IDs are one-based and dense within the capped arena.
-	colors := make([]uint8, len(c.subtrees)+1)
-	incoming := make([]uint8, len(c.subtrees)+1)
+	colors := make([]uint8, c.subtrees.Len()+1)
+	incoming := make([]uint8, c.subtrees.Len()+1)
 	if err := poll(); err != nil {
 		return nil, err
 	}
@@ -6461,7 +6463,7 @@ func (c *Core) MaterializationOrder(roots []SubtreeID, poll func() error) ([]Sub
 		id   SubtreeID
 		next uint32
 	}
-	order := make([]SubtreeID, 0, len(c.subtrees))
+	order := make([]SubtreeID, 0, c.subtrees.Len())
 	var reusedOwners map[uint32]SubtreeID
 	if len(c.reusedSubtrees) != 0 {
 		reusedOwners = make(map[uint32]SubtreeID)
@@ -6525,7 +6527,7 @@ func (c *Core) MaterializationOrder(roots []SubtreeID, poll func() error) ([]Sub
 			stack = stack[:len(stack)-1]
 		}
 	}
-	if len(order) > len(c.subtrees) {
+	if len(order) > c.subtrees.Len() {
 		return nil, errors.New("parser-core phase zero: materialization exceeded compact subtree arena")
 	}
 	if err := poll(); err != nil {
@@ -6581,7 +6583,7 @@ func (c *Core) SubtreeArenaLen() int {
 	if c == nil {
 		return 0
 	}
-	return len(c.subtrees)
+	return c.subtrees.Len()
 }
 
 // validateMaterializationMetadata takes the record by pointer: the postorder
@@ -6665,7 +6667,7 @@ func (c *Core) Stats(head Head) (Stats, error) {
 		return Stats{}, err
 	}
 	return Stats{
-		Nodes: uint32(c.nodes.Len()), Links: uint32(len(c.links)), Subtrees: uint32(len(c.subtrees)), Children: uint32(len(c.children)),
+		Nodes: uint32(c.nodes.Len()), Links: uint32(len(c.links)), Subtrees: uint32(c.subtrees.Len()), Children: uint32(len(c.children)),
 		CurrentExactPaths: nPaths,
 	}, nil
 }
@@ -6675,7 +6677,7 @@ func (c *Core) Stats(head Head) (Stats, error) {
 // uint32(len(c.subtrees)), the same quantity Stats reports as Subtrees. Use
 // this instead of Stats when a caller needs only the subtree count.
 func (c *Core) SubtreeCount() int {
-	return len(c.subtrees)
+	return c.subtrees.Len()
 }
 
 // HeadExactPathCount returns the given head node's exact-path count (the
@@ -6713,7 +6715,7 @@ func (c *Core) RawSelectedSubtreeCensus(roots []SubtreeID) (RawSelectedCensus, e
 	for index := len(roots) - 1; index >= 0; index-- {
 		stack = append(stack, frame{id: roots[index]})
 	}
-	active := make([]bool, len(c.subtrees)+1)
+	active := make([]bool, c.subtrees.Len()+1)
 	var census RawSelectedCensus
 	add := func(slot *uint64) error {
 		if *slot == math.MaxUint64 {
@@ -6726,7 +6728,7 @@ func (c *Core) RawSelectedSubtreeCensus(roots []SubtreeID) (RawSelectedCensus, e
 	for len(stack) != 0 {
 		item := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
-		if item.id == 0 || uint64(item.id) > uint64(len(c.subtrees)) {
+		if item.id == 0 || uint64(item.id) > uint64(c.subtrees.Len()) {
 			return RawSelectedCensus{}, fmt.Errorf("parser-core phase zero: raw selected census invalid subtree %d", item.id)
 		}
 		if item.exit {
@@ -6738,7 +6740,7 @@ func (c *Core) RawSelectedSubtreeCensus(roots []SubtreeID) (RawSelectedCensus, e
 		}
 		active[item.id] = true
 		stack = append(stack, frame{id: item.id, exit: true})
-		record := c.subtrees[item.id-1]
+		record := *c.subtrees.At(int(item.id - 1))
 		if record.externalProvenanceState == subtreeExternalProvenanceReusedOpaque {
 			return RawSelectedCensus{}, errors.New("parser-core phase zero: raw census cannot inspect a reused subtree")
 		}
@@ -6905,7 +6907,7 @@ func (c *Core) appendAuthenticatedTerminal(
 			end:     c.externalTokenScannerEnd,
 		})
 		if r.external && !c.externalPayloadsQuiescent {
-			c.subtrees[payload-1].externalProvenanceState = subtreeExternalProvenanceExactHasExternal
+			(*c.subtrees.At(int(payload - 1))).externalProvenanceState = subtreeExternalProvenanceExactHasExternal
 		}
 	}
 	if lexerSkippedPrefixLength != 0 {
@@ -6934,7 +6936,7 @@ func (c *Core) lexerSkippedPrefix(payload SubtreeID) (uint32, bool) {
 }
 
 func (c *Core) appendSubtreeRecord(r subtreeRecord, children []SubtreeID, fields []FieldMapEntry, aliases []Symbol) (SubtreeID, error) {
-	if uint64(len(c.subtrees))+1 > uint64(c.limits.MaxSubtrees) || uint64(len(c.subtrees)) >= math.MaxUint32 {
+	if uint64(c.subtrees.Len())+1 > uint64(c.limits.MaxSubtrees) || uint64(c.subtrees.Len()) >= math.MaxUint32 {
 		return 0, errors.New("parser-core phase zero: subtree arena cap")
 	}
 	if uint64(len(c.children))+uint64(len(children)) > uint64(c.limits.MaxChildren) {
@@ -6950,13 +6952,15 @@ func (c *Core) appendSubtreeRecord(r subtreeRecord, children []SubtreeID, fields
 	c.children = append(c.children, children...)
 	c.fields = append(c.fields, fields...)
 	c.aliases = append(c.aliases, aliases...)
-	c.subtrees = append(c.subtrees, r)
+	if _, ok := c.subtrees.Append(r, c.limits.MaxSubtrees); !ok {
+		return 0, errors.New("parser-core phase zero: subtree arena publication failed")
+	}
 	if r.terminal {
 		c.addWork(&c.work.LeafConstructionsProxy, 1)
 	} else {
 		c.addWork(&c.work.ParentConstructionsProxy, 1)
 	}
-	return SubtreeID(len(c.subtrees)), nil
+	return SubtreeID(c.subtrees.Len()), nil
 }
 
 func (c *Core) addWork(counter *uint64, delta uint64) {
@@ -7270,10 +7274,10 @@ func (c *Core) AlternativeSetIncomparable(a, b AlternativeSet) bool {
 }
 
 func (c *Core) subtree(id SubtreeID) (*subtreeRecord, error) {
-	if id == 0 || uint64(id) > uint64(len(c.subtrees)) {
+	if id == 0 || uint64(id) > uint64(c.subtrees.Len()) {
 		return nil, fmt.Errorf("parser-core phase zero: invalid subtree id %d", id)
 	}
-	record := &c.subtrees[id-1]
+	record := c.subtrees.At(int(id - 1))
 	if record.externalProvenanceState == subtreeExternalProvenanceReusedOpaque {
 		if err := c.validateReusedRecord(id, *record); err != nil {
 			return nil, err

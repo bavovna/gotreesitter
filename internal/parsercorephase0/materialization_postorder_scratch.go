@@ -187,7 +187,7 @@ func (c *Core) VisitMaterializationPostorderPrebuiltWithBorrowedReplay(
 	if err := poll(); err != nil {
 		return err
 	}
-	if err := scratch.prepare(len(c.subtrees)); err != nil {
+	if err := scratch.prepare(c.subtrees.Len()); err != nil {
 		return err
 	}
 	defer scratch.Reset()
@@ -228,7 +228,7 @@ func (c *Core) VisitMaterializationPostorderPrebuiltWithBorrowedReplay(
 				}
 			}
 			top := &scratch.frames[len(scratch.frames)-1]
-			record := &records[top.id-1]
+			record := records.At(int(top.id - 1))
 			if top.next < record.childCount {
 				child := c.children[record.firstChild+top.next]
 				top.next++
@@ -289,7 +289,7 @@ func (c *Core) VisitMaterializationPostorderPrebuiltWithBorrowedReplay(
 			scratch.frames = scratch.frames[:len(scratch.frames)-1]
 		}
 	}
-	if visited > uint64(len(c.subtrees)) {
+	if visited > uint64(c.subtrees.Len()) {
 		return errors.New("parser-core phase zero: materialization exceeded compact subtree arena")
 	}
 	return poll()

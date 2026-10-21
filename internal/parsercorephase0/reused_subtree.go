@@ -65,7 +65,7 @@ func (c *Core) PushReusedSubtreeOwnedWithPoll(owner SchedulerTransactionToken, h
 		if err != nil {
 			return err
 		}
-		c.subtrees[payload-1].externalProvenanceState = subtreeExternalProvenanceReusedOpaque
+		(*c.subtrees.At(int(payload - 1))).externalProvenanceState = subtreeExternalProvenanceReusedOpaque
 		c.reusedSubtrees = append(c.reusedSubtrees, reusedSubtreeProvenance{payload: payload, descriptor: reused})
 		out, err = c.appendPrivate(reused.State, reused.EndByte, linkInput{
 			prev: head.Node, payload: payload, scoreDelta: int64(reused.DynamicPrecedence),
@@ -100,7 +100,7 @@ func (c *Core) validateReusedHead(head Head, poll func() error) error {
 		return nil
 	}
 	// Child identifiers precede parents. Each completed prefix therefore proves all descendants.
-	for uint64(c.reuseProof.subtrees) < uint64(len(c.subtrees)) {
+	for uint64(c.reuseProof.subtrees) < uint64(c.subtrees.Len()) {
 		if err := step(); err != nil {
 			return err
 		}

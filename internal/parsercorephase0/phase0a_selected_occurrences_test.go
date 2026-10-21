@@ -345,12 +345,16 @@ func TestPhase0ASelectedCompactWindowsFailClosedWithoutPanic(t *testing.T) {
 		name   string
 		mutate func(*Core, SubtreeID)
 	}{
-		{name: "child-first", mutate: func(core *Core, id SubtreeID) { core.subtrees[id-1].firstChild = uint32(len(core.children)) }},
-		{name: "child-count", mutate: func(core *Core, id SubtreeID) { core.subtrees[id-1].childCount = ^uint32(0) }},
-		{name: "field-first", mutate: func(core *Core, id SubtreeID) { core.subtrees[id-1].firstField = uint32(len(core.fields)) }},
-		{name: "field-count", mutate: func(core *Core, id SubtreeID) { core.subtrees[id-1].fieldCount = ^uint32(0) }},
-		{name: "alias-first", mutate: func(core *Core, id SubtreeID) { core.subtrees[id-1].firstAlias = uint32(len(core.aliases)) }},
-		{name: "alias-count", mutate: func(core *Core, id SubtreeID) { core.subtrees[id-1].aliasCount = ^uint32(0) }},
+		{name: "child-first", mutate: func(core *Core, id SubtreeID) {
+			(*core.subtrees.At(int(id - 1))).firstChild = uint32(len(core.children))
+		}},
+		{name: "child-count", mutate: func(core *Core, id SubtreeID) { (*core.subtrees.At(int(id - 1))).childCount = ^uint32(0) }},
+		{name: "field-first", mutate: func(core *Core, id SubtreeID) { (*core.subtrees.At(int(id - 1))).firstField = uint32(len(core.fields)) }},
+		{name: "field-count", mutate: func(core *Core, id SubtreeID) { (*core.subtrees.At(int(id - 1))).fieldCount = ^uint32(0) }},
+		{name: "alias-first", mutate: func(core *Core, id SubtreeID) {
+			(*core.subtrees.At(int(id - 1))).firstAlias = uint32(len(core.aliases))
+		}},
+		{name: "alias-count", mutate: func(core *Core, id SubtreeID) { (*core.subtrees.At(int(id - 1))).aliasCount = ^uint32(0) }},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -369,7 +373,7 @@ func TestPhase0ASelectedDigestRejectsForwardCompactChild(t *testing.T) {
 	core := newTinyCore(t, 8)
 	leaf, _ := core.appendSubtree(subtreeRecord{symbol: 1, terminal: true}, nil, nil, nil)
 	parent, _ := core.appendSubtree(subtreeRecord{symbol: 2}, []SubtreeID{leaf}, nil, nil)
-	core.children[core.subtrees[parent-1].firstChild] = parent
+	core.children[(*core.subtrees.At(int(parent - 1))).firstChild] = parent
 	run := CoreRunNamespace{CoreInstance: 1, RunGeneration: 1}
 	event := ConstructionEventKey{Attempt: AttemptKey{Run: run, AttemptEpoch: 1}, Serial: 1}
 	records := []Phase0ASelectedOccurrenceRecord{
@@ -738,7 +742,7 @@ func TestPhase0ASelectedConstructionKindMatchesCompactFlags(t *testing.T) {
 		{name: "ordinary-as-extra", mutate: func(core *Core, observer *phase0AObserver) {
 			for _, row := range observer.mutations {
 				if row.Kind == Phase0AMutationOccurrence && row.ConstructionKind == Phase0AConstructionOrdinaryTerminal {
-					core.subtrees[row.Payload-1].extra = true
+					(*core.subtrees.At(int(row.Payload - 1))).extra = true
 					return
 				}
 			}
@@ -746,7 +750,7 @@ func TestPhase0ASelectedConstructionKindMatchesCompactFlags(t *testing.T) {
 		{name: "reduction-as-terminal", mutate: func(core *Core, observer *phase0AObserver) {
 			for _, row := range observer.mutations {
 				if row.Kind == Phase0AMutationOccurrence && row.ConstructionKind == Phase0AConstructionReductionParent {
-					core.subtrees[row.Payload-1].terminal = true
+					(*core.subtrees.At(int(row.Payload - 1))).terminal = true
 					return
 				}
 			}

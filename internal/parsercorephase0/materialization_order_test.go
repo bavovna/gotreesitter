@@ -276,12 +276,12 @@ func TestReductionMetadataAuthenticationRequiresSuccessfulCanonicalRemap(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	before := len(bad.subtrees)
+	before := bad.subtrees.Len()
 	if _, err := bad.ReduceOutputs(badHead, 9, 0, ForkOrder{}); err == nil || !strings.Contains(err.Error(), "field child index") {
 		t.Fatalf("invalid remap error = %v", err)
 	}
-	if len(bad.subtrees) != before {
-		t.Fatalf("failed remap published %d subtrees, want %d", len(bad.subtrees), before)
+	if bad.subtrees.Len() != before {
+		t.Fatalf("failed remap published %d subtrees, want %d", bad.subtrees.Len(), before)
 	}
 	if !bad.metadataConstructionAuthenticated {
 		t.Fatal("failed authenticated remap invalidated construction authentication")
@@ -391,7 +391,7 @@ func TestVisitMaterializationPostorderScratchReusesAndResets(t *testing.T) {
 			continue
 		}
 	}
-	if cap(scratch.colors) < len(compact.subtrees)+1 || cap(scratch.frames) < 64 {
+	if cap(scratch.colors) < compact.subtrees.Len()+1 || cap(scratch.frames) < 64 {
 		t.Fatalf("scratch did not retain traversal storage: colors=%d frames=%d", cap(scratch.colors), cap(scratch.frames))
 	}
 	colorStorage := &scratch.colors[:cap(scratch.colors)][0]

@@ -236,11 +236,11 @@ func TestCoreRecoveryVisibleCountRejectsMalformedMetadata(t *testing.T) {
 			switch malformed {
 			case "alias width":
 				c.aliases = append(c.aliases, 5, 5)
-				c.subtrees[root-1].aliasCount = 2
+				(*c.subtrees.At(int(root - 1))).aliasCount = 2
 			case "child range":
-				c.subtrees[root-1].childCount++
+				(*c.subtrees.At(int(root - 1))).childCount++
 			case "alias range":
-				c.subtrees[root-1].firstAlias = 1
+				(*c.subtrees.At(int(root - 1))).firstAlias = 1
 			case "cycle":
 				c.children[0] = root
 			}

@@ -58,7 +58,7 @@ func (c *Core) reductionTerminalHistoriesEqual(left, right SubtreeID) (bool, err
 		scratch.rev = leftStack[:0]
 		scratch.external = rightStack[:0]
 	}()
-	budget := uint64(len(c.subtrees)) + uint64(len(c.children))
+	budget := uint64(c.subtrees.Len()) + uint64(len(c.children))
 	var work uint64
 	for {
 		l, clean, err := c.nextReductionTerminalCandidate(&leftStack, &work, budget)
