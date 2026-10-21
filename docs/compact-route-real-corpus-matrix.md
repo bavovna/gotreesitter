@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Trusted small-source verification: measured Go edits, held counters
+
+The [qualification receipt](benchmarks/20261021-trusted-small-source-results/README.md) records 20 matched Mac Docker ARM64 pairs on Cogno’s exact Go fixture: plain insert **107.981→5.705 ms** and replace **95.971→5.697 ms** (both p<.001). Tree.Edit becomes slower; delete timing is inconclusive. The 178 adverse selected counter changes and 158 complete-operation event increases remain unapproved. Two YAML screens are rejected, and ordinary ownership/graduation stay unchanged. This receipt promotes no runtime or ledger baseline.
+
 ### Fused scanner checkpoint receipts: preliminary screen held
 
 The [Mac ARM64 screen](compact-fused-checkpoint-screen-20261021.md) retains all **480 rows / 80 processes** and exact route/node/token counters. All twelve timing differences are nonsignificant, and all median ratchets pass. Focused correctness checks preserve **414 ledger rows**, four Go vectors and actual C/race/386 checks; full-fleet and RSS qualification were not run. E stays held, the existing native-YAML net hold remains, and no runtime or graduation change follows.
