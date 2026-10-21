@@ -1,6 +1,6 @@
 # Primitive-edit DFA snapshot receipts, 2026-10-21
 
-Status: runtime qualification is held. The speed result is measured; the 1 MiB warm-process RSS hard gate is unresolved. Do not merge or graduate a language from this receipt.
+Status: runtime qualification is held. The speed result is measured; direct parser-only probes confirm a 1 MiB warm-process RSS ceiling failure in both baseline and candidate. Do not merge or graduate a language from this receipt.
 
 The primitive-edit proof still clones and scans the full configured lexer. It now returns the six cursor/failure coordinates that callers compare, instead of returning and projecting the entire lexer. The returned state is 32 rather than 240 bytes on tested 64-bit targets, and 24 rather than 136 bytes on actual Linux 386. Scans, mode enumeration, byte/scan budgets, rollback, verification policy and reuse selection are unchanged.
 
@@ -35,7 +35,9 @@ The existing 1 MiB Go four-edit test also passes incremental/fresh/locked-C stru
 
 Twenty additional matched pairs on the generated 1,048,591-byte Go fixture show no full-parse timing difference (644.5 to 651.2 ms, p=.820). Full tokens (425,742), nodes (993,391), max stacks (2), arena/source ratio (160.7) and route counters agree before timing and throughout the run.
 
-Process RSS medians are 458,928,128 baseline and 458,780,672 candidate bytes (ratio .99968, within the 10% ratchet). The hard 400-RSS-bytes/source-byte ceiling is nevertheless exceeded in 15 baseline and 18 candidate samples. Over-limit samples have benchmark N=2; N=1 samples remain under the ceiling. GNU time wraps `go test`, so this includes toolchain and benchmark calibration. Parser-only attribution remains required. Do not claim that the hard RSS gate passed, lower the workload to hide it, or change GC/pool/budget settings to obtain a pass. The raw RSS process files and complete audit are retained.
+Process RSS medians are 458,928,128 baseline and 458,780,672 candidate bytes (ratio .99968, within the 10% ratchet). The hard 400-RSS-bytes/source-byte ceiling is nevertheless exceeded in 15 baseline and 18 candidate samples. Over-limit samples have benchmark N=2; N=1 samples remain under the ceiling. GNU time wraps `go test`, so this includes toolchain and benchmark calibration. Subsequent direct parser-only probes exclude the compiler and confirm the failure, as recorded below. Do not claim that the hard RSS gate passed, lower the workload to hide it, or change GC/pool/budget settings to obtain a pass. The raw RSS process files and complete audit are retained.
+
+Direct immutable benchmark binaries at fixed N=2 report plain-process RSS of 458,366,976 baseline and 458,457,088 candidate bytes, with no compiler in the process. Default-sampled post-GC heap profiles retain 53.73 and 55.63 MiB; transient-parent allocation is the largest retained category at 30.04 MiB each. These are attribution probes, not randomized timing comparisons or measurements of the instantaneous RSS peak by allocation category. `parser-only-RSS-audit.json` and its archive retain the exact commands, input binary hashes, logs and profiles. Runtime promotion stays held. The next investigation concerns transient-parent construction/materialization and scratch lifetime.
 
 Initial one-iteration process samples were under the hard ceiling but varied; they do not override the 20-pair result. An earlier paired setup attempt lacked the language environment and emitted zero valid benchmark rows. Its output remains in the local evidence directory and supplies no timing evidence.
 

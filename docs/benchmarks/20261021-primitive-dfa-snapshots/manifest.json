@@ -1,7 +1,7 @@
 {
   "README.md": {
-    "bytes": 7325,
-    "sha256": "7406ccf0d71c892fbef736d2f9a948fd11e0f9ed7181e85d64b7b7bbe2578869"
+    "bytes": 8127,
+    "sha256": "8841f41d6a2787a2dea6ff24021ae07b3edaaa3833b2a229c0ed442d3ab73b3d"
   },
   "arm64-after.txt": {
     "bytes": 13588,
@@ -126,6 +126,14 @@
   "linux-perf-audit.json": {
     "bytes": 524,
     "sha256": "f959716347b59c694fee145a934d502939c705a494aeb8bd62e681e209a840fc"
+  },
+  "parser-only-RSS-attribution.tar.gz": {
+    "bytes": 26313,
+    "sha256": "989efa80e87a4972114c76c6584dfbcdcc9a95360f120edd013c15024609eeaa"
+  },
+  "parser-only-RSS-audit.json": {
+    "bytes": 1836,
+    "sha256": "6c1252e76cf0a7e4c3e0cc6c7c765db62805dafc9b7caa7cbf5ab1bfb1d66098"
   },
   "reproduction-audit.json": {
     "bytes": 777,

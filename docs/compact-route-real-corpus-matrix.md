@@ -26,7 +26,7 @@ have only synthetic samples and are outside this real-file census.
 
 ### Primitive-edit DFA snapshots (qualification held)
 
-The isolated proof-state copy change lowers the standard Go edit benchmark by 6.85% on Linux amd64 and 36.40% on M1 Max Docker Linux arm64 (20 pairs each). All 412 ledger rows are unchanged. The [receipt](benchmarks/20261021-primitive-dfa-snapshots/README.md) retains full correctness gates and the unresolved large-process RSS ceiling in both baseline and candidate. Runtime promotion stays held; this does not graduate Go or ordinary YAML.
+The isolated proof-state copy change lowers the standard Go edit benchmark by 6.85% on Linux amd64 and 36.40% on M1 Max Docker Linux arm64 (20 pairs each). All 412 ledger rows are unchanged. The [receipt](benchmarks/20261021-primitive-dfa-snapshots/README.md) retains full correctness gates and the confirmed warm-parser RSS ceiling failure in both baseline and candidate. Runtime promotion stays held; this does not graduate Go or ordinary YAML.
 
 ### Trusted small-source verification: measured Go edits, held counters
 
