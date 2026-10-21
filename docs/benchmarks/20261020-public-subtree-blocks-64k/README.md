@@ -1,6 +1,6 @@
 # Public subtree storage: 65,536-record blocks
 
-See [the qualification receipt](../../compact-public-subtree-blocks-64k-20261020.md). This is local evidence against unmerged PR #1502; promotion still requires the core lane and all latest-head CI checks.
+See [the qualification receipt](../../compact-public-subtree-blocks-64k-20261020.md). This is local evidence against PR #1502, now merged to main. The successor branch preserves all 3,541 qualified Go source hashes and the entire non-documentation tree; see `pr-source-alignment.json`. Promotion still requires its own latest-head CI checks.
 
 - `source-protocol.tar.gz`: exact source overlay, source pins, commands, test overlays, and retained failed build attempts.
 - `qualification.tar.gz`: deterministic ledgers, all-language invariants, locked-C checks, race/386/API/layout and core mode results.

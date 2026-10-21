@@ -1,8 +1,8 @@
 # Public subtree blocks: 65,536-record geometry
 
-This candidate reduces allocated bytes on the 1 MiB Go fixture by **17.52%** against PR #1502's qualified compact node-block implementation. Timing is inconclusive in all twelve cells. It is locally qualified and remains private: PR #1502's PowerShell editor gate failed, and this candidate has not passed latest-head CI. Nothing in this receipt promotes either runtime.
+This candidate reduces allocated bytes on the 1 MiB Go fixture by **17.52%** against PR #1502's qualified compact node-block implementation. Timing is inconclusive in all twelve cells. It is locally qualified. PR #1502 passed its final ready-event CI and merged as `356c980d58fc5c5e3fb8478d8eda50fa4f6ece58`. This successor carries the identical qualified runtime onto that merge; its own latest-head CI remains pending. Compact graduation remains unproven.
 
-The reference is `98747629037d6934b9dcf6dfbb41db6d082a3078` (runtime code `647ea982cdf2f6accedce5cda0705949f957acb8`), not merged main. Candidate runtime code is `e91e0322f1b094c0995684449f9b90a1a08f4783`. Go source pins cover all 3,535 reference and 3,541 candidate files; 47 internal files differ.
+The reference is `98747629037d6934b9dcf6dfbb41db6d082a3078` (runtime code `647ea982cdf2f6accedce5cda0705949f957acb8`), now merged with identical runtime source. Candidate runtime code is `e91e0322f1b094c0995684449f9b90a1a08f4783`. Go source pins cover all 3,535 reference and 3,541 candidate files; 47 internal files differ.
 
 ## Change and rejected alternative
 

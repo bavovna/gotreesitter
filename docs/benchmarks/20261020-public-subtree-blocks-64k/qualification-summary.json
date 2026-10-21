@@ -1,5 +1,5 @@
 {
-  "outcome": "qualified, awaiting core lane and latest-head CI before promotion",
+  "outcome": "qualified source aligned onto merged PR1502; awaiting latest-head CI",
   "all_414_ledger_rows_exact": true,
   "all_206_edit_sessions_and_618_C_fixtures_pass": true,
   "RSS_processes": 126,
