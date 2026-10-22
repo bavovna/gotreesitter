@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Read-history pages: byte savings held by allocation count
+
+The [read-history receipt](benchmarks/20261021-read-history-pages/README.md) records twenty matched native ARM64 pairs per language. Go allocated bytes fall **53.33%** on `grammargen_lr` and **19.04%** on the large generated case, but the 1 MiB allocation-count median rises **230→270 (+17.39%)**, exceeding the 10% ratchet. All thirteen timing differences are inconclusive. All 412 ledger rows stay exact; 1,236 standard C checks, 29,664 edit steps, twenty memory contracts and 59 race cases pass. Exact report probes preserve D8 and the existing malformed-delete C gap. The prototype remains private; the next variant groups page allocations. Warm-only profiles provide the next scanner and scheduler targets. Runtime, routing, ledger baselines, RSS holds and graduation remain unchanged.
+
 ### Ordered receipt publication: qualified adaptive Go win
 
 The [adaptive publication receipt](benchmarks/20261021-ordered-receipt-publication/README.md) preserves the direct path for at most 64 candidates and avoids random sparse-array insertion for larger publications. Twenty native ARM64 pairs reduce generated Go full parse **110.30→96.19 ms (-12.79%, p<.001)** at 3,500 functions and **13.58→13.28 ms (-2.19%, p=.049)** at 500 functions. Edit, human-authored Go and all six YAML timing differences are inconclusive. All 412 ledger rows and eighteen receipt digests match; 1,236 locked-C checks, 29,664 invariant edits, twenty memory contracts and 27 race cases pass. The runtime is integrated into the draft incremental PR; the existing RSS blocker remains. No graduation, route or ledger change follows this receipt.
