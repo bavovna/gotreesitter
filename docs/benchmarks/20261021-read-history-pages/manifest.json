@@ -1,9 +1,9 @@
 {
-  "allocation_ratchet_passed": false,
+  "combined_qualification_pending": true,
   "files": {
     "README.md": {
-      "bytes": 7316,
-      "sha256": "c828ac0ef36c4af1aa96c59b536f23bd7c4510ac703fd561084628b5041ad652"
+      "bytes": 9940,
+      "sha256": "6d95c93eb0bca8e724f1b432f82d73a5aa8ba607b2d0bd3af7c52586fb458465"
     },
     "audit-pairs.py": {
       "bytes": 4215,
@@ -73,6 +73,66 @@
       "bytes": 4281,
       "sha256": "3601f0467d0d3421001f3e1375e0a3ee9137798b1d03ba4a961622980d9ab421"
     },
+    "v4-archive.json": {
+      "bytes": 121,
+      "sha256": "d2cd81fda1502fb387a215408fb1e0a6ee06005ebd0e9e9fc2ee8857231fd17a"
+    },
+    "v4-cognociente-audit.json": {
+      "bytes": 4041,
+      "sha256": "c87a4700d2055d5f5425c0c33919be129de25fa80d236b5f369860dade45459c"
+    },
+    "v4-collection-audit.json": {
+      "bytes": 461,
+      "sha256": "c990d1bb9ebe2fd7a8578f9391c9069b8dc2a22614d5fe840048497c823a80a3"
+    },
+    "v4-full-gate-audit.json": {
+      "bytes": 1120,
+      "sha256": "ad001ddc056f2d1c3eaa92db2aea46ea600f74eccecd2f04afae9fe74a239534"
+    },
+    "v4-go-after.txt.gz": {
+      "bytes": 3733,
+      "sha256": "f6bdf15426a3541b034f361dcb0e7a57322a30ec31ac9f230975afb8858a63cc"
+    },
+    "v4-go-before.txt.gz": {
+      "bytes": 3793,
+      "sha256": "b704009dd9e51f86a28483f86a340f5337b1430388c5dfa759b61412656dbe58"
+    },
+    "v4-go-benchstat.txt": {
+      "bytes": 5973,
+      "sha256": "dd2bb1e8c5deedeba504ae5432b95cc6b3855d548a0276cbba83d2c930b6fed8"
+    },
+    "v4-go-pair-audit.json": {
+      "bytes": 4972,
+      "sha256": "a84013294f35fd0b1adf636cbba890cb7f5e60b0fb98178a1b90896b0e3862c0"
+    },
+    "v4-receipts.tar.gz": {
+      "bytes": 2246040,
+      "sha256": "33c64c8ad4fe959ae056a768501d8333b92192899736e06325b324808064f440"
+    },
+    "v4-runtime.patch.gz": {
+      "bytes": 5280,
+      "sha256": "f58a5d930078964cc1f5e41e77be63e217db3de4969671d215ea47d81c140ed8"
+    },
+    "v4-source-post-audit.json": {
+      "bytes": 949,
+      "sha256": "0d4fb98100638212d24bee29302b32a01135d8615867524f6a07aa07a32ee6a7"
+    },
+    "v4-yaml-after.txt.gz": {
+      "bytes": 3329,
+      "sha256": "57fdc8636d1a842e11f49a09afd0e08f248c236cd057430c9b3a3449efc5b774"
+    },
+    "v4-yaml-before.txt.gz": {
+      "bytes": 3382,
+      "sha256": "a909f63600a5ef0db4d1e5eaeacbeca94b919701b7d567bff2d7540b8cbb5132"
+    },
+    "v4-yaml-benchstat.txt": {
+      "bytes": 7462,
+      "sha256": "a5f78c1976ce0aebbd50045ce5930c64644f2125d3b1531a7d759c6bfc836fa7"
+    },
+    "v4-yaml-pair-audit.json": {
+      "bytes": 4270,
+      "sha256": "cdf814b41ecf15283950530620d6ad84e0a2b4b509629556457563325703d0cb"
+    },
     "warm-archive.json": {
       "bytes": 119,
       "sha256": "8b5e0366fdd702c8b40f84f9a4c70b59c73a3530744539a7ac152f379f551b8f"
@@ -114,5 +174,7 @@
       "sha256": "b6c0e137dc12985a04b064dd56fa49d9d7519b13c877cf615e8a43564e899816"
     }
   },
-  "runtime_promoted": false
+  "runtime_promoted": false,
+  "v3_allocation_ratchet_passed": false,
+  "v4_component_ratchets_passed": true
 }

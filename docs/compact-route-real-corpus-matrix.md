@@ -24,9 +24,9 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
-### Read-history pages: byte savings held by allocation count
+### Read-history pages: qualified byte savings, combined audit pending
 
-The [read-history receipt](benchmarks/20261021-read-history-pages/README.md) records twenty matched native ARM64 pairs per language. Go allocated bytes fall **53.33%** on `grammargen_lr` and **19.04%** on the large generated case, but the 1 MiB allocation-count median rises **230→270 (+17.39%)**, exceeding the 10% ratchet. All thirteen timing differences are inconclusive. All 412 ledger rows stay exact; 1,236 standard C checks, 29,664 edit steps, twenty memory contracts and 59 race cases pass. Exact report probes preserve D8 and the existing malformed-delete C gap. The prototype remains private; the next variant groups page allocations. Warm-only profiles provide the next scanner and scheduler targets. Runtime, routing, ledger baselines, RSS holds and graduation remain unchanged.
+The [grouped-page receipt](benchmarks/20261021-read-history-pages/README.md) records twenty matched native ARM64 pairs per language. Go allocated bytes fall **47.40%** on `grammargen_lr` and **19.04%** on large generated input. Allocation counts rise **1,706→1,709**, **74→76** and **236.5→256.5** respectively; all median ratchets pass. All thirteen timing differences are inconclusive. All 412 ledger rows stay exact; 1,236 standard C checks, 29,664 edit steps, twenty memory contracts and 59 race cases pass. Exact report probes preserve D8 and the existing malformed-delete C gap. The earlier +17.39% allocation-count failure remains recorded. Runtime promotion awaits the combined main-to-PR audit and RSS evidence; routing, ledger baselines and graduation remain unchanged.
 
 ### Ordered receipt publication: qualified adaptive Go win
 

@@ -1,8 +1,27 @@
 # Read-history storage experiments, 2026-10-21/22
 
-Status: the measured V3 prototype remains private. It reduces allocated bytes substantially on two Go workloads, but its 1 MiB allocation count exceeds the 10% ratchet. All thirteen timing differences are inconclusive. The receipt changes neither the runtime nor a route, allowlist, ledger baseline or graduation decision. The existing large-file RSS hold remains.
+Status: V4 passes the component correctness, counter and performance ratchets. The runtime remains private while the combined PR is qualified against main and its peak RSS is measured. No route, allowlist, ledger baseline or graduation decision changes. The earlier V3 allocation-count failure remains below.
 
-## Twenty matched pairs per language
+## V4: grouped pages pass the component ratchets
+
+Coallocating suffix pages in pairs reduces allocator calls while preserving the initial 64 KiB flat prefix and existing limits. An added regression rejects storage-size overflow before budget charging; it fails the earlier prototype and passes V4. The full internal test and race suites pass, including the retained-prefix and differential probe-history tests.
+
+Twenty new pairs use Go seeds 150001..150020 and YAML seeds 151001..151020 with the same native platform, shared runner and stable settings as V3. All thirteen time, byte and allocation-count median ratios stay within 10%; all reported work and route metrics match. All timing differences remain inconclusive. In particular, grammargen_lr moves 144.6→146.6 ms (p=.383), large generated Go 112.2→114.1 ms (p=.989), and the report-shaped 1 MiB case 998.5→1006.9 ms (p=.529). The complete [Go](v4-go-benchstat.txt) and [YAML](v4-yaml-benchstat.txt) tables retain every directional change.
+
+| V4 allocation metric | Before | After | Result |
+| --- | ---: | ---: | --- |
+| grammargen_lr B/op | 1,079.5 KiB | 567.8 KiB | -47.40%, p<.001 |
+| Large generated Go B/op | 3.281 MiB | 2.657 MiB | -19.04%, p<.001 |
+| Report-shaped 1 MiB B/op | 337.3 MiB | 331.9 MiB | -1.59%, p=.039 |
+| grammargen_lr allocs/op | 1,706 | 1,709 | +0.18%, p<.001 |
+| Large generated Go allocs/op | 74 | 76 | +2.70%, p<.001 |
+| Report-shaped 1 MiB allocs/op | 236.5 | 256.5 | +8.46%, inconclusive p=.097 |
+
+The remaining allocation-count trade stays visible. All YAML byte and allocation medians remain unchanged; no-edit uses zero bytes and allocations in every pair. V4 again preserves all 412 ledger rows and passes 1,236 standard C checks, 29,664 invariant edit steps, twenty memory contracts and 59 focused root race cases. The exact report probes retain twelve D8 leaves per variant, eight clean C leaves per variant and the same four malformed-delete C failures per variant. Candidate numeric checks pass twelve replacement steps. Header assertions compile for native 64-bit and actual 386 layouts; the latter binary is not executed on ARM64.
+
+The [V4 archive](v4-receipts.tar.gz) contains 973 verified members. The [collection audit](v4-collection-audit.json) records component qualification and the outstanding combined/RSS checks. Its original and paired Go manifests authenticate all sources; the user's checkout remains unchanged. Reproduction follows the V3 instructions with the V4 archive's shared benchmark wrapper and [V4 runtime patch](v4-runtime.patch.gz). This is an allocation-byte improvement with additional small allocations, not a throughput or RSS claim.
+
+## Earlier V3: twenty matched pairs per language
 
 Native Linux ARM64 Docker on M1 Max, Go 1.25.14, GOMAXPROCS=1, count=1 per process, 750 ms and benchmem. The shared randomized runner uses Go seeds 147001..147020 and YAML seeds 148001..148020. Every pair has the same child order and alternates revision order. All 260 rows per variant are retained and verified; source manifests and post-run hashes authenticate the inputs independently of the runner's informational metadata.
 
