@@ -1,6 +1,6 @@
 # Compact route real-corpus matrix
 
-Current evidence date: 2026-10-20 (UTC).
+Current evidence date: 2026-10-22 (UTC).
 Parent PR #1486 merged to main as `88dc1d9c3ff15cc2b8b5c53864455fc3a24a9d34`
 after all 78 checks passed. Branch integration `b876c5b5` preserves all 414
 ledger rows and passes focused TypeScript/TSX C checks. The final whole-PR matched-order audit passes all 414 rows and 480 timings;
@@ -23,6 +23,10 @@ Scope: the 204 committed real `sample` files in the R4 manifest. CSV and Enforce
 have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
+
+### Ordered receipt publication: large Go win, prototype held
+
+The [qualified private prototype](benchmarks/20261021-ordered-receipt-publication/README.md) removes random sparse-array insertion copying without adding a buffer. Twenty native ARM64 pairs reduce the 3,500-function Go full parse **112.59→97.05 ms (-13.81%, p<.001)**. The small edit rises **1.82% (p=.044)**; the other Go and all six YAML timing differences are inconclusive. All 412 selected ledger rows and eighteen receipt digests match; 1,236 locked-C checks, 29,664 invariant edits, memory and race contracts pass. Engine integration remains held while a small-publication fast path and the existing RSS blocker remain open. No graduation, route or ledger change follows this receipt.
 
 ### Primitive-edit DFA snapshots (qualification held)
 
