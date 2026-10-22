@@ -286,5 +286,16 @@
   "ledger_archive_members": [
     "counters-before.json",
     "counters-after.json"
-  ]
+  ],
+  "source_snapshot_commit": "ec89776f7b26fb9c3931d1151d0aea64d2921d30",
+  "test_only_followup": {
+    "path": "internal/parsercorephase0/link_record_storage_test.go",
+    "before_sha256": "cee416a89744aec44f922e2a2bbad1790738c2068f1fae8d93977abb2f022bef",
+    "after_sha256": "d75adc13d7cb66d276a70a6ebf14051f6cbc1185bb784ae9666d23fe518d5544",
+    "production_unchanged": true,
+    "frozen_main_candidate_unchanged": true,
+    "reason": "go vet copylocks: test copied Core containing sync.Mutex",
+    "qualification_snapshot_commit": "ec89776f7b26fb9c3931d1151d0aea64d2921d30",
+    "validation": "pending exact-head CI"
+  }
 }

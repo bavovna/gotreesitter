@@ -149,9 +149,12 @@ func TestCompactLinkStorageCoreRollbackAndBudgetAccounting(t *testing.T) {
 		t.Fatalf("rollback retained %d live wide records", len(c.links.wide))
 	}
 	linkFootprint := func() uint64 {
-		withoutLinks := *c
-		withoutLinks.links = linkRecordStorage{}
-		return c.FootprintBytes() - withoutLinks.FootprintBytes()
+		withLinks := c.FootprintBytes()
+		links := c.links
+		c.links = linkRecordStorage{}
+		withoutLinks := c.FootprintBytes()
+		c.links = links
+		return withLinks - withoutLinks
 	}
 	wantLive := uint64(2*20 + 24)
 	wantRetained := uint64(cap(c.links.records))*20 + uint64(cap(c.links.wide))*24

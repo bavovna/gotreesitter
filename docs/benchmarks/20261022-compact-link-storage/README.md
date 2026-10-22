@@ -25,6 +25,8 @@ The main-based invariant sweep completed **235/412 sessions (16,920 edit steps)*
 
 [Qualification metadata](qualification.json), [raw native logs](native-validation.tar.gz) and [member hashes](native-validation-members.json) preserve this partial snapshot. The source snapshots remain frozen. The earlier Mac trial used the same Core change over the held incremental branch; its separate source and benchmark results are not a substitute for main-only qualification.
 
+CI found a test-only `go vet` error in snapshot `ec89776`: the link-footprint helper copied `Core`, including its mutex. The follow-up measures the footprint with link storage temporarily removed from the test-owned Core and then restores it. Production code and frozen benchmark inputs are byte-identical. The archived native results describe the original snapshot; the revised test awaits CI validation.
+
 ## Open gates
 
 Finish the remaining main-based edit sessions, locked-C fleet/report/large-file checks, owned-YAML and canonical work vectors, peak-RSS gates, and 20 matched randomized timing pairs. The Mac timing worker remains unreachable and must be inspected before resumption; its samples must not be replaced.
