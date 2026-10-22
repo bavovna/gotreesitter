@@ -4,6 +4,8 @@ The private V4 candidate removes the redundant fresh verification parse for clea
 
 The candidate remains held. The selected ledger has **178 adverse guarded changes**, including **142 above 2%**; the complete-operation view has **158 event increases**. [Every changed selected field and adverse operation event](counter-changes.md) is listed. [R3](../../v1-design.md#r3-counter-ledger-changes) says: “Agents do not approve ledger exceptions.” No exception is approved here.
 
+The [owner exception proposal](owner-exception-proposal.md) lists all 238 selected-field changes and all 1,457 complete-operation changes with exact old/new values and reasons. It remains proposed; this link records no approval.
+
 ## Measured scope
 
 The source is 140,368 bytes, 1,760 functions, SHA-256 `5434575bb249338937331c3756e10dcec34237d107f523ea315996fb6de0ef8f`. Edits target byte 57, row 5, column 1, using the [October 21 downstream report](https://github.com/odvcencio/gotreesitter/issues/454#issuecomment-6311551850). The comparison is current D64 runtime against private V4, **not** v0.55.1 against v0.56.0. There is no independent native Windows timing in this receipt.

@@ -1,7 +1,7 @@
 {
   "README.md": {
-    "bytes": 8938,
-    "sha256": "4595987802f621fabfbfdd72d6289022b348d6872af15eff52b0e1bf9528c68c"
+    "bytes": 9168,
+    "sha256": "ee0dc4587311fd5ea2f376d26f4a6573e288109f525551087b43cdf39b8454e0"
   },
   "baseline-benchmark-harness.patch.gz": {
     "bytes": 7755,
@@ -82,6 +82,14 @@
   "locked-C-state-contract.json": {
     "bytes": 2809600,
     "sha256": "bc848addd6e15424b47e22a5e3754272256148557a59d139ee0daa7d93c1bcaa"
+  },
+  "owner-exception-proposal.md": {
+    "bytes": 37160,
+    "sha256": "8671cfa231360582f53792b903bcf0d4203e312639810b5c3292784b3abc7d24"
+  },
+  "owner-exception-render-audit.json": {
+    "bytes": 1190,
+    "sha256": "fe7b1fbee46a7a08aa3ea921a8c26ba6c78e42955f12d98dd62925e48ee03a2a"
   },
   "primary-wrapper.patch.gz": {
     "bytes": 458,
