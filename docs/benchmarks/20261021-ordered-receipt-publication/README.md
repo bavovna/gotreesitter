@@ -1,5 +1,30 @@
 # Ordered compact receipt publication, 2026-10-21
 
+
+## Integrated adaptive variant
+
+The PR now contains the qualified adaptive publication change. Publications with at most 64 candidates keep the original direct map path; larger publications seed the highest valid arena slot and publish the rest in physical slot order. This bounds copying on large fresh sparse stores without scanning an entire arena for a small publication. No buffer, Node field, language-name check, GC setting, pool cap, memory budget, route or allowlist changes.
+
+Twenty new matched native Linux ARM64 pairs compare the qualified primitive-DFA source with this adaptive change. Go seeds are 144001..144020 and YAML seeds 145001..145020. The comparison is separate from the primitive-DFA/D64 measurements. All thirteen timing, byte and allocation-count median ratios stay inside the 10% ratchet. The no-edit path retains zero bytes and allocations.
+
+| Go compact workload | Before | After | Result |
+| --- | ---: | ---: | --- |
+| Generated 3,500 functions | 110.30 ms | 96.19 ms | -12.79%, p<.001 |
+| Generated 500 functions | 13.58 ms | 13.28 ms | -2.19%, p=.049 |
+| Single-byte edit | 116.3 us | 115.8 us | inconclusive, p=.314 |
+| No edit | 6.158 ns | 6.146 ns | inconclusive, p=.380 |
+| Report-shaped 1 MiB | 978.7 ms | 988.9 ms | inconclusive, p=.081 |
+| Human-authored query_compile | 13.79 ms | 13.96 ms | inconclusive, p=.355 |
+| Human-authored grammargen_lr | 143.8 ms | 144.6 ms | inconclusive, p=.253 |
+
+All six YAML timing differences remain inconclusive. Their complete values, directional changes and allocation metrics appear in [v3-yaml-benchstat.txt](v3-yaml-benchstat.txt); the corresponding Go table is [v3-go-benchstat.txt](v3-go-benchstat.txt). These results do not establish a human-authored Go or YAML throughput win. The primitive edit can bypass publication, so the sample does not establish publication ordering as the cause of the earlier small-edit difference.
+
+The adaptive runtime preserves all 412 ledger rows and eighteen receipt digests. It passes 1,236 locked-C checks (206 grammars, both routes), 412 native ARM64 edit sessions / 29,664 steps with zero no-edit allocations, twenty memory contracts and 27 focused race cases. The overflow regression now uses 65 candidates so it exercises the ordered branch. All three integrated Go files match the qualified paired-source hashes. The adjacent v3 audits and archives retain source identities, controls and complete logs.
+
+The existing parser-only warm RSS failure remains unresolved. Keep this PR draft and do not merge or graduate from this receipt. The earlier variant, its edit regression and its failed predecessor remain below as experiment evidence.
+
+## Earlier measured variant, not integrated
+
 Status: qualified prototype archived for review. The runtime patch is archived for review; this receipt does not add it to the engine, graduate a language, change ordinary YAML routing, or change a ledger baseline. Keep the existing primitive-DFA PR draft and its RSS hold. A small-publication fast path is the next experiment because this prototype makes the measured edit slightly slower.
 
 The comparison starts from the qualified primitive-DFA source in PR #1509, before the publication patch. Its fresh-parser runtime is D64. The candidate changes only `publishCompactReuseDependencies`: it seeds the highest valid arena slot, then publishes remaining candidates in physical slot order. It preserves the full dependency range for density decisions and avoids random insertion into a sorted sparse receipt array. No buffer, Node field, GC setting, pool cap, or memory budget changes.

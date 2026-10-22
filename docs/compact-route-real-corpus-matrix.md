@@ -24,9 +24,9 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
-### Ordered receipt publication: large Go win, prototype held
+### Ordered receipt publication: qualified adaptive Go win
 
-The [qualified private prototype](benchmarks/20261021-ordered-receipt-publication/README.md) removes random sparse-array insertion copying without adding a buffer. Twenty native ARM64 pairs reduce the 3,500-function Go full parse **112.59→97.05 ms (-13.81%, p<.001)**. The small edit rises **1.82% (p=.044)**; the other Go and all six YAML timing differences are inconclusive. All 412 selected ledger rows and eighteen receipt digests match; 1,236 locked-C checks, 29,664 invariant edits, memory and race contracts pass. Engine integration remains held while a small-publication fast path and the existing RSS blocker remain open. No graduation, route or ledger change follows this receipt.
+The [adaptive publication receipt](benchmarks/20261021-ordered-receipt-publication/README.md) preserves the direct path for at most 64 candidates and avoids random sparse-array insertion for larger publications. Twenty native ARM64 pairs reduce generated Go full parse **110.30→96.19 ms (-12.79%, p<.001)** at 3,500 functions and **13.58→13.28 ms (-2.19%, p=.049)** at 500 functions. Edit, human-authored Go and all six YAML timing differences are inconclusive. All 412 ledger rows and eighteen receipt digests match; 1,236 locked-C checks, 29,664 invariant edits, twenty memory contracts and 27 race cases pass. The runtime is integrated into the draft incremental PR; the existing RSS blocker remains. No graduation, route or ledger change follows this receipt.
 
 ### Primitive-edit DFA snapshots (qualification held)
 
