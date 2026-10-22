@@ -29,6 +29,8 @@ CI found a test-only `go vet` error in snapshot `ec89776`: the link-footprint he
 
 ## Open gates
 
+Manual full CI now runs the R4 edit-session gate in Docker for all 206 languages on both routes. Each session has its own process; the job requires all 412 sessions, 72 steps each, and zero no-edit allocations. It retains partial logs on failure and records source, counter, binary, image and container evidence. This addition closes a CI coverage gap; its first complete runtime result is still pending.
+
 Finish the remaining main-based edit sessions, locked-C fleet/report/large-file checks, owned-YAML and canonical work vectors, peak-RSS gates, and 20 matched randomized timing pairs. The Mac timing worker remains unreachable and must be inspected before resumption; its samples must not be replaced.
 
 Cognociente's [October 21 report](https://github.com/odvcencio/gotreesitter/issues/454#issuecomment-6311551850) remains open. Its exact Go fixture and both public incremental APIs are included in the pending main-only C run. The known malformed-delete C mismatch, Windows ARM64 timings and broader Windows matrix remain unresolved. The separate small-document counter exception in #1511 is unapproved. This draft neither changes that exception nor clears #1509's absolute RSS hold. No compact graduation or merge is qualified by this receipt.
