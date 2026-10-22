@@ -24,6 +24,10 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
+### Storage census: shared reductions and hidden-node volume
+
+The [current-candidate census](benchmarks/20261022-compact-storage-census/README.md) finds one clean pop without extras on **95.00%** of 1 MiB Go reductions and **85.78%** of owned 8 KiB YAML reductions. Go publishes 1,032,094 graph links; most carry zero score/order/flags. Public materialization visits 309,627 hidden subtrees on Go and 803 on the YAML witness. All five current fixtures have zero tied acceptance comparisons, so the earlier duplicate-trial target does not apply. Whole temporary-parent copy removal has only a 5.4 MB upper bound; an existing pending mode preserves the Go digest but increases node slots. A smaller lossless link representation remains private and unqualified. No timing or RSS win, routing change or graduation follows this diagnostic receipt.
+
 ### Combined incremental overhead: Go wins, absolute RSS still held
 
 The [main-to-final receipt](benchmarks/20261022-combined-incremental-overhead/README.md) qualifies the composition of primitive DFA snapshots, adaptive receipt publication and grouped read-history pages. Twenty matched native ARM64 pairs cut generated Go full parse **113.08→97.15 ms (-14.09%, p=.001)** and standard edits **176.1→117.1 us (-33.52%, p<.001)**. Allocated bytes fall **47.40%** on `grammargen_lr` and **19.04%** on large generated Go, with allocation counts **1,706→1,709**, **74→76** and **264.5→286.5** on the 1 MiB workload. All median ratchets pass; real-file Go timing remains inconclusive. Ordinary and legacy R4 YAML are **2.03% / 2.33% slower**; no YAML throughput win is claimed.
