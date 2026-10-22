@@ -1264,6 +1264,10 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      - name: Prepare job-owned Go cache and scratch
+        if: runner.environment == 'self-hosted'
+        run: bash .github/scripts/prepare_runner.sh
+
       - name: Run every v1 edit session in Docker
         env:
           SESSION_IMAGE: golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
@@ -1276,12 +1280,12 @@ jobs:
           docker image inspect "$SESSION_IMAGE" > "${RUNNER_TEMP}/v1-session-image.json"
           container="gts-v1-sessions-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           cleanup() {
+            cp "${RUNNER_TEMP}/v1-session-image.json" "$evidence/image.json"
             docker stop --time 10 "$container" >/dev/null 2>&1 || true
             docker inspect "$container" > "$evidence/container.json" 2>/dev/null || true
             docker rm "$container" >/dev/null 2>&1 || true
           }
           trap cleanup EXIT
-          cp "${RUNNER_TEMP}/v1-session-image.json" "$evidence/image.json"
           set +e
           docker run --name "$container" --memory 4g --memory-swap 4g --cpus 2 --pids-limit 512 \
             -e GOMAXPROCS=1 -e GOMEMLIMIT=3GiB -e GTS_V1_SOURCE_SHA="$SESSION_SOURCE_SHA" \
