@@ -2666,7 +2666,7 @@ jobs:
               --output "${head_output}"
               --lock-path "/tmp/gotreesitter-ci-bench-${UID}.lock"
               --runs 20 --seed-start 1 --benchtime 750ms
-              --bench-regex "${BENCH_RE}" --package . --tags ''
+              --primary-go-suite --package . --tags ''
               --require-benchmarks "${BENCH_REQUIRED}"
             )
             if [ -n "${BENCH_NODE_SCALE}" ]; then

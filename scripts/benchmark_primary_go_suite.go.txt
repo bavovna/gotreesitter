@@ -1,0 +1,31 @@
+package gotreesitter_test
+
+import (
+	"math/rand"
+	"os"
+	"strconv"
+	"testing"
+)
+
+// This suite calls the existing public benchmarks. Its private shuffle does
+// not consume the RNG used to shuffle registered Go tests and benchmarks.
+func BenchmarkGTSSeededPrimary(b *testing.B) {
+	seed, err := strconv.ParseInt(os.Getenv("GTS_BENCHMARK_SEED"), 10, 64)
+	if err != nil {
+		b.Fatalf("GTS_BENCHMARK_SEED must contain an integer: %v", err)
+	}
+	cases := []struct {
+		name string
+		run  func(*testing.B)
+	}{
+		{"BenchmarkGoParseFullDFA", BenchmarkGoParseFullDFA},
+		{"BenchmarkGoParseIncrementalSingleByteEditDFA", BenchmarkGoParseIncrementalSingleByteEditDFA},
+		{"BenchmarkGoParseIncrementalNoEditDFA", BenchmarkGoParseIncrementalNoEditDFA},
+	}
+	rand.New(rand.NewSource(seed)).Shuffle(len(cases), func(i, j int) {
+		cases[i], cases[j] = cases[j], cases[i]
+	})
+	for _, test := range cases {
+		b.Run(test.name, test.run)
+	}
+}
