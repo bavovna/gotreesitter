@@ -5,7 +5,7 @@
   "complete_increases": 158,
   "selected_rows": 54,
   "complete_rows": 119,
-  "markdown_bytes": 37160,
+  "markdown_bytes": 41077,
   "metric_aliases": {
     "selected": {
       "block_splices": "S1",
@@ -38,5 +38,7 @@
   "runtime_promoted": false,
   "roundtrip_exact": true,
   "selected_values_verified": 238,
-  "complete_values_verified": 1457
+  "complete_values_verified": 1457,
+  "native_windows_pairs": 20,
+  "native_windows_archive_sha256": "0e71c6d56887084cbf652c50e4aad34e0fd505fbfad5034d85c0897c64d86632"
 }
