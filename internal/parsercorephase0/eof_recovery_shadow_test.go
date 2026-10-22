@@ -41,7 +41,7 @@ func TestDiagnosticEOFRecoveryClonePlanAccountsEveryRequestedByte(t *testing.T) 
 		nodePrecedenceWide:                make([]int64, 2),
 		nodeLineages:                      make([]nodeLineageHot, 2),
 		nodeCheckpoints:                   make([]CheckpointID, 2),
-		links:                             make([]linkRecord, 3),
+		links:                             makeLinkRecordStorage(3, 3),
 		subtrees:                          subtreeBlocksFromSliceForTest(make([]subtreeRecord, 4)),
 		eofRecoveryRoots:                  []SubtreeID{2},
 		externalProvenance:                make([]externalPayloadProvenance, 1),
@@ -71,7 +71,7 @@ func TestDiagnosticEOFRecoveryClonePlanAccountsEveryRequestedByte(t *testing.T) 
 		uint64(2)*coreInt64Bytes +
 		uint64(2)*coreNodeLineageRecordBytes +
 		uint64(2)*coreCheckpointIDBytes +
-		uint64(3)*coreLinkRecordBytes +
+		uint64(3)*packedLinkRecordBytes +
 		uint64(4)*coreSubtreeRecordBytes +
 		coreSubtreeIDBytes +
 		coreExternalProvenanceBytes +

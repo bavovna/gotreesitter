@@ -879,10 +879,10 @@ func (c *Core) computePrecedenceMaximumFromNode(r nodeRecord, folded precedenceM
 	var maximum precedenceCandidate
 	haveMaximum := false
 	for remaining := r.linkCount; remaining > 0; remaining-- {
-		if id == 0 || uint64(id) > uint64(len(c.links)) {
+		if id == 0 || uint64(id) > uint64(c.links.Len()) {
 			return precedenceCandidate{}, errors.New("parser-core phase zero: adjacency shorter than recorded link count")
 		}
-		candidate, err := c.linkPrecedenceMaximum(c.links[id-1])
+		candidate, err := c.linkPrecedenceMaximum(c.links.At(int(id - 1)))
 		if err != nil {
 			return precedenceCandidate{}, err
 		}
@@ -890,7 +890,7 @@ func (c *Core) computePrecedenceMaximumFromNode(r nodeRecord, folded precedenceM
 			maximum = candidate
 			haveMaximum = true
 		}
-		id = c.links[id-1].next
+		id = c.links.At(int(id - 1)).next
 	}
 	if id != 0 {
 		return precedenceCandidate{}, errors.New("parser-core phase zero: adjacency exceeds recorded link count or cycles")
@@ -1323,7 +1323,7 @@ type Core struct {
 	nodeLineageRecovery    []nodeLineageRecovery
 	nodeLineageRefSets     []DropCohortRefSet
 	nodeCheckpoints        []CheckpointID
-	links                  []linkRecord
+	links                  linkRecordStorage
 
 	// dropCohortLinkRefIndexes is an optional, LinkID-indexed sidecar. A zero
 	// entry means that no finalized drop-cohort reference is bound.
@@ -1670,7 +1670,7 @@ func (c *Core) markInto(mark *checkpoint) {
 		nodePrecedenceWideBase: c.nodePrecedenceWideBase,
 		nodes:                  c.nodes.Len(), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
 		nodeLineageRefSets: c.nodeLineageRefSets,
-		links:              len(c.links), subtrees: c.subtrees.Len(),
+		links:              c.links.Len(), subtrees: c.subtrees.Len(),
 		nodeCheckpoints:                 len(c.nodeCheckpoints),
 		externalProvenance:              len(c.externalProvenance),
 		missingLeafProvenance:           len(c.missingLeafProvenance),
@@ -1792,7 +1792,7 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 	c.nodeLineageRefSets = mark.nodeLineageRefSets
 	c.nodeLineageRecovery = c.nodeLineageRecovery[:mark.nodeLineageRecovery]
 	c.nodeCheckpoints = c.nodeCheckpoints[:mark.nodeCheckpoints]
-	c.links = c.links[:mark.links]
+	c.links.Truncate(int(mark.links))
 	if !c.subtrees.Truncate(mark.subtrees) {
 		panic("parser-core phase zero: invalid subtree checkpoint")
 	}
@@ -2421,7 +2421,7 @@ func (c *Core) Reset() error {
 	c.nodeLineageRecovery = c.nodeLineageRecovery[:0]
 	c.nodeLineageRefSets = c.nodeLineageRefSets[:0]
 	c.nodeCheckpoints = c.nodeCheckpoints[:0]
-	c.links = c.links[:0]
+	c.links.Truncate(int(0))
 	clear(c.dropCohortLinkRefIndexes)
 	c.dropCohortLinkRefIndexes = c.dropCohortLinkRefIndexes[:0]
 	c.subtrees.Reset()
@@ -3589,7 +3589,7 @@ func (c *Core) appendPrivate(state StateID, byteOffset uint32, in linkInput) (He
 	if err != nil {
 		return Head{}, err
 	}
-	if uint64(len(c.links))+1 > uint64(c.limits.MaxLinks) || uint64(len(c.links)) >= math.MaxUint32 {
+	if uint64(c.links.Len())+1 > uint64(c.limits.MaxLinks) || uint64(c.links.Len()) >= math.MaxUint32 {
 		return Head{}, errors.New("parser-core phase zero: link arena cap")
 	}
 	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
@@ -4007,7 +4007,7 @@ func (c *Core) condenseWithOutcomeAtomic(key boundaryKey, in linkInput) (condens
 		}
 		newPathCount = saturatingAddPaths(newPathCount, oldPaths)
 	}
-	if uint64(len(c.links))+1 > uint64(c.limits.MaxLinks) || uint64(len(c.links)) >= math.MaxUint32 {
+	if uint64(c.links.Len())+1 > uint64(c.limits.MaxLinks) || uint64(c.links.Len()) >= math.MaxUint32 {
 		if oldID != 0 {
 			c.recordLinkUnionRejected()
 		}
@@ -4103,7 +4103,7 @@ func (c *Core) condenseWithOutcomeAtomic(key boundaryKey, in linkInput) (condens
 // zero value). publishBoundary keeps deciding journal writes from
 // len(c.transactions) unchanged; this helper does not touch that contract.
 func (c *Core) condenseDirectAppend(key boundaryKey, probe boundaryProbe, prevPaths uint64, in linkInput, storedErrorCost uint32) (condenseOutcome, error) {
-	if uint64(len(c.links))+1 > uint64(c.limits.MaxLinks) || uint64(len(c.links)) >= math.MaxUint32 {
+	if uint64(c.links.Len())+1 > uint64(c.limits.MaxLinks) || uint64(c.links.Len()) >= math.MaxUint32 {
 		return condenseOutcome{}, errors.New("parser-core phase zero: link arena cap")
 	}
 	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
@@ -4214,10 +4214,10 @@ func (c *Core) graphVersionIsDeterministic(root NodeID) (bool, error) {
 		}
 		linkID := LinkID(node.firstLink)
 		for count := uint32(0); count < node.linkCount; count++ {
-			if linkID == 0 || uint64(linkID) > uint64(len(c.links)) {
+			if linkID == 0 || uint64(linkID) > uint64(c.links.Len()) {
 				return false, errors.New("parser-core phase zero: historical forest has an invalid link")
 			}
-			link := c.links[linkID-1]
+			link := c.links.At(int(linkID - 1))
 			if err := link.validateShape(); err != nil {
 				return false, err
 			}
@@ -5193,7 +5193,7 @@ func (c *Core) appendAdjacencyNodeAtWithPrecedenceAndStoredErrorCost(
 	if uint64(len(links)) > uint64(c.limits.MaxLinksPerBoundary) {
 		return 0, &LiveLinkCapacityError{State: state, ByteOffset: byteOffset, ObservedLinks: uint64(len(links)), Limit: c.limits.MaxLinksPerBoundary}
 	}
-	if uint64(len(c.links))+uint64(len(links)) > uint64(c.limits.MaxLinks) || uint64(len(c.links))+uint64(len(links)) > math.MaxUint32 {
+	if uint64(c.links.Len())+uint64(len(links)) > uint64(c.limits.MaxLinks) || uint64(c.links.Len())+uint64(len(links)) > math.MaxUint32 {
 		return 0, errors.New("parser-core phase zero: link arena cap")
 	}
 	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
@@ -5228,7 +5228,7 @@ func (c *Core) appendAdjacencyNodeAtWithPrecedenceAndStoredErrorCost(
 		copy.next = first
 		c.appendGraphLink(copy)
 		c.addWork(&c.work.GraphLinkAdditionsProxy, 1)
-		first = LinkID(len(c.links))
+		first = LinkID(c.links.Len())
 	}
 	id, err := c.appendNodeAtWithMaximum(nodeInput{
 		state: state, byteOffset: byteOffset, firstLink: uint32(first),
@@ -5415,7 +5415,7 @@ func (c *Core) replaceBoundaryLink(key boundaryKey, probe boundaryProbe, oldID N
 	if oldLineage.storedErrorCost != incomingCost {
 		return Head{}, errors.New("parser-core phase zero: replacement heads have different stored recovery costs")
 	}
-	if uint64(len(c.links))+uint64(len(oldLinks)) > uint64(c.limits.MaxLinks) || uint64(len(c.links))+uint64(len(oldLinks)) > math.MaxUint32 {
+	if uint64(c.links.Len())+uint64(len(oldLinks)) > uint64(c.limits.MaxLinks) || uint64(c.links.Len())+uint64(len(oldLinks)) > math.MaxUint32 {
 		return Head{}, errors.New("parser-core phase zero: link arena cap")
 	}
 	if uint64(c.nodes.Len())+1 > uint64(c.limits.MaxNodes) || uint64(c.nodes.Len()) >= math.MaxUint32 {
@@ -5447,7 +5447,7 @@ func (c *Core) replaceBoundaryLink(key boundaryKey, probe boundaryProbe, oldID N
 		return Head{}, err
 	}
 
-	linkMark := len(c.links)
+	linkMark := c.links.Len()
 	linkRefMark := len(c.dropCohortLinkRefIndexes)
 	var first LinkID
 	for _, stored := range rebuilt {
@@ -5455,14 +5455,14 @@ func (c *Core) replaceBoundaryLink(key boundaryKey, probe boundaryProbe, oldID N
 		copy.next = first
 		c.appendGraphLink(copy)
 		c.addWork(&c.work.GraphLinkAdditionsProxy, 1)
-		first = LinkID(len(c.links))
+		first = LinkID(c.links.Len())
 	}
 	id, err := c.appendNodeAtWithMaximum(nodeInput{
 		state: key.state, byteOffset: key.byteOffset,
 		firstLink: uint32(first), linkCount: uint32(len(rebuilt)), pathCount: oldPaths,
 	}, key.checkpoint, maximum.value)
 	if err != nil {
-		c.links = c.links[:linkMark]
+		c.links.Truncate(int(linkMark))
 		if c.dropCohortLinkRefIndexes != nil {
 			c.dropCohortLinkRefIndexes = c.dropCohortLinkRefIndexes[:linkRefMark]
 		}
@@ -5739,10 +5739,10 @@ descend:
 			}
 			break descend
 		case 1:
-			if node.firstLink == 0 || uint64(node.firstLink) > uint64(len(c.links)) {
+			if node.firstLink == 0 || uint64(node.firstLink) > uint64(c.links.Len()) {
 				return false, errors.New("parser-core phase zero: clean path link is out of range")
 			}
-			link := c.links[node.firstLink-1]
+			link := c.links.At(int(node.firstLink - 1))
 			if link.next != 0 {
 				return false, errors.New("parser-core phase zero: clean path single link has a successor")
 			}
@@ -6054,7 +6054,7 @@ func (c *Core) popSingleLinkPath(head NodeID, childCount int, scratch *popEnumer
 		if count > uint64(c.limits.MaxLinks) || count > uint64(c.limits.MaxLinksPerBoundary) {
 			return false, errors.New("parser-core phase zero: recorded link count exceeds configured limit")
 		}
-		if count > uint64(len(c.links)) {
+		if count > uint64(c.links.Len()) {
 			return false, errors.New("parser-core phase zero: recorded link count exceeds link arena")
 		}
 		if n.linkCount != 1 {
@@ -6064,10 +6064,10 @@ func (c *Core) popSingleLinkPath(head NodeID, childCount int, scratch *popEnumer
 		if linkID == 0 {
 			return false, errors.New("parser-core phase zero: adjacency shorter than recorded link count")
 		}
-		if uint64(linkID) > uint64(len(c.links)) {
+		if uint64(linkID) > uint64(c.links.Len()) {
 			return false, errors.New("parser-core phase zero: link adjacency out of range")
 		}
-		link := c.links[linkID-1]
+		link := c.links.At(int(linkID - 1))
 		if link.next != 0 {
 			return false, errors.New("parser-core phase zero: adjacency exceeds recorded link count or cycles")
 		}
@@ -6342,7 +6342,7 @@ func (c *Core) singleDerivation(id NodeID) (Derivation, bool, error) {
 
 	path := Derivation{Payloads: make([]SubtreeID, 0, len(reverseLinks))}
 	for reverseIndex := len(reverseLinks) - 1; reverseIndex >= 0; reverseIndex-- {
-		link := c.links[reverseLinks[reverseIndex]-1]
+		link := c.links.At(int(reverseLinks[reverseIndex] - 1))
 		score, err := checkedAddScore(path.Score, link.scoreDelta)
 		if err != nil {
 			return Derivation{}, true, err
@@ -6381,10 +6381,10 @@ func (c *Core) appendSingleDerivationLinks(id NodeID, reverseLinks []LinkID) ([]
 		if linkID == 0 {
 			return reverseLinks, true, errors.New("parser-core phase zero: adjacency shorter than recorded link count")
 		}
-		if uint64(linkID) > uint64(len(c.links)) {
+		if uint64(linkID) > uint64(c.links.Len()) {
 			return reverseLinks, true, errors.New("parser-core phase zero: link adjacency out of range")
 		}
-		link := c.links[linkID-1]
+		link := c.links.At(int(linkID - 1))
 		if err := link.validateShape(); err != nil {
 			return reverseLinks, true, err
 		}
@@ -6392,7 +6392,7 @@ func (c *Core) appendSingleDerivationLinks(id NodeID, reverseLinks []LinkID) ([]
 			if link.next == linkID {
 				return reverseLinks, true, errors.New("parser-core phase zero: adjacency cycle")
 			}
-			if uint64(link.next) > uint64(len(c.links)) {
+			if uint64(link.next) > uint64(c.links.Len()) {
 				return reverseLinks, true, errors.New("parser-core phase zero: link adjacency out of range")
 			}
 			return reverseLinks, true, errors.New("parser-core phase zero: adjacency exceeds recorded link count")
@@ -6667,7 +6667,7 @@ func (c *Core) Stats(head Head) (Stats, error) {
 		return Stats{}, err
 	}
 	return Stats{
-		Nodes: uint32(c.nodes.Len()), Links: uint32(len(c.links)), Subtrees: uint32(c.subtrees.Len()), Children: uint32(len(c.children)),
+		Nodes: uint32(c.nodes.Len()), Links: uint32(c.links.Len()), Subtrees: uint32(c.subtrees.Len()), Children: uint32(len(c.children)),
 		CurrentExactPaths: nPaths,
 	}, nil
 }
@@ -6831,7 +6831,7 @@ func (c *Core) validatePublishedNodeDAGAt(r nodeRecord, next NodeID, checkpoint 
 	if count > uint64(c.limits.MaxLinks) || count > uint64(c.limits.MaxLinksPerBoundary) {
 		return errors.New("parser-core phase zero: recorded link count exceeds configured limit")
 	}
-	if count > uint64(len(c.links)) {
+	if count > uint64(c.links.Len()) {
 		return errors.New("parser-core phase zero: recorded link count exceeds link arena")
 	}
 	id := LinkID(r.firstLink)
@@ -6839,10 +6839,10 @@ func (c *Core) validatePublishedNodeDAGAt(r nodeRecord, next NodeID, checkpoint 
 		if id == 0 {
 			return errors.New("parser-core phase zero: adjacency shorter than recorded link count")
 		}
-		if uint64(id) > uint64(len(c.links)) {
+		if uint64(id) > uint64(c.links.Len()) {
 			return errors.New("parser-core phase zero: link adjacency out of range")
 		}
-		link := c.links[id-1]
+		link := c.links.At(int(id - 1))
 		if err := link.validateShape(); err != nil {
 			return err
 		}
@@ -7295,10 +7295,10 @@ func (c *Core) nodeLinks(n nodeRecord) ([]linkRecord, error) {
 			return nil, errors.New("parser-core phase zero: adjacency cycle")
 		}
 		seen[id] = true
-		if uint64(id) > uint64(len(c.links)) {
+		if uint64(id) > uint64(c.links.Len()) {
 			return nil, errors.New("parser-core phase zero: link adjacency out of range")
 		}
-		link := c.links[id-1]
+		link := c.links.At(int(id - 1))
 		if err := link.validateShape(); err != nil {
 			return nil, err
 		}
@@ -7341,7 +7341,7 @@ func (c *Core) nodeLinksIntoBounded(dst []linkRecord, n nodeRecord, maxCount uin
 	if count > uint64(c.limits.MaxLinks) || count > uint64(maxCount) {
 		return dst[:0], errors.New("parser-core phase zero: recorded link count exceeds configured limit")
 	}
-	if count > uint64(len(c.links)) {
+	if count > uint64(c.links.Len()) {
 		return dst[:0], errors.New("parser-core phase zero: recorded link count exceeds link arena")
 	}
 	if cap(dst) < int(n.linkCount) {
@@ -7354,10 +7354,10 @@ func (c *Core) nodeLinksIntoBounded(dst []linkRecord, n nodeRecord, maxCount uin
 		if id == 0 {
 			return dst, errors.New("parser-core phase zero: adjacency shorter than recorded link count")
 		}
-		if uint64(id) > uint64(len(c.links)) {
+		if uint64(id) > uint64(c.links.Len()) {
 			return dst, errors.New("parser-core phase zero: link adjacency out of range")
 		}
-		link := c.links[id-1]
+		link := c.links.At(int(id - 1))
 		if err := link.validateShape(); err != nil {
 			return dst, err
 		}

@@ -293,7 +293,7 @@ func planDiagnosticEOFRecoveryClone(live *Core, payloads []SubtreeID, providerWr
 		{len(live.nodeLineages), coreNodeLineageRecordBytes},
 		{len(live.nodeLineageRecovery), 8},
 		{len(live.nodeCheckpoints), coreCheckpointIDBytes},
-		{len(live.links), coreLinkRecordBytes},
+		{1, live.links.CloneActiveFootprintBytes()},
 		{1, live.subtrees.CloneActiveFootprintBytes()},
 		{len(live.eofRecoveryRoots), coreSubtreeIDBytes},
 		{len(live.recoveryDiscontinuityReductions), coreRecoveryDiscontinuityReductionBytes},
@@ -466,7 +466,7 @@ func cloneDiagnosticEOFRecoveryCore(
 	shadow.nodeLineages = cloneDiagnosticSlice(live.nodeLineages, 0)
 	shadow.nodeLineageRecovery = cloneDiagnosticSlice(live.nodeLineageRecovery, 0)
 	shadow.nodeCheckpoints = cloneDiagnosticSlice(live.nodeCheckpoints, 0)
-	shadow.links = cloneDiagnosticSlice(live.links, 0)
+	shadow.links = live.links.CloneActive()
 	shadow.subtrees = live.subtrees.cloneActive(1)
 	// Recompute optional counts without retaining mutable caches from the live core.
 	shadow.recoveryVisibleCounts = nil
@@ -570,7 +570,8 @@ func diagnosticEOFRecoveryCopiedArenasEqual(live, shadow *Core) bool {
 		equalDiagnosticSlice(live.nodeLineages, shadow.nodeLineages) &&
 		equalDiagnosticSlice(live.nodeLineageRecovery, shadow.nodeLineageRecovery) &&
 		equalDiagnosticSlice(live.nodeCheckpoints, shadow.nodeCheckpoints) &&
-		equalDiagnosticSlice(live.links, shadow.links) &&
+		equalDiagnosticSlice(live.links.records, shadow.links.records) &&
+		equalDiagnosticSlice(live.links.wide, shadow.links.wide) &&
 		equalDiagnosticSubtreePrefix(&live.subtrees, &shadow.subtrees) &&
 		equalDiagnosticSlice(live.eofRecoveryRoots, shadow.eofRecoveryRoots[:len(live.eofRecoveryRoots)]) &&
 		equalDiagnosticSlice(live.recoveryDiscontinuityReductions, shadow.recoveryDiscontinuityReductions) &&
@@ -631,7 +632,8 @@ func diagnosticEOFRecoveryStorageDisjoint(live, shadow *Core) bool {
 		disjointDiagnosticSlice(live.nodeLineages, shadow.nodeLineages) &&
 		disjointDiagnosticSlice(live.nodeLineageRecovery, shadow.nodeLineageRecovery) &&
 		disjointDiagnosticSlice(live.nodeCheckpoints, shadow.nodeCheckpoints) &&
-		disjointDiagnosticSlice(live.links, shadow.links) &&
+		disjointDiagnosticSlice(live.links.records, shadow.links.records) &&
+		disjointDiagnosticSlice(live.links.wide, shadow.links.wide) &&
 		disjointDiagnosticSubtreeBlocks(&live.subtrees, &shadow.subtrees) &&
 		disjointDiagnosticSlice(live.recoveryVisibleCounts, shadow.recoveryVisibleCounts) &&
 		disjointDiagnosticSlice(live.recoveryVisibleSymbols, shadow.recoveryVisibleSymbols) &&
