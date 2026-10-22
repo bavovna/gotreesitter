@@ -1,6 +1,6 @@
 # Read-history storage experiments, 2026-10-21/22
 
-Status: V4 passes the component correctness, counter and performance ratchets. The runtime remains private while the combined PR is qualified against main and its peak RSS is measured. No route, allowlist, ledger baseline or graduation decision changes. The earlier V3 allocation-count failure remains below.
+Status: V4 passes the component correctness, counter and performance ratchets and is integrated into draft PR #1509. The [combined main-to-final receipt](../20261022-combined-incremental-overhead/README.md) qualifies the composition and retains the failed absolute peak-RSS gate and merge hold. No route, allowlist, ledger baseline or graduation decision changes. The earlier V3 allocation-count failure remains below.
 
 ## V4: grouped pages pass the component ratchets
 
@@ -46,7 +46,7 @@ The baseline is the qualified primitive-DFA source, before ordered publication. 
 | Generated 3,500 functions allocs/op | 74 | 79 | +6.76%, p<.001 |
 | Report-shaped 1 MiB allocs/op | 230 | 270 | **+17.39%, p<.001; ratchet failure** |
 
-The [complete Go table](v3-go-benchstat.txt) retains every metric and directional change. All six YAML timing differences are inconclusive; their byte and allocation-count medians remain unchanged in the [complete YAML table](v3-yaml-benchstat.txt). No-edit bytes and allocations stay zero in every pair. All reported node, token and route metrics match. The next private variant coallocates suffix pages in pairs to reduce allocation count while preserving the flat prefix and existing limits; it has no measured result in this receipt.
+The [complete Go table](v3-go-benchstat.txt) retains every metric and directional change. All six YAML timing differences are inconclusive; their byte and allocation-count medians remain unchanged in the [complete YAML table](v3-yaml-benchstat.txt). No-edit bytes and allocations stay zero in every pair. All reported node, token and route metrics match. V4 above coallocates suffix pages in pairs and passes the component allocation-count ratchet; its results do not retroactively qualify V3.
 
 ## Correctness and rejected variants
 
@@ -70,4 +70,4 @@ Start from the qualified DFA source at `00fbed6a66531a3e2e0f1897d4b85c08d02b4cff
 
 The [V3 archive](v3-receipts.tar.gz) contains 969 verified members: controls, complete logs, raw benchmark output, source manifests, the canonical ledger, report probes, known C failures, retention regression and terminal container audits. C runs explicitly emulated Linux amd64 on the Mac and supply correctness evidence only. Native gates and timing explicitly use Linux arm64. Executables, source checkouts and C shared objects are excluded. The adjacent archive JSON files pin byte counts and SHA-256; internal manifests pin every member.
 
-The [collection audit](v3-collection-audit.json) records the rejected allocation ratchet. Passing memory-contract tests and reducing B/op do not resolve the existing warm-parser RSS failure. No runtime, ledger exception or compact graduation follows this receipt.
+The [collection audit](v3-collection-audit.json) records the rejected allocation ratchet. Passing memory-contract tests and reducing B/op do not resolve the existing warm-parser RSS failure. V3 remains rejected; V4 integration and its outstanding RSS hold are recorded in the combined receipt linked above. No ledger exception or compact graduation follows.

@@ -24,9 +24,11 @@ have only synthetic samples and are outside this real-file census.
 
 ## Current compact-graduation matrix
 
-### Read-history pages: qualified byte savings, combined audit pending
+### Combined incremental overhead: Go wins, absolute RSS still held
 
-The [grouped-page receipt](benchmarks/20261021-read-history-pages/README.md) records twenty matched native ARM64 pairs per language. Go allocated bytes fall **47.40%** on `grammargen_lr` and **19.04%** on large generated input. Allocation counts rise **1,706→1,709**, **74→76** and **236.5→256.5** respectively; all median ratchets pass. All thirteen timing differences are inconclusive. All 412 ledger rows stay exact; 1,236 standard C checks, 29,664 edit steps, twenty memory contracts and 59 race cases pass. Exact report probes preserve D8 and the existing malformed-delete C gap. The earlier +17.39% allocation-count failure remains recorded. Runtime promotion awaits the combined main-to-PR audit and RSS evidence; routing, ledger baselines and graduation remain unchanged.
+The [main-to-final receipt](benchmarks/20261022-combined-incremental-overhead/README.md) qualifies the composition of primitive DFA snapshots, adaptive receipt publication and grouped read-history pages. Twenty matched native ARM64 pairs cut generated Go full parse **113.08→97.15 ms (-14.09%, p=.001)** and standard edits **176.1→117.1 us (-33.52%, p<.001)**. Allocated bytes fall **47.40%** on `grammargen_lr` and **19.04%** on large generated Go, with allocation counts **1,706→1,709**, **74→76** and **264.5→286.5** on the 1 MiB workload. All median ratchets pass; real-file Go timing remains inconclusive. Ordinary and legacy R4 YAML are **2.03% / 2.33% slower**; no YAML throughput win is claimed.
+
+All 412 ledger rows remain equal; 1,236 standard C checks, 29,664 edit steps, twenty memory contracts and sixty root race cases pass. Exact report probes retain D8 and the known malformed-delete C gap. All 3,544 integrated Go files match the qualified candidate. Twenty parser-only RSS pairs preserve work counters and the relative ratchet, but **eight candidate samples exceed 400 RSS bytes/source byte** (maximum 461,205,504 bytes). PR #1509 remains draft under its RSS hold. The [earlier component receipt](benchmarks/20261021-read-history-pages/README.md) retains the rejected +17.39% allocation-count variant. Routing, ledger baselines and graduation remain unchanged.
 
 ### Ordered receipt publication: qualified adaptive Go win
 
