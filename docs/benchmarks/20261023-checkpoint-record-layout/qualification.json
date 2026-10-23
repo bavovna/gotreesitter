@@ -8,7 +8,7 @@
     "source_bytes": 140368,
     "source_sha256": "5434575bb249338937331c3756e10dcec34237d107f523ea315996fb6de0ef8f"
   },
-  "Mac_new_source_transfer": "explicitly approved and transferred; source validated; qualification running; no Mac results in this receipt",
+  "Mac_new_source_transfer": "explicitly approved; completed source-authenticated Mac qualification is separately recorded in mac-qualification.json",
   "RSS": {
     "Go": "1.26.6",
     "RSS_only_not_randomized_timing": true,
