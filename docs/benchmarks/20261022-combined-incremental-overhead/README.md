@@ -76,3 +76,7 @@ A [profile-backed reservation experiment](rss-attribution-followup.md) identifie
 ## Numeric-run proof prototype
 
 A [separate numeric-run experiment](../20261022-numeric-run-projection/README.md) reduces a generated 137 KiB edit session by about 98% on default and compact routes in twenty shuffled pairs. It is not promoted: the primary single-byte edit regresses 9.67%, the targeted block-splice trade is unapproved, and the absolute RSS hold remains. The exact Cogno report is replayed against the prototype with the same four malformed-delete C failures.
+
+## Segmented reservation follow-up
+
+Two [segmented node-reservation prototypes](segmented-reservation-followup.md) pass correctness but remain unpromoted. Separate pieces meet the sampled RSS ceiling while adding 27.6% allocations; sharing metadata reduces that overhead but four of twenty refined runs still breach the RSS ceiling. All 206 refined counter exports remain identical. The runtime and existing hold remain unchanged.
