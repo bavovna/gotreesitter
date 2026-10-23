@@ -60,9 +60,11 @@ func (d *dfaTokenSource) tokenInvariantPrimitiveEditsEquivalentBeforeToken(oldSo
 	}
 	var modeStorage [1024]uint32
 	modes := modeStorage[:0]
+	var modeSet incr.ProbeModeSet
 	// The lexer can use state zero for a fallback scan without a mode row.
 	if len(d.lexer.states) != 0 {
 		modes = append(modes, 0)
+		modeSet.SeenOrAdd(0, nil)
 	}
 	if len(d.language.LexModes) > 32768 {
 		return 0, false
@@ -78,7 +80,7 @@ func (d *dfaTokenSource) tokenInvariantPrimitiveEditsEquivalentBeforeToken(oldSo
 			if uint64(state) >= uint64(len(d.lexer.states)) {
 				return 0, false
 			}
-			if !slices.Contains(modes, state) {
+			if !modeSet.SeenOrAdd(state, modes) {
 				if len(modes) == len(modeStorage) {
 					return 0, false
 				}

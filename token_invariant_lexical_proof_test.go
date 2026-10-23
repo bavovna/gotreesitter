@@ -323,3 +323,47 @@ func TestTokenInvariantPrimitiveProbeStateContract(t *testing.T) {
 		}()
 	}
 }
+
+func TestPrimitiveProofModeSetRetainsBounds(t *testing.T) {
+	for _, tc := range []struct {
+		name           string
+		states, rows   int
+		invalid, after bool
+		want           bool
+	}{
+		{"ordered-limit", 1024, 1024, false, false, true},
+		{"above-limit", 1025, 1025, false, false, false},
+		{"duplicate-rows", 2, 32768, false, false, true},
+		{"too-many-rows", 2, 32769, false, false, false},
+		{"invalid-primary", 2, 1, true, false, false},
+		{"invalid-after-whitespace", 2, 1, true, true, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			lang := primitiveProofDigitLanguage()
+			first := lang.LexStates[0]
+			lang.LexStates = make([]LexState, tc.states)
+			for i := range lang.LexStates {
+				lang.LexStates[i] = first
+			}
+			lang.LexStates[1] = LexState{AcceptToken: 1, Default: -1, EOF: -1}
+			lang.LexModes = make([]LexMode, tc.rows)
+			for i := range lang.LexModes {
+				lang.LexModes[i].SetLexStateIndex(uint32(i % tc.states))
+			}
+			if tc.invalid {
+				if tc.after {
+					lang.LexModes[0].SetAfterWhitespaceLexStateIndex(uint32(tc.states))
+				} else {
+					lang.LexModes[0].SetLexStateIndex(uint32(tc.states))
+				}
+			}
+			old, new := []byte("1 "), []byte("2 ")
+			d := newDFATokenSourceDirectWithCRecovery(NewLexer(lang.LexStates, old), lang, nil, nil, nil, nil, false)
+			defer d.Close()
+			edit := InputEdit{OldEndByte: 1, NewEndByte: 1, OldEndPoint: Point{Column: 1}, NewEndPoint: Point{Column: 1}}
+			if _, got := d.tokenInvariantPrimitiveEditsEquivalent(old, new, edit, 2); got != tc.want {
+				t.Fatalf("proof %t want %t", got, tc.want)
+			}
+		})
+	}
+}
