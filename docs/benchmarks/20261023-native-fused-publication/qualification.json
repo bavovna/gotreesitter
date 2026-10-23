@@ -291,6 +291,14 @@
     "valid_rows_per_role": 240,
     "workload_exit_code": 0
   },
+  "ARM64_profile_attribution": {
+    "go_accepted_publication_percent": 36.21,
+    "go_native_stream_percent": 23.13,
+    "go_reduction_construction_percent": 14.94,
+    "kind": "Separate CPU samples; cumulative percentages overlap and are not timing comparisons",
+    "yaml_native_stream_percent": 17.28,
+    "yaml_reduction_construction_percent": 14.72
+  },
   "ARM64_scope": {
     "additional_C_parity": false,
     "additional_RSS": false,
@@ -311,9 +319,9 @@
     "unchanged_malformed_delete_C_failures": 4
   },
   "archive": {
-    "bytes": 3167567,
-    "members": 2481,
-    "sha256": "9f4d47ef65d3b213ff426d8aa4c86a0625459e0f93bb6e8b6899cb6be136cb22"
+    "bytes": 3883338,
+    "members": 2588,
+    "sha256": "68e219c3aa80474bdac8ebcf669d219f1f7b76cf8c370fe3a1d0e6d9af6c30bb"
   },
   "cold_RSS": {
     "all_initial_probes_retained": true,
@@ -784,6 +792,7 @@
     "valid_rows_per_role": 300,
     "workload_exit_code": 0
   },
+  "reproduction_overlay_files_complete": true,
   "source": {
     "baseline": "native-record-receipts-v2; source-equivalent to canonical runtime at 362db75a2",
     "candidate": "362db75a2 plus fused native traversal patch",
