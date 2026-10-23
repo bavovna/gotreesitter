@@ -957,15 +957,19 @@ func checkedNativeSelectedProjection(store *core.SelectedStore, source []byte, s
 	collectRawNodes := publishReuseDependencies || scheduler.reuseDependencies.reads != nil && !scheduler.s3RegionOpened && !scheduler.recoveryIsolation
 	scratch.sink = nativeStreamSink{arena: arena, points: &points, scratch: scratch, compact: scheduler.compact, lang: runner.lang}
 	scratch.sinkAdapter = core.NativeProjectionSinkAdapter[nativeStreamSink]{Context: &scratch.sink, EmitRecord: (*nativeStreamSink).emit, ReadRecord: (*nativeStreamSink).read, RewriteRecord: (*nativeStreamSink).rewrite}
-	replay := core.NativeProjectionReplay{CheckpointsRequired: languageUsesExternalScannerCheckpoints(runner.lang), Scratch: &scratch.postorder, RootPre: core.StateID(runner.tables.parser.replayRootPreGotoState()), NativeTransition: runner.tables, VisitRaw: func(id core.SubtreeID, view *core.MaterializationSubtreeView) error {
-		if err := validateNativeStreamRawTiling(scheduler.compact, runner.parser, view, source); err != nil {
-			return err
+	replay := core.NativeProjectionReplay{
+		CheckpointsRequired: languageUsesExternalScannerCheckpoints(runner.lang),
+		Scratch:             &scratch.postorder, RootPre: core.StateID(runner.tables.parser.replayRootPreGotoState()), NativeTransition: runner.tables,
+		Tiling: &core.NativeProjectionTiling{RootSymbol: core.Symbol(runner.parser.rootSymbol), HasRootSymbol: runner.parser.hasRootSymbol, GapIsTolerated: diagnosticParserCoreGapIsTolerated},
+	}
+	if replay.CheckpointsRequired {
+		replay.VisitTerminal = func(_ core.SubtreeID, view *core.MaterializationSubtreeView) error {
+			if !view.ExternalScannerCheckpointExact || view.ExternalScannerCheckpointStart == 0 || view.ExternalScannerCheckpointEnd == 0 {
+				scratch.scannerProven = false
+			}
+			return nil
 		}
-		if languageUsesExternalScannerCheckpoints(runner.lang) && view.Terminal && (!view.ExternalScannerCheckpointExact || view.ExternalScannerCheckpointStart == 0 || view.ExternalScannerCheckpointEnd == 0) {
-			scratch.scannerProven = false
-		}
-		return nil
-	}}
+	}
 	roots, err := scheduler.compact.StreamNativeProjection(scheduler.acceptedPayloads, source, &scratch.sinkAdapter, replay, poll)
 	if err != nil {
 		return nil, nil, nil, err

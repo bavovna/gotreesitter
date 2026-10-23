@@ -45,6 +45,8 @@ type NativeProjectionReplay struct {
 	Transition          MaterializationReplayBorrowedTransition
 	NativeTransition    NativeProjectionTransition
 	VisitRaw            func(SubtreeID, *MaterializationSubtreeView) error
+	VisitTerminal       func(SubtreeID, *MaterializationSubtreeView) error
+	Tiling              *NativeProjectionTiling
 }
 
 func (r NativeProjectionRecord) Named() bool    { return r.Flags&uint16(selectedNodeFlagNamed) != 0 }
@@ -114,7 +116,7 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 		return nil, errors.New("parser-core phase zero: native projection requires authenticated replay")
 	}
 	rs := replay.Scratch
-	if err := rs.prepare(c.subtrees.Len()); err != nil {
+	if err := rs.prepareNative(c.subtrees.Len()); err != nil {
 		return nil, err
 	}
 	defer rs.Reset()
@@ -126,16 +128,12 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 	defer c.finishSelectedBuildScratch()
 	logical := c.selectedBuild.logical[:0]
 	rootIDs := c.selectedBuild.rootIDs[:0]
-	stack := c.selectedBuild.stack[:0]
-	payloads := c.selectedBuild.collect[:0]
-	edges := c.selectedBuild.rawRoots[:0]
+	stack := rs.nativeFrames[:0]
 	var occurrences, rawChildren, work, emitted uint64
 	save := func() {
 		c.selectedBuild.logical = logical
 		c.selectedBuild.rootIDs = rootIDs
-		c.selectedBuild.stack = stack
-		c.selectedBuild.collect = payloads
-		c.selectedBuild.rawRoots = edges
+		rs.nativeFrames = stack
 	}
 	defer save()
 	push := func(id SubtreeID, alias Symbol, field FieldID) error {
@@ -164,8 +162,22 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 		}
 		colors[id] = 1
 		pre := replay.RootPre
-		if len(rs.frames) != 0 {
-			pre = rs.frames[len(rs.frames)-1].cursor
+		if replay.Tiling != nil {
+			if err := replay.Tiling.validateExtent(source, r.startByte, r.endByte); err != nil {
+				return err
+			}
+		}
+		if len(stack) != 0 {
+			parent := &stack[len(stack)-1]
+			pre = parent.cursor
+			if replay.Tiling != nil {
+				if !parent.root {
+					if err := replay.Tiling.validateGap(source, parent.lastEnd, r.startByte); err != nil {
+						return err
+					}
+				}
+				parent.lastEnd = max(parent.lastEnd, r.endByte)
+			}
 		}
 		var state StateID
 		var known bool
@@ -179,15 +191,17 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 				return err
 			}
 		}
-		if len(rs.frames) != 0 {
-			rs.frames[len(rs.frames)-1].cursor = state
+		if len(stack) != 0 {
+			stack[len(stack)-1].cursor = state
 		}
-		rs.frames = append(rs.frames, materializationPostorderFrame{id: id, pre: pre, cursor: pre, state: state, stateKnown: known, preKnown: known && !r.extra})
 		occurrences++
 		rawChildren += uint64(r.childCount)
-		stack = append(stack, selectedOccurrenceFrame{occurrence: uint32(len(logical))})
-		payloads = append(payloads, uint32(id))
-		edges = append(edges, uint32(alias)|uint32(field)<<16)
+		stack = append(stack, nativeProjectionFrame{
+			id: uint32(id), logicalStart: uint32(len(logical)), lastEnd: r.startByte,
+			pre: pre, cursor: pre, state: state, stateKnown: known, preKnown: known && !r.extra,
+			alias: alias, field: field,
+			root: replay.Tiling != nil && replay.Tiling.HasRootSymbol && r.symbol == replay.Tiling.RootSymbol,
+		})
 		return nil
 	}
 	emit := func(r NativeProjectionRecord, children []SelectedNodeID) (SelectedNodeID, error) {
@@ -264,7 +278,7 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 			}
 			index := len(stack) - 1
 			frame := &stack[index]
-			payload := SubtreeID(payloads[index])
+			payload := SubtreeID(frame.id)
 			raw, err := c.subtree(payload)
 			if err != nil {
 				return nil, err
@@ -293,14 +307,26 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 				}
 				continue
 			}
-			rf := rs.frames[index]
-			view := &rs.view
-			c.fillMaterializationSubtreeView(payload, raw, view)
-			view.ReplayPreGotoState, view.ReplayParseState = rf.pre, rf.state
-			view.ReplayPreGotoKnown, view.ReplayParseStateKnown = rf.preKnown, rf.stateKnown
-			if replay.VisitRaw != nil {
-				if err := replay.VisitRaw(payload, view); err != nil {
+			rf := *frame
+			if replay.Tiling != nil && !raw.terminal && !rf.root {
+				if err := replay.Tiling.validateGap(source, rf.lastEnd, raw.endByte); err != nil {
 					return nil, err
+				}
+			}
+			view := &rs.view
+			if replay.VisitRaw != nil || raw.terminal && (replay.CheckpointsRequired || replay.VisitTerminal != nil) {
+				c.fillMaterializationSubtreeView(payload, raw, view)
+				view.ReplayPreGotoState, view.ReplayParseState = rf.pre, rf.state
+				view.ReplayPreGotoKnown, view.ReplayParseStateKnown = rf.preKnown, rf.stateKnown
+				if replay.VisitRaw != nil {
+					if err := replay.VisitRaw(payload, view); err != nil {
+						return nil, err
+					}
+				}
+				if raw.terminal && replay.VisitTerminal != nil {
+					if err := replay.VisitTerminal(payload, view); err != nil {
+						return nil, err
+					}
 				}
 			}
 			replayFlags := uint16(0)
@@ -310,9 +336,8 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 			if rf.stateKnown {
 				replayFlags |= nativeProjectionStateKnown
 			}
-			start := int(frame.occurrence)
-			edge := edges[index]
-			alias, field := Symbol(edge), FieldID(edge>>16)
+			start := int(rf.logicalStart)
+			alias, field := rf.alias, rf.field
 			retain := !raw.extra && policy.retainsAliasChild(alias, raw.symbol)
 			symbol := raw.symbol
 			if alias != 0 && !retain {
@@ -442,10 +467,7 @@ func (c *Core) StreamNativeProjection(roots []SubtreeID, source []byte, sink Nat
 			if folded {
 				colors[payload] |= rawNodeIsProjected
 			}
-			rs.frames = rs.frames[:index]
 			stack = stack[:index]
-			payloads = payloads[:index]
-			edges = edges[:index]
 		}
 		rootIDs = append(rootIDs, logical[begin:]...)
 		logical = logical[:begin]
