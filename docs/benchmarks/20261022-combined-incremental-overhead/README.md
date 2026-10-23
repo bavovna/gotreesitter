@@ -72,3 +72,7 @@ Exact-head CI remains required. PR #1509 stays draft and held on RSS. This recei
 ## RSS follow-up: attribution and an unpromoted experiment
 
 A [profile-backed reservation experiment](rss-attribution-followup.md) identifies the public-node primary array as the largest allocation site. Accepting a smaller learned capacity hint lowers median RSS by 7.35% in a separate twenty-pair native ARM64 run, but 9/20 candidate processes still breach the hard ceiling. The experiment is rejected for promotion; this PR's runtime and original qualification scope are unchanged, and its absolute RSS hold remains.
+
+## Numeric-run proof prototype
+
+A [separate numeric-run experiment](../20261022-numeric-run-projection/README.md) reduces a generated 137 KiB edit session by about 98% on default and compact routes in twenty shuffled pairs. It is not promoted: the primary single-byte edit regresses 9.67%, the targeted block-splice trade is unapproved, and the absolute RSS hold remains. The exact Cogno report is replayed against the prototype with the same four malformed-delete C failures.
