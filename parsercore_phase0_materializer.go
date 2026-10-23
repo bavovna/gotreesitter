@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"sync"
+	"unsafe"
 
 	core "github.com/odvcencio/gotreesitter/internal/parsercorephase0"
 )
@@ -857,4 +858,400 @@ func (m *compactMaterializer) visit(id core.SubtreeID, view *core.Materializatio
 	m.markFragile(parent, view.Fragile)
 	m.stamp(id, parent, view)
 	return nil
+}
+
+// Streaming native publication keeps hidden wrappers out of the public arena.
+type nativeProjectionWorkspace struct {
+	sink          nativeStreamSink
+	sinkAdapter   core.NativeProjectionSinkAdapter[nativeStreamSink]
+	proofScratch  []*Node
+	records       core.ProjectionPages[nativeStreamRecord]
+	lines         []uint32
+	postorder     core.MaterializationPostorderScratch
+	frames        []nativeProjectionFrame
+	rootNodes     []*Node
+	scannerProven bool
+	checkpoints   core.CheckpointCopyScratch
+}
+
+type nativeProjectionFrame struct {
+	id   core.SelectedNodeID
+	next uint32
+}
+
+func (s *nativeProjectionWorkspace) retainedBytes() uint64 {
+	if s == nil {
+		return 0
+	}
+	return uint64(unsafe.Sizeof(*s)) + uint64(cap(s.proofScratch))*uint64(unsafe.Sizeof((*Node)(nil))) + uint64(cap(s.lines))*4 + uint64(cap(s.frames))*uint64(unsafe.Sizeof(nativeProjectionFrame{})) + s.records.FootprintBytes() + uint64(cap(s.rootNodes))*uint64(unsafe.Sizeof((*Node)(nil))) + s.postorder.RetainedBytes() + s.checkpoints.RetainedBytes()
+}
+
+func checkedNativeSelectedProjection(store *core.SelectedStore, source []byte, scratch *nativeProjectionWorkspace, scheduler *diagnosticParserCoreGenericScheduler, runner *parserCoreFreshFullRunner) (result *Node, ownedArena *nodeArena, published *Tree, resultErr error) {
+	defer runner.scratch.resetTreeBuffers()
+	arena := acquireNodeArena(arenaClassFull)
+	defer func() {
+		if runner.scratch.freshAttemptWork != nil {
+			runner.scratch.freshAttemptWork.allocatedNodes += uint64(arena.used)
+		}
+		if resultErr != nil {
+			arena.Release()
+		}
+	}()
+	if scratch == nil {
+		scratch = &nativeProjectionWorkspace{}
+	}
+	defer func() {
+		scratch.records.Clear()
+		clear(scratch.rootNodes)
+		clear(scratch.proofScratch)
+		scratch.sink = nativeStreamSink{}
+		scratch.sinkAdapter = core.NativeProjectionSinkAdapter[nativeStreamSink]{}
+	}()
+	poll := func() error {
+		if reason := runner.parser.activeParseStopReason(); resultMaterializationShouldStop(reason) {
+			return diagnosticParserCoreStopControlTripped(reason)
+		}
+		additional := uint64(0)
+		workspaceBytes := uint64(0)
+		if scheduler.nativeProjectionScratch != scratch {
+			workspaceBytes = scratch.retainedBytes()
+		}
+		for _, item := range []uint64{arenaAllocatedVolume(arena), workspaceBytes, scheduler.compact.SelectedBuildAuxiliaryBytes(), uint64(cap(runner.scratch.goCompatFrames)) * uint64(unsafe.Sizeof(goCompatSubtreeFrame{})), uint64(cap(runner.scratch.linkScratch)) * uint64(unsafe.Sizeof((*Node)(nil)))} {
+			if item > math.MaxUint64-additional {
+				additional = math.MaxUint64
+				break
+			}
+			additional += item
+		}
+		if reason := scheduler.stopControlMemoryBudgetReasonWithAdditionalBytes(additional); resultMaterializationShouldStop(reason) {
+			return diagnosticParserCoreStopControlTripped(reason)
+		}
+		return nil
+	}
+	if err := poll(); err != nil {
+		return nil, nil, nil, err
+	}
+	if !scheduler.compact.TableIdentityMatches() {
+		return nil, nil, nil, fmt.Errorf("stream table identity mismatch")
+	}
+	if runner.lang.CompactLexerSkippedPrefixTilingCertified {
+		return nil, nil, nil, fmt.Errorf("stream lexer-prefix provenance outside prototype scope")
+	}
+	scratch.scannerProven = true
+	if languageUsesExternalScannerCheckpoints(runner.lang) {
+		_, required, valid := externalScannerCheckpointIdentityStatus(runner.lang)
+		if required {
+			scratch.scannerProven = valid && arena.setExternalScannerCheckpointIdentityForLanguage(runner.lang)
+		}
+	}
+	points, err := newDiagnosticParserCorePointIndexInto(source, poll, scratch.lines)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	scratch.lines = points.lineStarts
+	scratch.records.Clear()
+	scratch.records.Append(nativeStreamRecord{})
+	// Native records already bind each emitted occurrence to its raw source.
+	// Receipt publication consumes those records without a dense raw-node map.
+	publishReuseDependencies := runner.replayParseStates && compactIncrementalReuseProvenForLanguage(runner.lang)
+	collectRawNodes := publishReuseDependencies || scheduler.reuseDependencies.reads != nil && !scheduler.s3RegionOpened && !scheduler.recoveryIsolation
+	scratch.sink = nativeStreamSink{arena: arena, points: &points, scratch: scratch, compact: scheduler.compact, lang: runner.lang}
+	scratch.sinkAdapter = core.NativeProjectionSinkAdapter[nativeStreamSink]{Context: &scratch.sink, EmitRecord: (*nativeStreamSink).emit, ReadRecord: (*nativeStreamSink).read, RewriteRecord: (*nativeStreamSink).rewrite}
+	replay := core.NativeProjectionReplay{CheckpointsRequired: languageUsesExternalScannerCheckpoints(runner.lang), Scratch: &scratch.postorder, RootPre: core.StateID(runner.tables.parser.replayRootPreGotoState()), NativeTransition: runner.tables, VisitRaw: func(id core.SubtreeID, view *core.MaterializationSubtreeView) error {
+		if err := validateNativeStreamRawTiling(scheduler.compact, runner.parser, view, source); err != nil {
+			return err
+		}
+		if languageUsesExternalScannerCheckpoints(runner.lang) && view.Terminal && (!view.ExternalScannerCheckpointExact || view.ExternalScannerCheckpointStart == 0 || view.ExternalScannerCheckpointEnd == 0) {
+			scratch.scannerProven = false
+		}
+		return nil
+	}}
+	roots, err := scheduler.compact.StreamNativeProjection(scheduler.acceptedPayloads, source, &scratch.sinkAdapter, replay, poll)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	scratch.rootNodes = scratch.rootNodes[:0]
+	for _, id := range roots {
+		scratch.rootNodes = append(scratch.rootNodes, scratch.records.At(int(id)).node)
+	}
+	if len(scratch.rootNodes) == 0 {
+		return nil, nil, nil, fmt.Errorf("stream emitted no roots")
+	}
+	acceptedStart, acceptedEnd := uint32(len(source)), uint32(0)
+	for _, payload := range scheduler.acceptedPayloads {
+		g, err := scheduler.compact.SubtreeGeometry(payload)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		if g.StartByte < acceptedStart {
+			acceptedStart = g.StartByte
+		}
+		if g.EndByte > acceptedEnd {
+			acceptedEnd = g.EndByte
+		}
+	}
+	if acceptedStart > firstNonTriviaByteStart(source) {
+		return nil, nil, nil, fmt.Errorf("stream accepted-root-leading-gap")
+	}
+	if collectRawNodes {
+		// Replay stamps the already projected nodes directly. Multiple selected
+		// occurrences with the same payload copy only state and proof metadata from
+		// the first occurrence; their fields, alias identity and parent remain local.
+		for id := 0; id < scratch.records.Len(); id++ {
+			record := scratch.records.At(id)
+			node := record.node
+			if node == nil {
+				continue
+			}
+			// Incoming fields have been copied into their parents. Reuse that
+			// temporary slot to authenticate the symbol before compatibility.
+			record.metadata.field = core.FieldID(node.symbol)
+
+		}
+	}
+	previousFrames := runner.parser.goCompatFrames
+	runner.parser.goCompatFrames = &runner.scratch.goCompatFrames
+	defer func() { runner.parser.goCompatFrames = previousFrames }()
+	finalized := runner.parser.buildResultFromNodes(scratch.rootNodes, source, arena, nil, nil, &runner.scratch.linkScratch)
+	if finalized == nil || finalized.root == nil {
+		return nil, nil, nil, fmt.Errorf("stream finalization omitted root")
+	}
+	result = finalized.root
+	if reason := finalized.rawParseStopReason(); reason != ParseStopNone || finalized.rawParseRuntime().Truncated || finalized.rawParseRuntime().TokenSourceEOFEarly {
+		return nil, nil, nil, fmt.Errorf("stream incomplete runtime")
+	}
+	if err := finalizeDiagnosticParserCoreAcceptedRootSpanWithSplice(result, source, uint32(len(source)), false, runner.parser.lineContinuationEscapeByte(), poll, runner.lang.TokenCount, nil, nil, false); err != nil {
+		return nil, nil, nil, err
+	}
+	_ = acceptedEnd
+	if collectRawNodes {
+		// Keep the existing conservative read-certificate boundary for alias copies.
+		for index := 0; index < scratch.records.Len(); index++ {
+			record := scratch.records.At(index)
+			id, node := record.metadata.source, record.node
+			if node == nil {
+				continue
+			}
+			geometry, err := scheduler.compact.SubtreeGeometry(core.SubtreeID(id))
+			if err != nil {
+				record.metadata.source = 0
+				continue
+			}
+			if Symbol(geometry.Symbol) != node.symbol {
+				// Hidden leaf aliases materialize in place; visible aliases clone
+				// and retain the existing unknown-receipt boundary. Authenticate
+				// the exact source, published pointer and symbol before retaining
+				// a hidden leaf's receipt across finalization.
+				meta := runner.lang.SymbolMetadata
+				if node.ChildCount() == 0 && int(geometry.Symbol) < len(meta) && !meta[geometry.Symbol].Visible && scratch.matchesPublishedNode(arena, node, core.SubtreeID(id)) {
+					continue
+				}
+				view, err := scheduler.compact.MaterializationView(core.SubtreeID(id))
+				if err != nil || node.ChildCount() == 0 || view.Terminal || len(view.Children) != 1 || len(view.Aliases) != 0 || int(view.Symbol) >= len(meta) || meta[view.Symbol].Visible {
+					record.metadata.source = 0
+				}
+			}
+		}
+	}
+	if err := scheduler.publishCompactLegacyReadsFrom(arena, compactProjectionNodeSource{records: &scratch.records}, scheduler.compact.SubtreeGeometry, &points, poll); err != nil {
+		return nil, nil, nil, err
+	}
+	if publishReuseDependencies {
+		extraBytes := uint64(0)
+		if scheduler.nativeProjectionScratch != scratch {
+			extraBytes = scratch.retainedBytes()
+		}
+		if err := scheduler.publishCompactReuseDependenciesFrom(runner.tables.parser, result, arena, compactProjectionNodeSource{records: &scratch.records}, scheduler.compact.MaterializationView, &points, extraBytes, poll); err != nil {
+			return nil, nil, nil, err
+		}
+	}
+	if err := poll(); err != nil {
+		return nil, nil, nil, err
+	}
+	finalized.compactMaterialized = true
+	proven := publishReuseDependencies && scratch.scannerProven && compactTreeIncrementalReuseProven(result, &scratch.proofScratch)
+	finalized.incrementalReuseDisabled = !proven
+	finalized.incrementalReuseUnsupportedClause = compactIncrementalReuseClauseScanner
+	if !runner.replayParseStates {
+		finalized.incrementalReuseUnsupportedClause = compactIncrementalReuseClauseReplay
+	}
+	if err := poll(); err != nil {
+		return nil, nil, nil, err
+	}
+	finalized.setParseRuntime(ParseRuntime{StopReason: ParseStopAccepted, NodesAllocated: arena.used, SourceLen: uint32(len(source)), ExpectedEOFByte: uint32(len(source)), RootEndByte: result.endByte, LastTokenEndByte: uint32(len(source)), LastTokenWasEOF: true, ExternalScannerCheckpointRecords: arena.externalScannerCheckpointRecords, ExternalScannerCheckpointSlotsAllocated: arena.externalScannerCheckpointSlotsAllocated(), ExternalScannerCheckpointBytesAllocated: arena.externalScannerCheckpointBytesAllocated(), ExternalScannerSnapshotBytesAllocated: arena.externalScannerSnapshotPayloadBytes, ExternalScannerCheckpointLeafNodes: arena.externalScannerCheckpointLeafNodes, CompactExternalScannerCheckpointTransferProven: scratch.scannerProven})
+	return result, arena, finalized, nil
+}
+
+// Eight bytes per emitted public occurrence. Native headers own all other
+// construction metadata; there is no selected-record or selected-child arena.
+type nativeStreamMetadata struct {
+	source core.SubtreeID
+	field  core.FieldID
+	flags  uint16
+}
+type nativeStreamRecord struct {
+	node     *Node
+	metadata nativeStreamMetadata
+}
+
+// matchesPublishedNode rejects compatibility clones and changed symbols.
+// Stream records and arena nodes advance together; checking the pointer makes
+// this a conservative lookup if allocation order ever changes.
+func (s *nativeProjectionWorkspace) matchesPublishedNode(arena *nodeArena, node *Node, source core.SubtreeID) bool {
+	if s == nil || arena == nil || node == nil || node.ownerArena != arena {
+		return false
+	}
+	_, index, ok := arena.denseDependencyStore(node)
+	if !ok || index+1 >= s.records.Len() {
+		return false
+	}
+	record := s.records.At(index + 1)
+	return record.node == node && record.metadata.source == source && Symbol(record.metadata.field) == node.symbol
+}
+
+type nativeStreamSink struct {
+	compact *core.Core
+	lang    *Language
+	arena   *nodeArena
+	points  *diagnosticParserCorePointIndex
+	scratch *nativeProjectionWorkspace
+}
+
+func (s *nativeStreamSink) emit(r core.NativeProjectionRecord, ids []core.SelectedNodeID) (core.SelectedNodeID, error) {
+	var n *Node
+	if r.Terminal() {
+		if len(ids) != 0 {
+			return 0, fmt.Errorf("terminal stream occurrence has children")
+		}
+		n = newLeafNodeInArena(s.arena, Symbol(r.Symbol), r.Named(), r.StartByte, r.EndByte, s.points.point(r.StartByte), s.points.point(r.EndByte))
+	} else {
+		children := s.arena.allocNodeSlice(len(ids))
+		var fields []FieldID
+		for i, id := range ids {
+			if id == 0 || int(id) >= s.scratch.records.Len() {
+				return 0, fmt.Errorf("stream child handle is invalid")
+			}
+			children[i] = s.scratch.records.At(int(id)).node
+			if f := s.scratch.records.At(int(id)).metadata.field; f != 0 {
+				if fields == nil {
+					fields = s.arena.allocFieldIDSlice(len(ids))
+				}
+				fields[i] = FieldID(f)
+			}
+		}
+		n = newParentNodeInArena(s.arena, Symbol(r.Symbol), r.Named(), children, fields, r.ProductionID)
+	}
+	if r.Terminal() && languageUsesExternalScannerCheckpoints(s.lang) {
+		v, err := s.compact.MaterializationView(r.Source)
+		if err != nil {
+			return 0, err
+		}
+		if !materializeCompactExternalScannerCheckpoint(s.compact, s.arena, n, v, &s.scratch.checkpoints) {
+			s.scratch.scannerProven = false
+		}
+	}
+	id := core.SelectedNodeID(s.scratch.records.Len())
+	s.scratch.records.Append(nativeStreamRecord{node: n})
+	return id, s.rewrite(id, r)
+}
+func (s *nativeStreamSink) read(id core.SelectedNodeID) (core.NativeProjectionRecord, error) {
+	if id == 0 || int(id) >= s.scratch.records.Len() {
+		return core.NativeProjectionRecord{}, fmt.Errorf("invalid stream handle")
+	}
+	n := s.scratch.records.At(int(id)).node
+	m := s.scratch.records.At(int(id)).metadata
+	return core.NativeProjectionRecord{ReplayPre: core.StateID(n.preGotoState), ReplayState: core.StateID(n.parseState), Source: m.source, StartByte: n.startByte, EndByte: n.endByte, DynamicPrecedence: n.dynamicPrecedence, SupertypeMask: n.supertypeMask(), ChildCount: uint32(n.ChildCount()), Symbol: core.Symbol(n.symbol), Field: m.field, ProductionID: n.productionID, Flags: m.flags}, nil
+}
+func (s *nativeStreamSink) rewrite(id core.SelectedNodeID, r core.NativeProjectionRecord) error {
+	if id == 0 || int(id) >= s.scratch.records.Len() {
+		return fmt.Errorf("invalid stream rewrite handle")
+	}
+	n := s.scratch.records.At(int(id)).node
+	if uint32(n.ChildCount()) != r.ChildCount {
+		return fmt.Errorf("stream rewrite changed children")
+	}
+	n.symbol = Symbol(r.Symbol)
+	n.productionID = r.ProductionID
+	n.dynamicPrecedence = r.DynamicPrecedence
+	// Constructors and field-only rewrites already have exact points. Resolve
+	// source positions only when projection actually changes the byte span.
+	if n.startByte != r.StartByte {
+		n.startByte = r.StartByte
+		n.startPoint = s.points.point(r.StartByte)
+	}
+	if n.endByte != r.EndByte {
+		n.endByte = r.EndByte
+		n.endPoint = s.points.point(r.EndByte)
+	}
+	n.parseState, n.preGotoState = 0, 0
+	n.setCompactParseStateProof(r.ReplayStateKnown())
+	n.setCompactPreGotoStateProof(r.ReplayPreKnown())
+	if r.ReplayStateKnown() {
+		n.parseState = StateID(r.ReplayState)
+	}
+	if r.ReplayPreKnown() {
+		n.preGotoState = StateID(r.ReplayPre)
+	}
+	n.setNamed(r.Named())
+	n.setExtra(r.Extra())
+	n.setExternalScannerToken(r.External())
+	n.setMissing(r.Missing())
+	n.setHasError(r.HasError())
+	n.setCompactMaterialized(true)
+	n.setFragileLeft(r.Fragile())
+	n.setFragileRight(r.Fragile())
+	n.addSupertypeMask(s.arena, r.SupertypeMask)
+	s.scratch.records.At(int(id)).metadata = nativeStreamMetadata{r.Source, r.Field, r.Flags}
+	return nil
+}
+
+// Raw child geometry is checked before it can be hidden by projection. Unary
+// folds additionally require exact raw/output spans in the core builder.
+func validateNativeStreamRawTiling(compact *core.Core, parser *Parser, view *core.MaterializationSubtreeView, source []byte) error {
+	if view.EndByte < view.StartByte || uint64(view.EndByte) > uint64(len(source)) {
+		return fmt.Errorf("stream raw extent outside source")
+	}
+	if view.Terminal {
+		return nil
+	}
+	last := view.StartByte
+	root := parser.hasRootSymbol && Symbol(view.Symbol) == parser.rootSymbol
+	for _, id := range view.Children {
+		g, err := compact.SubtreeGeometry(id)
+		if err != nil {
+			return err
+		}
+		if g.EndByte < g.StartByte || uint64(g.EndByte) > uint64(len(source)) {
+			return fmt.Errorf("stream raw child extent outside source")
+		}
+		if !root && g.StartByte > last && !diagnosticParserCoreGapIsTolerated(source[last:g.StartByte]) {
+			return fmt.Errorf("stream accepted-leaf-tiling-gap %d..%d", last, g.StartByte)
+		}
+		if g.EndByte > last {
+			last = g.EndByte
+		}
+	}
+	if !root && last < view.EndByte && !diagnosticParserCoreGapIsTolerated(source[last:view.EndByte]) {
+		return fmt.Errorf("stream accepted-leaf-tiling-gap %d..%d", last, view.EndByte)
+	}
+	return nil
+}
+
+// reset releases every public pointer before the runner returns to its pool.
+func (s *nativeProjectionWorkspace) reset() {
+	if s == nil {
+		return
+	}
+	if s.retainedBytes() > parserCoreMaxRetainedComparisonBytes {
+		*s = nativeProjectionWorkspace{}
+		return
+	}
+	s.proofScratch = clearNodeScratch(s.proofScratch)
+	s.records.Clear()
+	s.rootNodes = clearNodeScratch(s.rootNodes)
+	s.lines = s.lines[:0]
+	s.frames = s.frames[:0]
+	s.postorder.Reset()
+	s.checkpoints.Reset()
+	s.scannerProven = false
 }

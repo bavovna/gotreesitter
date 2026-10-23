@@ -1428,7 +1428,8 @@ type Core struct {
 	// metadataConstructionAuthenticated remains true only while every compact
 	// subtree was published through the authenticated shift/reduction seams.
 	// Diagnostic generic publication clears it monotonically until Reset.
-	metadataConstructionAuthenticated bool
+	metadataConstructionAuthenticated       bool
+	nativeProjectionFieldProfileUnsupported bool
 	// lastShiftFresh records whether the most recent single-boundary shift
 	// published a new node. See LastShiftFresh.
 	lastShiftFresh bool
@@ -1544,6 +1545,7 @@ type checkpoint struct {
 	nodePrecedenceWideBase                                                    NodeID
 	nodePrecedenceWide                                                        int
 	nodeLineageRecovery                                                       int
+	ownedLexerRequestsActive                                                  bool
 	nodeLineageRefSets                                                        []DropCohortRefSet
 	nodes, nodeLineages, nodeCheckpoints, links, subtrees, externalProvenance int
 	missingLeafProvenance                                                     int
@@ -1642,11 +1644,12 @@ type SchedulerTransactionToken struct {
 }
 
 type schedulerTransactionFrame struct {
-	mark     checkpoint
-	epoch    uint64
-	poisoned error
-	active   bool
-	fresh    bool
+	ownedLexerRequestsActive bool
+	mark                     checkpoint
+	epoch                    uint64
+	poisoned                 error
+	active                   bool
+	fresh                    bool
 }
 
 // clearInactive releases every completed checkpoint reference, including the
@@ -1666,9 +1669,10 @@ func (c *Core) markInto(mark *checkpoint) {
 	}
 	c.nextTransaction++
 	*mark = checkpoint{
-		nodePrecedenceWide:     len(c.nodePrecedenceWide),
-		nodePrecedenceWideBase: c.nodePrecedenceWideBase,
-		nodes:                  c.nodes.Len(), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
+		ownedLexerRequestsActive: c.schedulerFrame.ownedLexerRequestsActive,
+		nodePrecedenceWide:       len(c.nodePrecedenceWide),
+		nodePrecedenceWideBase:   c.nodePrecedenceWideBase,
+		nodes:                    c.nodes.Len(), nodeLineages: len(c.nodeLineages), nodeLineageRecovery: len(c.nodeLineageRecovery),
 		nodeLineageRefSets: c.nodeLineageRefSets,
 		links:              c.links.Len(), subtrees: c.subtrees.Len(),
 		nodeCheckpoints:                 len(c.nodeCheckpoints),
@@ -1814,6 +1818,7 @@ func (c *Core) restoreCheckpoint(mark *checkpoint) {
 	c.frontier = mark.frontier
 	c.checkpoint = mark.checkpoint
 	c.work = mark.work
+	c.schedulerFrame.ownedLexerRequestsActive = mark.ownedLexerRequestsActive
 	for index := len(c.dropCohortLinkRefJournal) - 1; index >= mark.dropCohortLinkRefJournal; index-- {
 		mutation := c.dropCohortLinkRefJournal[index]
 		if mutation.index >= 0 && mutation.index < len(c.dropCohortLinkRefIndexes) {
@@ -2498,12 +2503,14 @@ func (c *Core) Reset() error {
 	c.historicalNodeScratch = c.historicalNodeScratch[:0]
 	c.derivationSummaryScratch.finish()
 	c.metadataConstructionAuthenticated = true
+	c.nativeProjectionFieldProfileUnsupported = false
 	c.reduceConflictContext = false
 	c.reduceNoLookaheadContext = false
 	c.dropCohortSelectionContext = DropCohortSelectionNone
 	c.historicalCertificateAuthentication = false
 	c.externalTokenScannerStart = 0
 	c.externalTokenScannerEnd = 0
+	c.schedulerFrame.ownedLexerRequestsActive = false
 	c.externalTokenScannerExact = false
 	return nil
 }
@@ -6954,6 +6961,9 @@ func (c *Core) appendSubtreeRecord(r subtreeRecord, children []SubtreeID, fields
 	c.aliases = append(c.aliases, aliases...)
 	if _, ok := c.subtrees.Append(r, c.limits.MaxSubtrees); !ok {
 		return 0, errors.New("parser-core phase zero: subtree arena publication failed")
+	}
+	if len(fields) != 0 && !c.nativeProjectionFieldProfileUnsupported && !nativeProjectionDirectSingleFields(fields) {
+		c.nativeProjectionFieldProfileUnsupported = true
 	}
 	if r.terminal {
 		c.addWork(&c.work.LeafConstructionsProxy, 1)

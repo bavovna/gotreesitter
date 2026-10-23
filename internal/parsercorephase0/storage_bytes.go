@@ -109,6 +109,7 @@ var (
 	coreReusedSubtreeBytes                  = uint64(unsafe.Sizeof(reusedSubtreeProvenance{}))
 	coreRecoveryDiscontinuityReductionBytes = uint64(unsafe.Sizeof(recoveryDiscontinuityReduction{}))
 	coreCheckpointRecordBytes               = uint64(unsafe.Sizeof(checkpointRecord{}))
+	coreCheckpointDigestCacheBytes          = uint64(unsafe.Sizeof(checkpointDigestCacheEntry{}))
 	coreNodePathCountRecordBytes            = uint64(unsafe.Sizeof(nodePathCountRecord{}))
 	coreCheckpointBucketBytes               = uint64(unsafe.Sizeof(uint64(0))) + uint64(unsafe.Sizeof(CheckpointID(0)))
 	coreBoundarySlotBytes                   = uint64(unsafe.Sizeof(boundarySlot{}))
@@ -268,6 +269,7 @@ func (i *checkpointInterner) footprintBytes() uint64 {
 		return 0
 	}
 	return uint64(cap(i.records))*coreCheckpointRecordBytes +
+		uint64(cap(i.receipts))*coreCheckpointDigestCacheBytes +
 		uint64(cap(i.bytes)) +
 		uint64(len(i.buckets))*coreCheckpointBucketBytes
 }
@@ -499,6 +501,7 @@ func (i *checkpointInterner) dropOversized() {
 		return
 	}
 	i.records = nil
+	i.receipts = nil
 	i.bytes = nil
 	i.buckets = nil
 }

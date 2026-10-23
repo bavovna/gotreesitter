@@ -165,11 +165,45 @@ func (s *diagnosticParserCoreGenericScheduler) growCompactReuseDependencies(last
 	return nil
 }
 
+// compactProjectionNodeSource lets receipt publication read native records
+// directly instead of allocating a pointer slot for every raw subtree.
+// Reference publication retains its original raw-ID indexed mapping.
+type compactProjectionNodeSource struct {
+	nodes   []*Node
+	records *core.ProjectionPages[nativeStreamRecord]
+}
+
+func (s compactProjectionNodeSource) len() int {
+	if s.records != nil {
+		return s.records.Len()
+	}
+	return len(s.nodes)
+}
+
+func (s compactProjectionNodeSource) at(index int) (core.SubtreeID, *Node) {
+	if s.records != nil {
+		record := s.records.At(index)
+		if record.metadata.source == 0 {
+			return 0, nil
+		}
+		return record.metadata.source, record.node
+	}
+	return core.SubtreeID(index), s.nodes[index]
+}
+
 // Publish top-level and nested candidates. Both need the original reduction's
 // lookahead frontier before an edit can authenticate their right boundary.
 // Borrowed nodes keep their original receipts and their original arena owner.
 func (s *diagnosticParserCoreGenericScheduler) publishCompactReuseDependencies(
 	p *Parser, root *Node, arena *nodeArena, nodesByID []*Node,
+	viewFor func(core.SubtreeID) (core.MaterializationSubtreeView, error), points *diagnosticParserCorePointIndex,
+	otherScratchBytes uint64, poll func() error,
+) error {
+	return s.publishCompactReuseDependenciesFrom(p, root, arena, compactProjectionNodeSource{nodes: nodesByID}, viewFor, points, otherScratchBytes, poll)
+}
+
+func (s *diagnosticParserCoreGenericScheduler) publishCompactReuseDependenciesFrom(
+	p *Parser, root *Node, arena *nodeArena, nodes compactProjectionNodeSource,
 	viewFor func(core.SubtreeID) (core.MaterializationSubtreeView, error), points *diagnosticParserCorePointIndex,
 	otherScratchBytes uint64, poll func() error,
 ) error {
@@ -269,10 +303,11 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactReuseDependencies(
 			}
 		}
 	}
-	for id, node := range nodesByID {
+	for index := 0; index < nodes.len(); index++ {
+		id, node := nodes.at(index)
 		if candidate, ok := candidates[node]; ok {
 			candidate.seen = true
-			if id == 0 || id >= len(s.reuseDependencies.ends) || s.reuseDependencies.ends[id] < node.EndByte() ||
+			if id == 0 || uint64(id) >= uint64(len(s.reuseDependencies.ends)) || s.reuseDependencies.ends[id] < node.EndByte() ||
 				viewFor == nil || points == nil {
 				candidate.unknown = true
 			} else {
@@ -288,7 +323,7 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactReuseDependencies(
 			}
 			candidates[node] = candidate
 		}
-		if id&255 == 0 {
+		if index&255 == 0 {
 			if err := check(); err != nil {
 				return err
 			}
@@ -406,6 +441,10 @@ func (s *diagnosticParserCoreGenericScheduler) beginCompactLegacyReads() {
 // authenticates every original projection's byte dependencies. Unknown outer
 // aliases cannot inherit a collapsed inner production's receipt.
 func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReads(arena *nodeArena, nodes []*Node, geometryFor func(core.SubtreeID) (core.SubtreeGeometry, error), points *diagnosticParserCorePointIndex, poll func() error) error {
+	return s.publishCompactLegacyReadsFrom(arena, compactProjectionNodeSource{nodes: nodes}, geometryFor, points, poll)
+}
+
+func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReadsFrom(arena *nodeArena, nodes compactProjectionNodeSource, geometryFor func(core.SubtreeID) (core.SubtreeGeometry, error), points *diagnosticParserCorePointIndex, poll func() error) error {
 	reads := s.reuseDependencies.reads
 	if reads == nil || arena == nil || geometryFor == nil || points == nil || s.s3RegionOpened || s.recoveryIsolation {
 		return nil
@@ -421,22 +460,24 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReads(arena *
 	const rejected = nodeFlags(incr.TransientProjectionRejected)
 	processed := 0
 	defer func() {
-		for _, node := range nodes[:processed] {
+		for index := 0; index < processed; index++ {
+			_, node := nodes.at(index)
 			if node != nil && node.ownerArena == arena {
 				node.flags &^= rejected
 			}
 		}
 	}()
-	for id, node := range nodes {
+	for index := 0; index < nodes.len(); index++ {
+		id, node := nodes.at(index)
 		if node == nil || node.ownerArena != arena {
 			continue
 		}
-		processed = id + 1
+		processed = index + 1
 		view, err := geometryFor(core.SubtreeID(id))
 		if err != nil || view.StartByte != node.StartByte() || view.EndByte != node.EndByte() || points.point(node.StartByte()) != node.StartPoint() || points.point(node.EndByte()) != node.EndPoint() {
 			node.flags |= rejected
 		}
-		if id&255 == 0 {
+		if index&255 == 0 {
 			if err := poll(); err != nil {
 				return err
 			}
@@ -446,7 +487,8 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReads(arena *
 	// the parent and leaf boundary rules; GLR backtracking uses their exact
 	// binary-search fallback when a later projection ends earlier.
 	parents, leaves := reads.Cursor(true), reads.Cursor(false)
-	for id, node := range nodes {
+	for index := 0; index < nodes.len(); index++ {
+		id, node := nodes.at(index)
 		if node == nil || node.ownerArena != arena || node.flags&rejected != 0 || !compactNodeStateProofAvailable(node) {
 			continue
 		}
@@ -467,7 +509,7 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReads(arena *
 				}
 			}
 		}
-		if id&255 == 0 {
+		if index&255 == 0 {
 			if err := poll(); err != nil {
 				return err
 			}

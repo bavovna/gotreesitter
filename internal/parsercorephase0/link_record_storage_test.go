@@ -5,11 +5,16 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
 func TestCompactLinkStorageExactWideValuesAndFlags(t *testing.T) {
-	if packedLinkRecordBytes != 20 || wideLinkRecordBytes != 24 {
+	wantWide := uint64(28)
+	if strconv.IntSize == 64 {
+		wantWide = 32
+	}
+	if packedLinkRecordBytes != 16 || wideLinkRecordBytes != wantWide {
 		t.Fatalf("storage geometry: packed=%d wide=%d", packedLinkRecordBytes, wideLinkRecordBytes)
 	}
 	records := []linkRecord{
@@ -82,6 +87,10 @@ func TestCompactLinkStorageDifferentialMutations(t *testing.T) {
 	var records []linkRecord
 	next := func() linkRecord {
 		r := linkRecord{prev: NodeID(rng.Uint32()), payload: SubtreeID(rng.Uint32()), next: LinkID(rng.Uint32()), scoreDelta: int64(rng.Intn(65536)) - 32768, order: uint64(rng.Uint32()), flags: uint32(rng.Intn(4))}
+		if rng.Intn(2) == 0 {
+			r.scoreDelta = int64(rng.Intn(256)) - 128
+			r.order = uint64(rng.Intn(1 << 21))
+		}
 		if rng.Intn(4) == 0 {
 			r.scoreDelta = int64(rng.Uint64())
 			r.order = rng.Uint64()
@@ -156,8 +165,12 @@ func TestCompactLinkStorageCoreRollbackAndBudgetAccounting(t *testing.T) {
 		c.links = links
 		return withLinks - withoutLinks
 	}
-	wantLive := uint64(2*20 + 24)
-	wantRetained := uint64(cap(c.links.records))*20 + uint64(cap(c.links.wide))*24
+	wideBytes := uint64(28)
+	if strconv.IntSize == 64 {
+		wideBytes = 32
+	}
+	wantLive := uint64(2*16) + wideBytes
+	wantRetained := uint64(cap(c.links.records))*16 + uint64(cap(c.links.wide))*wideBytes
 	if c.StorageBytes() != wantLive || linkFootprint() != wantRetained {
 		t.Fatalf("link accounting: live=%d/%d retained=%d/%d", c.StorageBytes(), wantLive, linkFootprint(), wantRetained)
 	}
@@ -172,5 +185,36 @@ func TestCompactLinkStorageCoreRollbackAndBudgetAccounting(t *testing.T) {
 	}
 	if linkFootprint() != 0 || c.links.records != nil || c.links.wide != nil {
 		t.Fatal("decline retained link storage")
+	}
+}
+
+func TestCompactLinkStorageNarrowBoundariesAndWideIndex(t *testing.T) {
+	var s linkRecordStorage
+	for _, score := range []int64{-129, -128, -1, 0, 1, 127, 128} {
+		for _, order := range []uint64{0, (1 << 21) - 1, 1 << 21, math.MaxUint64} {
+			for flags := uint32(0); flags < 4; flags++ {
+				r := linkRecord{prev: NodeID(math.MaxUint32), payload: SubtreeID(math.MaxUint32), next: LinkID(math.MaxUint32), scoreDelta: score, order: order, flags: flags}
+				n := s.Len()
+				s.Append(r)
+				if got := s.At(n); got != r {
+					t.Fatalf("boundary round trip: got=%+v want=%+v", got, r)
+				}
+				wantWide := score < -128 || score > 127 || order >= 1<<21
+				if got := s.records[n].attributes&packedLinkWide != 0; got != wantWide {
+					t.Fatalf("wide=%t want=%t for %+v", got, wantWide, r)
+				}
+			}
+		}
+	}
+	for n := s.Len() - 1; n >= 0; n-- {
+		s.Set(n, linkRecord{prev: 99, payload: 88, next: 77, scoreDelta: -128, order: (1 << 21) - 1, flags: linkKnownFlags})
+	}
+	if len(s.wide) != 0 {
+		t.Fatal("wide index removal retained values")
+	}
+	for n := 0; n < s.Len(); n++ {
+		if r := s.At(n); r.prev != 99 || r.order != (1<<21)-1 || r.scoreDelta != -128 {
+			t.Fatalf("rewritten narrow record %d: %+v", n, r)
+		}
 	}
 }

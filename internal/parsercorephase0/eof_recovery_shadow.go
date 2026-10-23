@@ -304,6 +304,7 @@ func planDiagnosticEOFRecoveryClone(live *Core, payloads []SubtreeID, providerWr
 		{len(live.fields), coreFieldRecordBytes},
 		{len(live.aliases), coreAliasRecordBytes},
 		{len(live.checkpoints.records), coreCheckpointRecordBytes},
+		{len(live.checkpoints.receipts), coreCheckpointDigestCacheBytes},
 		{len(live.checkpoints.bytes), 1},
 		{len(live.boundaries.slots), coreBoundarySlotBytes},
 		{len(live.alternativeSpillArena), coreUint32Bytes},
@@ -480,6 +481,7 @@ func cloneDiagnosticEOFRecoveryCore(
 	shadow.fields = cloneDiagnosticSlice(live.fields, 0)
 	shadow.aliases = cloneDiagnosticSlice(live.aliases, 0)
 	shadow.checkpoints.records = cloneDiagnosticSlice(live.checkpoints.records, 0)
+	shadow.checkpoints.receipts = cloneDiagnosticSlice(live.checkpoints.receipts, 0)
 	shadow.checkpoints.bytes = cloneDiagnosticSlice(live.checkpoints.bytes, 0)
 	shadow.checkpoints.buckets = nil
 	shadow.boundaries.slots = cloneDiagnosticSlice(live.boundaries.slots, 0)
@@ -582,6 +584,7 @@ func diagnosticEOFRecoveryCopiedArenasEqual(live, shadow *Core) bool {
 		equalDiagnosticSlice(live.fields, shadow.fields) &&
 		equalDiagnosticSlice(live.aliases, shadow.aliases) &&
 		equalDiagnosticSlice(live.checkpoints.records, shadow.checkpoints.records) &&
+		equalDiagnosticSlice(live.checkpoints.receipts, shadow.checkpoints.receipts) &&
 		equalDiagnosticSlice(live.checkpoints.bytes, shadow.checkpoints.bytes) &&
 		equalDiagnosticSlice(live.boundaries.slots, shadow.boundaries.slots) &&
 		equalDiagnosticSlice(live.alternativeSpillArena, shadow.alternativeSpillArena) &&
@@ -646,6 +649,7 @@ func diagnosticEOFRecoveryStorageDisjoint(live, shadow *Core) bool {
 		disjointDiagnosticSlice(live.fields, shadow.fields) &&
 		disjointDiagnosticSlice(live.aliases, shadow.aliases) &&
 		disjointDiagnosticSlice(live.checkpoints.records, shadow.checkpoints.records) &&
+		disjointDiagnosticSlice(live.checkpoints.receipts, shadow.checkpoints.receipts) &&
 		disjointDiagnosticSlice(live.checkpoints.bytes, shadow.checkpoints.bytes) &&
 		disjointDiagnosticSlice(live.boundaries.slots, shadow.boundaries.slots) &&
 		disjointDiagnosticSlice(live.alternativeSpillArena, shadow.alternativeSpillArena) &&

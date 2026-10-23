@@ -3,13 +3,14 @@ package parsercorephase0
 import "unsafe"
 
 // A normal graph link needs three identifiers, a small signed score, and an
-// ordering value. Keep the complete logical linkRecord at call boundaries;
+// ordering value. Common records keep an eight-bit signed score and a
+// twenty-one-bit order; all other values retain an exact wide record.
+// Keep the complete logical linkRecord at call boundaries;
 // only its stored form uses this smaller representation.
 type packedLinkRecord struct {
 	prev       NodeID
 	payload    SubtreeID
 	next       LinkID
-	order      uint32
 	attributes uint32
 }
 
@@ -20,6 +21,7 @@ type wideLinkRecord struct {
 	order      uint64
 	owner      uint32
 	flags      uint32
+	prev       NodeID
 }
 
 const packedLinkWide uint32 = 1 << 2
@@ -33,12 +35,11 @@ type linkRecordStorage struct {
 
 func packLinkRecord(link linkRecord) (packedLinkRecord, bool) {
 	packed := packedLinkRecord{prev: link.prev, payload: link.payload, next: link.next}
-	if link.scoreDelta < -32768 || link.scoreDelta > 32767 || link.order > uint64(^uint32(0)) || link.flags&^linkKnownFlags != 0 {
+	if link.scoreDelta < -128 || link.scoreDelta > 127 || link.order >= 1<<21 || link.flags&^linkKnownFlags != 0 {
 		packed.attributes = packedLinkWide
 		return packed, true
 	}
-	packed.order = uint32(link.order)
-	packed.attributes = uint32(uint16(int16(link.scoreDelta)))<<16 | link.flags
+	packed.attributes = uint32(link.order)<<11 | uint32(uint8(int8(link.scoreDelta)))<<3 | link.flags
 	return packed, false
 }
 
@@ -51,20 +52,20 @@ func (s *linkRecordStorage) At(index int) linkRecord {
 		return s.wideAt(packed)
 	}
 	return linkRecord{prev: packed.prev, payload: packed.payload, next: packed.next,
-		scoreDelta: int64(int16(packed.attributes >> 16)), order: uint64(packed.order), flags: packed.attributes & linkKnownFlags}
+		scoreDelta: int64(int8(packed.attributes >> 3)), order: uint64(packed.attributes >> 11), flags: packed.attributes & linkKnownFlags}
 }
 
 func (s *linkRecordStorage) wideAt(packed packedLinkRecord) linkRecord {
-	wide := s.wide[packed.order]
-	return linkRecord{prev: packed.prev, payload: packed.payload, next: packed.next,
+	wide := s.wide[uint32(packed.prev)]
+	return linkRecord{prev: wide.prev, payload: packed.payload, next: packed.next,
 		scoreDelta: wide.scoreDelta, order: wide.order, flags: wide.flags}
 }
 
 func (s *linkRecordStorage) Append(link linkRecord) {
 	packed, wide := packLinkRecord(link)
 	if wide {
-		packed.order = uint32(len(s.wide))
-		s.wide = append(s.wide, wideLinkRecord{scoreDelta: link.scoreDelta, order: link.order, flags: link.flags, owner: uint32(len(s.records))})
+		packed.prev = NodeID(len(s.wide))
+		s.wide = append(s.wide, wideLinkRecord{scoreDelta: link.scoreDelta, order: link.order, flags: link.flags, prev: link.prev, owner: uint32(len(s.records))})
 	}
 	s.records = append(s.records, packed)
 }
@@ -76,27 +77,27 @@ func (s *linkRecordStorage) Set(index int, link linkRecord) {
 	old := s.records[index]
 	packed, wide := packLinkRecord(link)
 	if old.attributes&packedLinkWide != 0 {
-		position := int(old.order)
+		position := int(uint32(old.prev))
 		if wide {
-			packed.order = old.order
-			s.wide[position] = wideLinkRecord{scoreDelta: link.scoreDelta, order: link.order, flags: link.flags, owner: uint32(index)}
+			packed.prev = old.prev
+			s.wide[position] = wideLinkRecord{scoreDelta: link.scoreDelta, order: link.order, flags: link.flags, prev: link.prev, owner: uint32(index)}
 		} else {
 			copy(s.wide[position:], s.wide[position+1:])
 			clear(s.wide[len(s.wide)-1:])
 			s.wide = s.wide[:len(s.wide)-1]
 			for i := position; i < len(s.wide); i++ {
-				s.records[s.wide[i].owner].order = uint32(i)
+				s.records[s.wide[i].owner].prev = NodeID(i)
 			}
 		}
 	} else if wide {
 		position := s.widePrefix(index)
 		s.wide = append(s.wide, wideLinkRecord{})
 		copy(s.wide[position+1:], s.wide[position:])
-		s.wide[position] = wideLinkRecord{scoreDelta: link.scoreDelta, order: link.order, flags: link.flags, owner: uint32(index)}
+		s.wide[position] = wideLinkRecord{scoreDelta: link.scoreDelta, order: link.order, flags: link.flags, prev: link.prev, owner: uint32(index)}
 		for i := position + 1; i < len(s.wide); i++ {
-			s.records[s.wide[i].owner].order = uint32(i)
+			s.records[s.wide[i].owner].prev = NodeID(i)
 		}
-		packed.order = uint32(position)
+		packed.prev = NodeID(position)
 	}
 	s.records[index] = packed
 }

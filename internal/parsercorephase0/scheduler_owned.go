@@ -1787,7 +1787,7 @@ func (c *Core) reduceOutputsClassifiedIntoActive(owner SchedulerTransactionToken
 	if cleanSource && sourceNodePaths > uint64(c.limits.MaxLinksPerBoundary) {
 		scratch.pressureSeen = true
 	}
-	scratch.selectCleanChildren = len(paths) > 1 && cleanSource && (scratch.pressureSeen || ExternalLexerOwnershipProbeEnabled())
+	scratch.selectCleanChildren = len(paths) > 1 && cleanSource && (scratch.pressureSeen || c.schedulerFrame.ownedLexerRequestsActive || ExternalLexerOwnershipProbeEnabled())
 	for index := range paths {
 		if paths[index].recoveryDiscontinuity {
 			scratch.selectCleanChildren = false
