@@ -4,6 +4,7 @@ package gotreesitter
 
 import (
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/odvcencio/gotreesitter/internal/incr"
@@ -512,6 +513,81 @@ func (s *diagnosticParserCoreGenericScheduler) publishCompactLegacyReadsFrom(are
 		if index&255 == 0 {
 			if err := poll(); err != nil {
 				return err
+			}
+		}
+	}
+	return nil
+}
+
+// Native records contain each public occurrence once, in arena allocation
+// order. Verify that order while combining alias authentication, byte/point
+// checks, and lookahead publication. Any ownership failure aborts publication;
+// the caller still owns the unpublished arena and releases it on error.
+func (s *diagnosticParserCoreGenericScheduler) publishNativeProjectionReads(arena *nodeArena, scratch *nativeProjectionWorkspace, points *diagnosticParserCorePointIndex, poll func() error) error {
+	reads := s.reuseDependencies.reads
+	publish := reads != nil && !s.s3RegionOpened && !s.recoveryIsolation
+	var parents, leaves incr.LookaheadCursor
+	if publish {
+		reads.Seal()
+		parents, leaves = reads.Cursor(true), reads.Cursor(false)
+	}
+	if err := poll(); err != nil {
+		return err
+	}
+	block, words := arena.nodes, &arena.nodeReuseLookahead
+	slab, offset := 0, 0
+	for index := 1; index < scratch.records.Len(); index++ {
+		if index&255 == 0 {
+			if err := poll(); err != nil {
+				return err
+			}
+		}
+		for offset >= len(block) {
+			if slab >= len(arena.nodeSlabs) {
+				return fmt.Errorf("native receipt exceeds arena allocation order")
+			}
+			part := &arena.nodeSlabs[slab]
+			block, words = part.data, &part.reuseLookahead
+			slab++
+			offset = 0
+		}
+		slot := offset
+		offset++
+		record := scratch.records.At(index)
+		node := record.node
+		if node != &block[slot] || node.ownerArena != arena {
+			return fmt.Errorf("native receipt does not own its unique arena slot")
+		}
+		id := record.metadata.source
+		leaf := node.ChildCount() == 0
+		geometry, compatible, err := s.compact.NativeProjectionReceiptGeometry(id, core.Symbol(node.symbol), leaf, core.Symbol(record.metadata.field) == core.Symbol(node.symbol))
+		if err != nil || !compatible {
+			record.metadata.source = 0
+			continue
+		}
+		if !publish || geometry.StartByte != node.startByte || geometry.EndByte != node.endByte || points.point(node.startByte) != node.startPoint || points.point(node.endByte) != node.endPoint || !compactNodeStateProofAvailable(node) {
+			continue
+		}
+		var count uint32
+		var ok bool
+		if leaf {
+			count, ok = leaves.Lookahead(node.endByte)
+		} else {
+			count, ok = parents.Lookahead(node.endByte)
+		}
+		if !ok {
+			continue
+		}
+		encoded := incr.Encode(count)
+		if encoded == 0 || encoded > legacyReuseCountMask {
+			continue
+		}
+		word, growth := incr.PublicationWord(words, slot, len(block), arena.canAllocateLegacyReuseDependency)
+		arena.allocatedBytes += growth
+		if word != nil {
+			*word = encoded
+			if leaf {
+				*word |= incr.LeafReceipt(s.reuseDependencies.leafWords, uint32(id))
 			}
 		}
 	}

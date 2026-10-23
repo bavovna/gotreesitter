@@ -976,7 +976,10 @@ func checkedNativeSelectedProjection(store *core.SelectedStore, source []byte, s
 	}
 	scratch.rootNodes = scratch.rootNodes[:0]
 	for _, id := range roots {
-		scratch.rootNodes = append(scratch.rootNodes, scratch.records.At(int(id)).node)
+		record := scratch.records.At(int(id))
+		// Roots have no parent to consume their incoming field slot.
+		record.metadata.field = core.FieldID(record.node.symbol)
+		scratch.rootNodes = append(scratch.rootNodes, record.node)
 	}
 	if len(scratch.rootNodes) == 0 {
 		return nil, nil, nil, fmt.Errorf("stream emitted no roots")
@@ -997,22 +1000,6 @@ func checkedNativeSelectedProjection(store *core.SelectedStore, source []byte, s
 	if acceptedStart > firstNonTriviaByteStart(source) {
 		return nil, nil, nil, fmt.Errorf("stream accepted-root-leading-gap")
 	}
-	if collectRawNodes {
-		// Replay stamps the already projected nodes directly. Multiple selected
-		// occurrences with the same payload copy only state and proof metadata from
-		// the first occurrence; their fields, alias identity and parent remain local.
-		for id := 0; id < scratch.records.Len(); id++ {
-			record := scratch.records.At(id)
-			node := record.node
-			if node == nil {
-				continue
-			}
-			// Incoming fields have been copied into their parents. Reuse that
-			// temporary slot to authenticate the symbol before compatibility.
-			record.metadata.field = core.FieldID(node.symbol)
-
-		}
-	}
 	previousFrames := runner.parser.goCompatFrames
 	runner.parser.goCompatFrames = &runner.scratch.goCompatFrames
 	defer func() { runner.parser.goCompatFrames = previousFrames }()
@@ -1029,36 +1016,9 @@ func checkedNativeSelectedProjection(store *core.SelectedStore, source []byte, s
 	}
 	_ = acceptedEnd
 	if collectRawNodes {
-		// Keep the existing conservative read-certificate boundary for alias copies.
-		for index := 0; index < scratch.records.Len(); index++ {
-			record := scratch.records.At(index)
-			id, node := record.metadata.source, record.node
-			if node == nil {
-				continue
-			}
-			geometry, err := scheduler.compact.SubtreeGeometry(core.SubtreeID(id))
-			if err != nil {
-				record.metadata.source = 0
-				continue
-			}
-			if Symbol(geometry.Symbol) != node.symbol {
-				// Hidden leaf aliases materialize in place; visible aliases clone
-				// and retain the existing unknown-receipt boundary. Authenticate
-				// the exact source, published pointer and symbol before retaining
-				// a hidden leaf's receipt across finalization.
-				meta := runner.lang.SymbolMetadata
-				if node.ChildCount() == 0 && int(geometry.Symbol) < len(meta) && !meta[geometry.Symbol].Visible && scratch.matchesPublishedNode(arena, node, core.SubtreeID(id)) {
-					continue
-				}
-				view, err := scheduler.compact.MaterializationView(core.SubtreeID(id))
-				if err != nil || node.ChildCount() == 0 || view.Terminal || len(view.Children) != 1 || len(view.Aliases) != 0 || int(view.Symbol) >= len(meta) || meta[view.Symbol].Visible {
-					record.metadata.source = 0
-				}
-			}
+		if err := scheduler.publishNativeProjectionReads(arena, scratch, &points, poll); err != nil {
+			return nil, nil, nil, err
 		}
-	}
-	if err := scheduler.publishCompactLegacyReadsFrom(arena, compactProjectionNodeSource{records: &scratch.records}, scheduler.compact.SubtreeGeometry, &points, poll); err != nil {
-		return nil, nil, nil, err
 	}
 	if publishReuseDependencies {
 		extraBytes := uint64(0)
@@ -1135,13 +1095,17 @@ func (s *nativeStreamSink) emit(r core.NativeProjectionRecord, ids []core.Select
 			if id == 0 || int(id) >= s.scratch.records.Len() {
 				return 0, fmt.Errorf("stream child handle is invalid")
 			}
-			children[i] = s.scratch.records.At(int(id)).node
-			if f := s.scratch.records.At(int(id)).metadata.field; f != 0 {
+			record := s.scratch.records.At(int(id))
+			children[i] = record.node
+			if f := record.metadata.field; f != 0 {
 				if fields == nil {
 					fields = s.arena.allocFieldIDSlice(len(ids))
 				}
 				fields[i] = FieldID(f)
 			}
+			// Once attached, this child leaves the logical frontier. Reuse its
+			// consumed field slot to preserve the pre-compatibility symbol.
+			record.metadata.field = core.FieldID(record.node.symbol)
 		}
 		n = newParentNodeInArena(s.arena, Symbol(r.Symbol), r.Named(), children, fields, r.ProductionID)
 	}
