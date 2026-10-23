@@ -2,7 +2,7 @@
 
 This bucket removes a second node-pointer buffer from native publication. The existing occurrence records now supply the raw source ID and published node directly to the receipt writers. On 20 matched pairs, compact Go full-parse allocation fell from 819,960 to 429,568 B/op (−47.61%), and from 71 to 36 allocations. The LR workload fell from 3,715,744 to 2,675,360 B/op (−28.00%).
 
-The baseline is the [held quiescent-native-publication prototype](../20261023-quiescent-native-publication/README.md), not main. The combined engine remains unpromoted. This commit publishes the four-file patch and evidence; it does not enable a route or change the PR's runtime source.
+The baseline is the [held quiescent-native-publication prototype](../20261023-quiescent-native-publication/README.md), not main. The combined engine remains unpromoted. The [runtime source at `154bac17b`](runtime-source.md) matches this tested snapshot. It remains on the draft branch, with the existing merge and graduation holds.
 
 ## Paired results
 
