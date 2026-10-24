@@ -10,6 +10,443 @@
     "members": 2439,
     "sha256": "224c30234c7159af76dac0f00de80bf64ee52deb83e88c8b73b202f85182c6c3"
   },
+  "arm64": {
+    "archive": {
+      "bytes": 2137014,
+      "members": 179,
+      "sha256": "f88a172241f59bfcab0c69f6980a9666c079bdc481f77a26f454579b554e31ba"
+    },
+    "container": {
+      "OOMKilled": false,
+      "exit_code": 0,
+      "removed_after_audit": true,
+      "resource_limits": {
+        "CpusetCpus": "2",
+        "Memory": 4294967296,
+        "MemorySwap": 4294967296,
+        "NanoCpus": 1000000000,
+        "NetworkMode": "none",
+        "PidsLimit": 512
+      }
+    },
+    "correctness": {
+      "core_units": true,
+      "edit_steps": 288,
+      "focused_root_tests": 42,
+      "invariant_sessions": 4,
+      "memory_checks": 20,
+      "no_edit_allocations": 0,
+      "no_edit_bytes": 0,
+      "receipt_storage_units": true,
+      "strict_counter_changes": [],
+      "strict_counter_languages": [
+        "go",
+        "yaml"
+      ]
+    },
+    "directional_time_increases_percent": {
+      "compact_go_edit": 0.06,
+      "legacy_yaml_EOF": 0.52,
+      "legacy_yaml_R4": 0.79,
+      "ordinary_yaml_EOF": 0.13,
+      "ordinary_yaml_R4": 0.24,
+      "primary_go_edit": 0.21
+    },
+    "limitations": [
+      "No ARM64 locked-C, race, 386, or RSS rerun; the source-identical amd64 qualification retains those checks.",
+      "Not native Darwin or Windows qualification.",
+      "Not a combined main-based or Go/C timing comparison.",
+      "All existing correctness, allocation, warmed-RSS, merge and graduation holds remain."
+    ],
+    "performance": {
+      "all_qualification_stages_complete": true,
+      "all_timed_work_and_route_metrics_exact": true,
+      "ratchet_failures": [],
+      "scope": "Native receipt publication versus fused publication at aced544fc3027e33e5486631846fd232ec10f406; Linux ARM64 in Mac Docker; not native Darwin or a main-based qualification.",
+      "suites": {
+        "compact-go": {
+          "alternating_roles": true,
+          "matched_orders": true,
+          "results": [
+            {
+              "benchmark": "BenchmarkCompactThroughputGo/full_dfa",
+              "medians": {
+                "baseline": {
+                  "B/op": 429515.0,
+                  "allocs/op": 36.0,
+                  "ns/op": 16487810.5
+                },
+                "candidate": {
+                  "B/op": 429515.5,
+                  "allocs/op": 36.0,
+                  "ns/op": 16249887.0
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0000011641036983,
+                "allocs/op": 1.0,
+                "ns/op": 0.9855697334706752
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputGo/no_edit_dfa",
+              "medians": {
+                "baseline": {
+                  "B/op": 0.0,
+                  "allocs/op": 0.0,
+                  "ns/op": 5.9895
+                },
+                "candidate": {
+                  "B/op": 0.0,
+                  "allocs/op": 0.0,
+                  "ns/op": 5.9830000000000005
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1,
+                "allocs/op": 1,
+                "ns/op": 0.998914767509809
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputGo/fresh_one_mib",
+              "medians": {
+                "baseline": {
+                  "B/op": 292339392.0,
+                  "allocs/op": 873.0,
+                  "ns/op": 1170564229.5
+                },
+                "candidate": {
+                  "B/op": 292339392.0,
+                  "allocs/op": 873.0,
+                  "ns/op": 1138510542.0
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 0.9726168913313782
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputGo/query_compile",
+              "medians": {
+                "baseline": {
+                  "B/op": 4632.0,
+                  "allocs/op": 120.0,
+                  "ns/op": 17890385.5
+                },
+                "candidate": {
+                  "B/op": 4632.0,
+                  "allocs/op": 120.0,
+                  "ns/op": 17271706.0
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 0.9654183248315136
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputGo/single_byte_edit_dfa",
+              "medians": {
+                "baseline": {
+                  "B/op": 431.0,
+                  "allocs/op": 5.0,
+                  "ns/op": 503421.0
+                },
+                "candidate": {
+                  "B/op": 431.0,
+                  "allocs/op": 5.0,
+                  "ns/op": 503731.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 1.0006167799912995
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputGo/grammargen_lr",
+              "medians": {
+                "baseline": {
+                  "B/op": 2688240.0,
+                  "allocs/op": 1807.0,
+                  "ns/op": 184206837.5
+                },
+                "candidate": {
+                  "B/op": 2688240.0,
+                  "allocs/op": 1807.0,
+                  "ns/op": 177202941.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 0.9619780888969445
+              }
+            }
+          ],
+          "rows_per_role": 120,
+          "seed_range": [
+            237001,
+            237020
+          ],
+          "source_files_sha256": {
+            "baseline": "f77ffcb4a02697539bf4331c0b28729e2639d7403bfe95ac1f0e1d2ae2a628b9",
+            "candidate": "ecbae0177c1024507ee93ee59935ed560e6301edcd4f7dd5093b9fc754fe8065"
+          }
+        },
+        "go": {
+          "alternating_roles": true,
+          "matched_orders": true,
+          "results": [
+            {
+              "benchmark": "BenchmarkGTSSeededPrimary/BenchmarkGoParseFullDFA",
+              "medians": {
+                "baseline": {
+                  "B/op": 1167.0,
+                  "allocs/op": 6.0,
+                  "ns/op": 5854951.5
+                },
+                "candidate": {
+                  "B/op": 1167.0,
+                  "allocs/op": 6.0,
+                  "ns/op": 5835062.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 0.9966030461567444
+              }
+            },
+            {
+              "benchmark": "BenchmarkGTSSeededPrimary/BenchmarkGoParseIncrementalNoEditDFA",
+              "medians": {
+                "baseline": {
+                  "B/op": 0.0,
+                  "allocs/op": 0.0,
+                  "ns/op": 5.7995
+                },
+                "candidate": {
+                  "B/op": 0.0,
+                  "allocs/op": 0.0,
+                  "ns/op": 5.798
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1,
+                "allocs/op": 1,
+                "ns/op": 0.9997413570135356
+              }
+            },
+            {
+              "benchmark": "BenchmarkGTSSeededPrimary/BenchmarkGoParseIncrementalSingleByteEditDFA",
+              "medians": {
+                "baseline": {
+                  "B/op": 404.0,
+                  "allocs/op": 5.0,
+                  "ns/op": 522994.5
+                },
+                "candidate": {
+                  "B/op": 404.0,
+                  "allocs/op": 5.0,
+                  "ns/op": 524096.0
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 1.0021061406955523
+              }
+            }
+          ],
+          "rows_per_role": 60,
+          "seed_range": [
+            236001,
+            236020
+          ],
+          "source_files_sha256": {
+            "baseline": "a642a96f750991a75a745b0c4903f59f10dc99d00d462e1ef6e444df3813041e",
+            "candidate": "cab60454df66f2c1359158bbc51e52ac9befdaf8361505b8f38f3bbdcf280e9b"
+          }
+        },
+        "yaml": {
+          "alternating_roles": true,
+          "matched_orders": true,
+          "results": [
+            {
+              "benchmark": "BenchmarkCompactThroughputYAML/r4_legacy",
+              "medians": {
+                "baseline": {
+                  "B/op": 1440.0,
+                  "allocs/op": 16.0,
+                  "ns/op": 195931.5
+                },
+                "candidate": {
+                  "B/op": 1440.0,
+                  "allocs/op": 16.0,
+                  "ns/op": 197474.0
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 1.0078726493698054
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputYAML/eof8k_ordinary",
+              "medians": {
+                "baseline": {
+                  "B/op": 18304.0,
+                  "allocs/op": 70.0,
+                  "ns/op": 1374052.0
+                },
+                "candidate": {
+                  "B/op": 18304.0,
+                  "allocs/op": 70.0,
+                  "ns/op": 1375859.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 1.0013154523991814
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputYAML/r4_owned",
+              "medians": {
+                "baseline": {
+                  "B/op": 13008.0,
+                  "allocs/op": 73.0,
+                  "ns/op": 598882.5
+                },
+                "candidate": {
+                  "B/op": 13008.0,
+                  "allocs/op": 73.0,
+                  "ns/op": 596680.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 0.9963231518703586
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputYAML/eof8k_owned",
+              "medians": {
+                "baseline": {
+                  "B/op": 43232.0,
+                  "allocs/op": 196.0,
+                  "ns/op": 2247349.0
+                },
+                "candidate": {
+                  "B/op": 43232.0,
+                  "allocs/op": 196.0,
+                  "ns/op": 2245158.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 0.9990252960265629
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputYAML/r4_ordinary",
+              "medians": {
+                "baseline": {
+                  "B/op": 5456.0,
+                  "allocs/op": 39.0,
+                  "ns/op": 365461.5
+                },
+                "candidate": {
+                  "B/op": 5456.0,
+                  "allocs/op": 39.0,
+                  "ns/op": 366353.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 1.0024407495728005
+              }
+            },
+            {
+              "benchmark": "BenchmarkCompactThroughputYAML/eof8k_legacy",
+              "medians": {
+                "baseline": {
+                  "B/op": 1264.0,
+                  "allocs/op": 13.0,
+                  "ns/op": 701447.0
+                },
+                "candidate": {
+                  "B/op": 1264.0,
+                  "allocs/op": 13.0,
+                  "ns/op": 705067.5
+                }
+              },
+              "ratchet_failures": [],
+              "ratios": {
+                "B/op": 1.0,
+                "allocs/op": 1.0,
+                "ns/op": 1.0051614733543661
+              }
+            }
+          ],
+          "rows_per_role": 120,
+          "seed_range": [
+            235001,
+            235020
+          ],
+          "source_files_sha256": {
+            "baseline": "e710103c09244e09ac79e512e5e8ae26b8c59ded7d023338fe85624d7f27427e",
+            "candidate": "9b07d8c934552f33f6ee70b84bb658b3e60178da6c73be1757abc566d562b059"
+          }
+        }
+      },
+      "valid_rows_per_role": 300,
+      "workload_exit_code": 0
+    },
+    "platform": "Linux ARM64 in Docker on Mac; not native Darwin",
+    "runtime_commit": "6d6ead01873d54d8cda839947e04b387474190ca",
+    "significant_time_changes": {
+      "compact_go_LR_percent": -3.8,
+      "fresh_one_mib_go_percent": -2.74,
+      "query_source_go_percent": -3.46
+    },
+    "source": {
+      "approved_transfer_sha256": "aeb4b08a25c14cf13971af5371b67d3330c5830b33736abbcbf2858ee1ea9474",
+      "file_counts": {
+        "baseline": 3561,
+        "candidate": 3566
+      },
+      "matches_amd64_effective_sources": true,
+      "matches_committed_candidate": true,
+      "unchanged_at_completion": true
+    },
+    "status": "qualified-linux-arm64"
+  },
   "cold_RSS": {
     "all_initial_probes_retained": true,
     "binary_sha256": {
@@ -91,7 +528,7 @@
       "Not a main-based or Go/C timing comparison",
       "Four known malformed-delete C shape differences remain unresolved",
       "Existing warmed forced-legacy Go RSS hold remains",
-      "ARM64 qualification awaits approval of the new bundle; native Windows and Darwin remain unqualified",
+      "Linux ARM64 qualification is complete; native Windows and Darwin remain unqualified",
       "All merges and graduation remain held"
     ],
     "reason": "Adopt the seven-file native receipt publication change on the held draft branch: fresh 1 MiB Go time falls 7.68% and Go LR time falls 4.02%, with no statistically established allocation increase, exact work/reuse/routing counters, and passing correctness and memory gates.",
@@ -99,7 +536,7 @@
       "compact_go_LR_percent": -4.02,
       "fresh_one_mib_go_percent": -7.68
     },
-    "status": "qualified-linux-amd64"
+    "status": "qualified-linux-amd64-and-linux-arm64"
   },
   "fleet": {
     "C": 412,
@@ -116,7 +553,7 @@
     "Not a main-based or Go/C timing comparison",
     "Four known malformed-delete C shape differences remain unresolved",
     "Existing warmed forced-legacy Go RSS hold remains",
-    "ARM64 qualification awaits approval of the new bundle; native Windows and Darwin remain unqualified",
+    "Linux ARM64 qualification is complete; native Windows and Darwin remain unqualified",
     "All merges and graduation remain held"
   ],
   "performance": {
@@ -535,6 +972,6 @@
     ]
   },
   "source_overlay_backings_complete": true,
-  "status": "qualified-linux-amd64",
+  "status": "qualified-linux-amd64-and-linux-arm64",
   "strict_counter_changes": []
 }
