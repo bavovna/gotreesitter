@@ -20,8 +20,8 @@ rust https://github.com/tree-sitter/tree-sitter-rust src .rs
 sql https://github.com/m-novikov/tree-sitter-sql src .sql
 swift https://github.com/alex-pinkus/tree-sitter-swift src .swift
 toml https://github.com/tree-sitter/tree-sitter-toml src .toml
-tsx https://github.com/tree-sitter/tree-sitter-typescript tsx/src .tsx
-typescript https://github.com/tree-sitter/tree-sitter-typescript typescript/src .ts
+tsx https://github.com/bavovna/tree-sitter-typescript 5896c15f7731b55352a47e3a727f3c5e2a54051f tsx/src .tsx
+typescript https://github.com/bavovna/tree-sitter-typescript 5896c15f7731b55352a47e3a727f3c5e2a54051f typescript/src .ts
 yaml https://github.com/tree-sitter-grammars/tree-sitter-yaml src .yaml,.yml
 zig https://github.com/tree-sitter-grammars/tree-sitter-zig src .zig
 scala https://github.com/tree-sitter/tree-sitter-scala src .scala
