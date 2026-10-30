@@ -92,7 +92,7 @@ var builtinLanguageRuntimeProfiles = map[string]builtinLanguageRuntimeProfile{
 	// Exact link comparisons retain async generic-arrow histories until selection.
 	"typescript": {
 		exactStackNodeEquivalence:    true,
-		blobSHA256:                   mustRuntimeProfileSHA256("1b6ace3de973196290411c0347013b9f2cc2385171c77dcf375e355f3c2cc90c"),
+		blobSHA256:                   mustRuntimeProfileSHA256("6c841f669e07b3635db892f7a23466349bfc118cd74ad3489b781cc1553a5503"),
 		compactPackedGSSVersionOrder: true,
 		conflictActionVersionOrder:   true,
 	},
@@ -101,7 +101,7 @@ var builtinLanguageRuntimeProfiles = map[string]builtinLanguageRuntimeProfile{
 	// Issue #1443 certifies the conflict rule without packed reduction ordering.
 	"tsx": {
 		exactStackNodeEquivalence:  true,
-		blobSHA256:                 mustRuntimeProfileSHA256("419002e62f0bbaf9a7f7bdc0fbe58799bf6ca94038550ccde33695c16859d984"),
+		blobSHA256:                 mustRuntimeProfileSHA256("56cec0a0a2968e3ff2e0d9f49e89637703fe57eac8c3264a58593b969afa6ea4"),
 		conflictActionVersionOrder: true,
 	},
 	// The Agda table's repetition shift at state 4039 on `id` must decline so
