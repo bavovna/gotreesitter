@@ -15,7 +15,7 @@ import (
 //
 // A bare '&' in TSX/JSX text (for example "Org & Team") is legal JSXText:
 // tsc 5.9.3 accepts it, and the grammar excludes only '{', '<', '>', '}'.
-// The pinned C oracle (tree-sitter/tree-sitter-typescript at the commit in
+// The pinned C oracle (the TypeScript grammar at the commit in
 // grammars/languages.lock) still rejects it, because upstream's
 // common/scanner.h unconditionally stops scan_jsx_text at any '&' -- the
 // same defect tracked upstream as tree-sitter-javascript#366, still open.

@@ -2459,17 +2459,17 @@ toml -- https://github.com/tree-sitter/tree-sitter-toml @ 342d9be207c2
   Copyright (c) Ika <ikatyang@gmail.com> (https://github.com/ikatyang)
   License file: https://github.com/tree-sitter/tree-sitter-toml/blob/342d9be207c2dba869b9967124c679b5e6fd0ebe/LICENSE
 
-tsx -- https://github.com/tree-sitter/tree-sitter-typescript @ 75b3874edb2d
+tsx -- https://github.com/bavovna/tree-sitter-typescript @ 5896c15f7731
   Copyright (c) 2017 Max Brunsfeld
-  License file: https://github.com/tree-sitter/tree-sitter-typescript/blob/75b3874edb2dc714fb1fd77a32013d0f8699989f/LICENSE
+  License file: https://github.com/bavovna/tree-sitter-typescript/blob/5896c15f7731b55352a47e3a727f3c5e2a54051f/LICENSE
 
 turtle -- https://github.com/GordianDziwis/tree-sitter-turtle @ 7f789ea7ef76
   Copyright (c) 2021 Gordian Dziwis
   License file: https://github.com/GordianDziwis/tree-sitter-turtle/blob/7f789ea7ef765080f71a298fc96b7c957fa24422/LICENSE
 
-typescript -- https://github.com/tree-sitter/tree-sitter-typescript @ 75b3874edb2d
+typescript -- https://github.com/bavovna/tree-sitter-typescript @ 5896c15f7731
   Copyright (c) 2017 Max Brunsfeld
-  License file: https://github.com/tree-sitter/tree-sitter-typescript/blob/75b3874edb2dc714fb1fd77a32013d0f8699989f/LICENSE
+  License file: https://github.com/bavovna/tree-sitter-typescript/blob/5896c15f7731b55352a47e3a727f3c5e2a54051f/LICENSE
 
 typst -- https://github.com/uben0/tree-sitter-typst @ 46cf4ded12ee
   Copyright (c) 2023 Gerbais-Nief Eddie

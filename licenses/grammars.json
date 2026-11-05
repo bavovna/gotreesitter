@@ -2459,15 +2459,15 @@
     },
     {
       "name": "tsx",
-      "repo": "https://github.com/tree-sitter/tree-sitter-typescript",
-      "ref": "75b3874edb2dc714fb1fd77a32013d0f8699989f",
+      "repo": "https://github.com/bavovna/tree-sitter-typescript",
+      "ref": "5896c15f7731b55352a47e3a727f3c5e2a54051f",
       "spdx": "MIT",
       "license_name": "MIT License",
       "copyright_holders": [
         "Copyright (c) 2017 Max Brunsfeld"
       ],
-      "license_file_url": "https://github.com/tree-sitter/tree-sitter-typescript/blob/75b3874edb2dc714fb1fd77a32013d0f8699989f/LICENSE",
-      "method": "github_license_api",
+      "license_file_url": "https://github.com/bavovna/tree-sitter-typescript/blob/5896c15f7731b55352a47e3a727f3c5e2a54051f/LICENSE",
+      "method": "license_file_content",
       "copyleft": false
     },
     {
@@ -2498,15 +2498,15 @@
     },
     {
       "name": "typescript",
-      "repo": "https://github.com/tree-sitter/tree-sitter-typescript",
-      "ref": "75b3874edb2dc714fb1fd77a32013d0f8699989f",
+      "repo": "https://github.com/bavovna/tree-sitter-typescript",
+      "ref": "5896c15f7731b55352a47e3a727f3c5e2a54051f",
       "spdx": "MIT",
       "license_name": "MIT License",
       "copyright_holders": [
         "Copyright (c) 2017 Max Brunsfeld"
       ],
-      "license_file_url": "https://github.com/tree-sitter/tree-sitter-typescript/blob/75b3874edb2dc714fb1fd77a32013d0f8699989f/LICENSE",
-      "method": "github_license_api",
+      "license_file_url": "https://github.com/bavovna/tree-sitter-typescript/blob/5896c15f7731b55352a47e3a727f3c5e2a54051f/LICENSE",
+      "method": "license_file_content",
       "copyleft": false
     },
     {
